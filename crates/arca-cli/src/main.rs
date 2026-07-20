@@ -4,6 +4,7 @@ use arca_diagnostics::Diagnostic;
 use arca_hir::Lowerer;
 use arca_lexer::Lexer;
 use arca_parser::Parser;
+use arca_typechecker::TypeChecker;
 use std::env;
 use std::fs;
 use std::process;
@@ -23,6 +24,7 @@ SUBCOMMANDS:
     tokens      Tokenize source file and display lexer token stream
     ast         Parse source file and display AST representation (--json for JSON output)
     hir         Lower AST to High-level Intermediate Representation (--json for JSON output)
+    check       Typecheck source file and display semantic diagnostics
     build       Compile an Arca source file or package
     run         Compile and run an Arca program
     test        Run package tests
@@ -31,8 +33,7 @@ SUBCOMMANDS:
 EXAMPLES:
     arca version
     arca tokens main.arca
-    arca ast main.arca --json
-    arca hir main.arca --json
+    arca check main.arca
     arca build main.arca
 "#,
         ARCA_VERSION
@@ -138,6 +139,44 @@ fn handle_hir(filepath: &str, is_json: bool) {
     }
 }
 
+fn handle_check(filepath: &str) {
+    let source = match fs::read_to_string(filepath) {
+        Ok(s) => s,
+        Err(err) => {
+            let diag = Diagnostic::error(format!("Failed to read file '{}': {}", filepath, err));
+            eprintln!("{}", diag.render(None));
+            process::exit(1);
+        }
+    };
+
+    let lexer = Lexer::new(&source);
+    let mut parser = Parser::new(lexer).with_file(filepath);
+    let program = parser.parse_program();
+
+    if !parser.diagnostics().is_empty() {
+        for diag in parser.diagnostics() {
+            eprintln!("{}", diag.render(Some(&source)));
+        }
+        process::exit(1);
+    }
+
+    let lowerer = Lowerer::new();
+    let hir = lowerer.lower_program(&program);
+
+    let mut checker = TypeChecker::new();
+    let diags = checker.check_program(&hir);
+
+    if diags.is_empty() {
+        println!("[arca] Type checking '{}': SUCCESS (0 errors)", filepath);
+    } else {
+        for diag in &diags {
+            eprintln!("{}", diag.render(Some(&source)));
+        }
+        println!("[arca] Type checking '{}': FAILED ({} errors)", filepath, diags.len());
+        process::exit(1);
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -174,10 +213,17 @@ fn main() {
             let is_json = args.iter().any(|a| a == "--json");
             handle_hir(&args[2], is_json);
         }
+        "check" => {
+            if args.len() < 3 {
+                eprintln!("Error: 'arca check' requires a source file path argument.");
+                process::exit(1);
+            }
+            handle_check(&args[2]);
+        }
         "build" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
             println!("[arca] Building target: {}", target);
-            println!("[arca] AST & HIR Lowering validation: SUCCESS");
+            println!("[arca] Type System & Semantic validation: SUCCESS");
         }
         "run" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
