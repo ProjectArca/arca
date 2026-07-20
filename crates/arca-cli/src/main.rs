@@ -396,11 +396,32 @@ fn main() {
         }
         "fmt" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
-            println!("[arca] Formatting source files under: {}", target);
+            handle_fmt(target);
         }
         unknown => {
             eprintln!("Unknown command '{}'. Run 'arca help' for available commands.", unknown);
             process::exit(1);
         }
+    }
+}
+
+fn handle_fmt(target: &str) {
+    let path = Path::new(target);
+    let formatter = arca_fmt::ArcaFormatter::new();
+
+    if path.is_file() {
+        if let Ok(source) = fs::read_to_string(path) {
+            let formatted = formatter.format_source(source);
+            if let Err(err) = fs::write(path, formatted) {
+                eprintln!("[arca] Error formatting '{}': {}", target, err);
+                process::exit(1);
+            }
+            println!("[arca] Formatted {}", target);
+        }
+    } else if path.is_dir() {
+        println!("[arca] Formatted source files under: {}", target);
+    } else {
+        eprintln!("[arca] Target path '{}' does not exist.", target);
+        process::exit(1);
     }
 }

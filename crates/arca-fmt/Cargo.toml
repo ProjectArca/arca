@@ -1,0 +1,11 @@
+[package]
+name = "arca-fmt"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+arca-ast = { path = "../arca-ast" }
+arca-diagnostics = { path = "../arca-diagnostics" }
+arca-lexer = { path = "../arca-lexer" }
+arca-parser = { path = "../arca-parser" }

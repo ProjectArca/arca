@@ -14,6 +14,7 @@ members = [
     "crates/arca-borrowck",
     "crates/arca-ffi",
     "crates/arca-rt",
+    "crates/arca-fmt",
 ]
 resolver = "2"
 
