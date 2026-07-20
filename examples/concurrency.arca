@@ -1,29 +1,38 @@
-// Arca Example: Structured Concurrency, Work-Stealing Tasks, Channels & Actors
+// Arca Example: Structured Concurrency, Work-Stealing Tasks, Channels & Native Actors
 
 actor Cache {
-    items: Vec<string>,
+  items: Array<string>
+
+  receive {
+    Put(key: string, val: string) => {
+      // Store item
+    }
+    Get(key: string) => {
+      // Retrieve item
+    }
+  }
 }
 
 fn worker_task(ch: Channel<i32>, id: i32) {
-    ch.send(id * 10)
+  ch.send(id * 10)
 }
 
 fn main() {
-    let ch = Channel<i32>()
+  let ch = Channel<i32>()
 
-    // Structured concurrency task group
-    group {
-        spawn worker_task(ch, 1)
-        spawn worker_task(ch, 2)
-        spawn worker_task(ch, 3)
-    }
+  // Structured task group (guarantees completion & automatic cancellation)
+  group {
+    spawn worker_task(ch, 1)
+    spawn worker_task(ch, 2)
+    spawn worker_task(ch, 3)
+  }
 
-    let val1 = await ch.recv()
-    let val2 = await ch.recv()
-    let val3 = await ch.recv()
+  let val1 = ch.recv()
+  let val2 = ch.recv()
+  let val3 = ch.recv()
 
-    println("Concurrency results received:")
-    println(val1)
-    println(val2)
-    println(val3)
+  println("Structured concurrency results received:")
+  println(val1)
+  println(val2)
+  println(val3)
 }
