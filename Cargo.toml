@@ -16,6 +16,7 @@ members = [
     "crates/arca-rt",
     "crates/arca-fmt",
     "crates/arca-stdlib",
+    "crates/arca-lsp",
 ]
 resolver = "2"
 
