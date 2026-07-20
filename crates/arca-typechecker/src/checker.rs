@@ -232,6 +232,7 @@ impl TypeChecker {
                 LiteralKind::String(_) => Type::Primitive(PrimitiveType::String),
                 LiteralKind::Char(_) => Type::Primitive(PrimitiveType::Char),
                 LiteralKind::Bool(_) => Type::Primitive(PrimitiveType::Bool),
+                LiteralKind::Null => Type::Null,
             },
             HirExpr::VarRef(name) => {
                 if let Some(ty) = self.env.lookup_var(name) {
@@ -284,10 +285,13 @@ impl TypeChecker {
 
                 match callee_ty {
                     Type::Fn(fnt) => {
+                        let is_method_call = matches!(**callee, HirExpr::Member { .. });
+                        let total_args = if is_method_call { arg_types.len() + 1 } else { arg_types.len() };
+
                         // Allow variadic/built-in functions like println, print, etc.
                         if fnt.params.is_empty() {
                             // Built-in variadic function
-                        } else if arg_types.len() != fnt.params.len() {
+                        } else if total_args != fnt.params.len() && arg_types.len() != fnt.params.len() {
                             self.diagnostics.push(Diagnostic::error(format!(
                                 "Function call argument count mismatch: expected {}, found {}",
                                 fnt.params.len(),

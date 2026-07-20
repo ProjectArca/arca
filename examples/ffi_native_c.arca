@@ -1,0 +1,23 @@
+// Arca Example: Native Interoperability (FFI) & C Header Imports
+
+import c from "sqlite3.h"
+
+struct SqliteConnection {
+  handle: c_void_ptr
+}
+
+fn open_database(path: string) -> SqliteConnection throws IOError {
+  let db_handle: c_void_ptr = nil
+  let rc = c.sqlite3_open(path, &db_handle)
+
+  if rc != 0 {
+    println("Failed to open SQLite database")
+  }
+
+  SqliteConnection { handle: db_handle }
+}
+
+fn main() {
+  let conn = open_database("app.db")
+  println("Native C FFI SQLite connection initialized!")
+}

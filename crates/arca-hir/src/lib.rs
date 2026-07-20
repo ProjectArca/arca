@@ -77,6 +77,7 @@ pub struct HirFn {
     pub name: String,
     pub params: Vec<ParamDef>,
     pub return_type: Option<TypeAnnotation>,
+    pub throws_type: Option<TypeAnnotation>,
     pub body: HirBlock,
 }
 
@@ -168,6 +169,7 @@ impl Lowerer {
             name: fndecl.name.clone(),
             params: fndecl.params.clone(),
             return_type: fndecl.return_type.clone(),
+            throws_type: fndecl.throws_type.clone(),
             body: self.lower_block(&fndecl.body),
         }
     }

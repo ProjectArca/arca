@@ -1,0 +1,64 @@
+// Arca Example: Full Microservice (HTTP Router, JSON, Concurrency & Error Throws)
+
+import { Router, Request, Response } from "std/http"
+import { json } from "std/json"
+import { log } from "std/log"
+import { Channel } from "std/concurrency"
+
+error WebError {
+  InvalidPayload
+  InternalError(msg: string)
+}
+
+struct UserRequest {
+  username: string
+  email: string
+}
+
+struct UserResponse {
+  id: i32
+  username: string
+  status: string
+}
+
+fn handle_create_user(body: string) -> UserResponse throws WebError {
+  let req: UserRequest = json.decode(body)
+
+  if req.username == "" {
+    Err(WebError.InvalidPayload)
+  }
+
+  UserResponse {
+    id: 101,
+    username: req.username,
+    status: "active",
+  }
+}
+
+fn worker_process(ch: Channel<string>) {
+  let event = ch.recv()
+  log.info("Background task processed event:")
+  log.info(event)
+}
+
+fn main() {
+  log.info("Starting Arca Production Microservice...")
+
+  let ch = Channel<string>()
+
+  group {
+    spawn worker_process(ch)
+  }
+
+  ch.send("User registration audit log event")
+
+  let router = Router()
+  router.post("/api/users", |req| {
+    match handle_create_user(req.body) {
+      Ok(res) => json.encode(res),
+      Err(err) => "{\"error\": \"Failed to create user\"}",
+    }
+  })
+
+  log.info("Microservice HTTP Router configured successfully!")
+}

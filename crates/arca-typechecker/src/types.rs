@@ -71,6 +71,7 @@ pub enum Type {
     Option(Box<Type>),
     Result(Box<Type>, Box<Type>),
     ErrorUnion(Vec<Type>),
+    Null,
     Unknown,
 }
 
@@ -116,6 +117,9 @@ impl Type {
                 matches!(p, PrimitiveType::F32 | PrimitiveType::F64)
             }
             (Type::Unknown, _) | (_, Type::Unknown) => true,
+            (Type::Null, Type::Reference { .. }) => true,
+            (Type::Null, Type::Option(_)) => true,
+            (Type::Null, Type::Primitive(PrimitiveType::Void)) => true,
             _ => false,
         }
     }
@@ -146,6 +150,7 @@ impl fmt::Display for Type {
                 let strs: Vec<String> = variants.iter().map(|v| format!("{}", v)).collect();
                 write!(f, "{}", strs.join(" | "))
             }
+            Type::Null => write!(f, "null"),
             Type::Unknown => write!(f, "Unknown"),
         }
     }

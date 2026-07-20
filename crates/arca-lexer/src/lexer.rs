@@ -295,6 +295,7 @@ impl<'a> Lexer<'a> {
             "actor" => TokenKind::Actor,
             "true" => TokenKind::True,
             "false" => TokenKind::False,
+            "nil" => TokenKind::Nil,
             _ => TokenKind::Identifier(text),
         }
     }

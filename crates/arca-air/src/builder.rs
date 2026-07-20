@@ -151,6 +151,7 @@ impl AirBuilder {
                 LiteralKind::String(s) => AirValue::ConstString(s.clone()),
                 LiteralKind::Bool(b) => AirValue::ConstBool(*b),
                 LiteralKind::Char(c) => AirValue::ConstString(c.to_string()),
+                LiteralKind::Null => AirValue::ConstInt(0),
             },
             HirExpr::VarRef(name) => {
                 if let Some(reg) = var_map.get(name) {

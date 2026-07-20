@@ -35,6 +35,7 @@ pub enum LiteralKind {
     String(String),
     Char(char),
     Bool(bool),
+    Null,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -258,6 +259,7 @@ pub struct FnDecl {
     pub name: String,
     pub params: Vec<ParamDef>,
     pub return_type: Option<TypeAnnotation>,
+    pub throws_type: Option<TypeAnnotation>,
     pub body: BlockExpr,
     pub span: Span,
 }
@@ -302,6 +304,7 @@ pub enum Decl {
     },
     Fn(FnDecl),
     Import {
+        namespace: Option<String>,
         items: Vec<String>,
         source: String,
         span: Span,

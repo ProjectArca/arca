@@ -37,6 +37,7 @@ pub enum TokenKind {
     Actor,
     True,
     False,
+    Nil,
 
     // Identifiers & Literals
     Identifier(String),
@@ -119,6 +120,7 @@ impl fmt::Display for TokenKind {
             TokenKind::Actor => write!(f, "actor"),
             TokenKind::True => write!(f, "true"),
             TokenKind::False => write!(f, "false"),
+            TokenKind::Nil => write!(f, "nil"),
             TokenKind::Identifier(id) => write!(f, "Identifier({})", id),
             TokenKind::IntLiteral(n) => write!(f, "IntLiteral({})", n),
             TokenKind::FloatLiteral(fl) => write!(f, "FloatLiteral({})", fl),

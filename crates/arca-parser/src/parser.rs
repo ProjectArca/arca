@@ -394,6 +394,17 @@ impl<'a> Parser<'a> {
             None
         };
 
+        let throws_type = if let TokenKind::Identifier(s) = &self.current_token.kind {
+            if s == "throws" {
+                self.advance();
+                self.parse_type_annotation()
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         let body = self.parse_block_expr()?;
         let end_span = body.span;
 
@@ -401,6 +412,7 @@ impl<'a> Parser<'a> {
             name,
             params,
             return_type,
+            throws_type,
             body,
             span: Span::new(
                 start_span.start,
@@ -450,6 +462,7 @@ impl<'a> Parser<'a> {
         let start_span = self.current_token.span;
         self.advance(); // import
 
+        let mut namespace = None;
         let mut items = Vec::new();
         if self.current_token.kind == TokenKind::OpenBrace {
             self.advance();
@@ -465,6 +478,11 @@ impl<'a> Parser<'a> {
                 }
             }
             self.expect(TokenKind::CloseBrace);
+        } else if let TokenKind::Identifier(name) = &self.current_token.kind {
+            if name != "from" {
+                namespace = Some(name.clone());
+                self.advance();
+            }
         }
 
         let _from = self.expect(TokenKind::Identifier("from".into()));
@@ -477,6 +495,7 @@ impl<'a> Parser<'a> {
         self.advance();
 
         Some(Decl::Import {
+            namespace,
             items,
             source,
             span: Span::new(
@@ -578,6 +597,13 @@ impl<'a> Parser<'a> {
                     span: token.span,
                 })
             }
+            TokenKind::Nil => {
+                self.advance();
+                Some(Expr::Literal {
+                    value: LiteralKind::Null,
+                    span: token.span,
+                })
+            }
             TokenKind::Identifier(id) => {
                 let name = id.clone();
                 self.advance();
@@ -592,6 +618,8 @@ impl<'a> Parser<'a> {
                         {
                             if let Some(arg) = self.parse_expression(Precedence::Lowest) {
                                 args.push(arg);
+                            } else {
+                                self.advance();
                             }
                             if self.current_token.kind == TokenKind::Comma {
                                 self.advance();
@@ -718,6 +746,8 @@ impl<'a> Parser<'a> {
                     {
                         if let Some(arg) = self.parse_expression(Precedence::Lowest) {
                             args.push(arg);
+                        } else {
+                            self.advance();
                         }
                         if self.current_token.kind == TokenKind::Comma {
                             self.advance();
@@ -1035,6 +1065,8 @@ impl<'a> Parser<'a> {
                 {
                     if let Some(arg) = self.parse_expression(Precedence::Lowest) {
                         args.push(arg);
+                    } else {
+                        self.advance();
                     }
                     if self.current_token.kind == TokenKind::Comma {
                         self.advance();

@@ -91,6 +91,9 @@ impl TypeEnv {
         self.insert_var("Array".into(), Type::Unknown);
         self.insert_var("Map".into(), Type::Unknown);
         self.insert_var("Set".into(), Type::Unknown);
+
+        // FFI / Native interop namespace
+        self.insert_var("c".into(), Type::Unknown);
     }
 
     pub fn push_scope(&mut self) {
@@ -134,6 +137,7 @@ impl TypeEnv {
             "string" => Type::Primitive(PrimitiveType::String),
             "char" => Type::Primitive(PrimitiveType::Char),
             "void" => Type::Primitive(PrimitiveType::Void),
+            "c_void_ptr" => Type::Primitive(PrimitiveType::Void),
             custom => {
                 if let Some(st) = self.structs.get(custom) {
                     st.clone()
