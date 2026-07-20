@@ -1004,6 +1004,11 @@ impl<'a> Parser<'a> {
 
                 let prop = match &self.current_token.kind {
                     TokenKind::Identifier(p) => p.clone(),
+                    TokenKind::Spawn => "spawn".to_string(),
+                    TokenKind::Move => "move".to_string(),
+                    TokenKind::Borrow => "borrow".to_string(),
+                    TokenKind::Match => "match".to_string(),
+                    TokenKind::Type => "type".to_string(),
                     _ => return None,
                 };
                 let end_span = self.current_token.span;

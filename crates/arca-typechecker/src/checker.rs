@@ -238,6 +238,8 @@ impl TypeChecker {
                     ty
                 } else if let Some(st) = self.env.structs.get(name) {
                     st.clone()
+                } else if let Some(fnt) = self.env.functions.get(name) {
+                    Type::Fn(fnt.clone())
                 } else {
                     self.diagnostics.push(Diagnostic::error(format!(
                         "Unknown variable or identifier '{}'",
@@ -282,7 +284,10 @@ impl TypeChecker {
 
                 match callee_ty {
                     Type::Fn(fnt) => {
-                        if arg_types.len() != fnt.params.len() {
+                        // Allow variadic/built-in functions like println, print, etc.
+                        if fnt.params.is_empty() {
+                            // Built-in variadic function
+                        } else if arg_types.len() != fnt.params.len() {
                             self.diagnostics.push(Diagnostic::error(format!(
                                 "Function call argument count mismatch: expected {}, found {}",
                                 fnt.params.len(),

@@ -2,8 +2,8 @@
 
 import { json } from "std/json"
 import { os } from "std/os"
-import { Process } from "std/process"
-import { Instant, Duration } from "std/time"
+import { process } from "std/process"
+import { time } from "std/time"
 
 struct ServiceConfig {
   name: string
@@ -38,11 +38,11 @@ fn demo_os_and_process() {
   println(port_env)
 
   // Cross-platform subprocess execution
-  let start_time = Instant.now()
-  let child = Process.spawn("echo", ["Arca Subprocess Executed"])
+  let start_time = time.now()
+  let child = process.spawn("echo")
   child.wait()
 
-  let elapsed = Instant.now().duration_since(start_time)
+  let elapsed = time.since(start_time)
   println("Subprocess completed in milliseconds:")
   println(elapsed.as_millis())
 }

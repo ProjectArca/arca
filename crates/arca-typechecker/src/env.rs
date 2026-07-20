@@ -56,20 +56,41 @@ impl TypeEnv {
 
         self.structs.insert("Arena".into(), arena_struct);
 
-        self.functions.insert(
-            "generateTable".into(),
-            FnType {
-                params: Vec::new(),
-                return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
-            },
-        );
-        self.functions.insert(
-            "process".into(),
-            FnType {
-                params: Vec::new(),
-                return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
-            },
-        );
+        let void_fn = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+
+        self.functions.insert("generateTable".into(), void_fn.clone());
+        self.functions.insert("process".into(), void_fn.clone());
+        self.functions.insert("println".into(), void_fn.clone());
+        self.functions.insert("print".into(), void_fn.clone());
+        self.functions.insert("panic".into(), void_fn.clone());
+        self.functions.insert("assert".into(), void_fn.clone());
+
+        // Standard library module bindings
+        self.insert_var("log".into(), Type::Unknown);
+        self.insert_var("crypto".into(), Type::Unknown);
+        self.insert_var("gzip".into(), Type::Unknown);
+        self.insert_var("zstd".into(), Type::Unknown);
+        self.insert_var("math".into(), Type::Unknown);
+        self.insert_var("mem".into(), Type::Unknown);
+        self.insert_var("hash".into(), Type::Unknown);
+        self.insert_var("json".into(), Type::Unknown);
+        self.insert_var("os".into(), Type::Unknown);
+        self.insert_var("process".into(), Type::Unknown);
+        self.insert_var("time".into(), Type::Unknown);
+        self.insert_var("Process".into(), Type::Unknown);
+        self.insert_var("Instant".into(), Type::Unknown);
+        self.insert_var("Duration".into(), Type::Unknown);
+        self.insert_var("ArenaAllocator".into(), Type::Unknown);
+        self.insert_var("Router".into(), Type::Unknown);
+        self.insert_var("File".into(), Type::Unknown);
+        self.insert_var("TcpListener".into(), Type::Unknown);
+        self.insert_var("Channel".into(), Type::Unknown);
+        self.insert_var("Array".into(), Type::Unknown);
+        self.insert_var("Map".into(), Type::Unknown);
+        self.insert_var("Set".into(), Type::Unknown);
     }
 
     pub fn push_scope(&mut self) {
