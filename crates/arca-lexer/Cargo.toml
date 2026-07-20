@@ -1,0 +1,9 @@
+[package]
+name = "arca-lexer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+arca-ast = { path = "../arca-ast" }
+arca-diagnostics = { path = "../arca-diagnostics" }
