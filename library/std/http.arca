@@ -1,0 +1,13 @@
+// Arca Standard Library: HTTP Server & Client module (std/http)
+
+export struct Router {}
+
+export struct Request {
+  method: string
+  url: string
+}
+
+export struct Response {
+  status: i32
+  body: string
+}

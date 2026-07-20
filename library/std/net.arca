@@ -1,0 +1,13 @@
+// Arca Standard Library: Async Networking module (std/net)
+
+export struct TcpListener {
+  port: i32
+}
+
+export struct TcpStream {
+  fd: i32
+}
+
+export struct UdpSocket {
+  port: i32
+}

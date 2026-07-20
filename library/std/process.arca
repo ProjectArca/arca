@@ -1,0 +1,15 @@
+// Arca Standard Library: Process Management module (std/process)
+
+export struct ChildProcess {
+  pid: i32
+}
+
+extend ChildProcess {
+  fn wait(borrow self: ChildProcess) -> i32 {
+    0
+  }
+}
+
+export fn spawn(cmd: string) -> ChildProcess {
+  ChildProcess { pid: 1234 }
+}

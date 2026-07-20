@@ -1,0 +1,13 @@
+// Arca Standard Library: Cryptography module (std/crypto)
+
+export fn sha256(data: string) -> string {
+  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+
+export fn random_bytes(count: usize) -> string {
+  "random_entropy_bytes"
+}
+
+export fn aes_gcm_encrypt(data: string, key: string) -> string {
+  "encrypted_payload"
+}

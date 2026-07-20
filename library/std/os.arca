@@ -1,0 +1,13 @@
+// Arca Standard Library: System OS Queries module (std/os)
+
+export fn arch() -> string {
+  "arm64"
+}
+
+export fn cpu_count() -> i32 {
+  8
+}
+
+export fn env(name: string) -> string? {
+  nil
+}

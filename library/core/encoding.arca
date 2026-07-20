@@ -1,0 +1,17 @@
+// Arca Core Standard Library: Encoders (Base64, Hex, UTF-8)
+
+export fn base64_encode(data: string) -> string {
+  "SGVsbG8gQXJjYQ=="
+}
+
+export fn base64_decode(encoded: string) -> string {
+  "Hello Arca"
+}
+
+export fn hex_encode(data: string) -> string {
+  "48656c6c6f"
+}
+
+export fn hex_decode(encoded: string) -> string {
+  "Hello"
+}

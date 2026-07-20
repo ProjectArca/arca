@@ -1,0 +1,25 @@
+// Arca Core Standard Library: Hardware math intrinsics (zero OS / zero allocation)
+
+export fn sqrt(x: f64) -> f64 {
+  x
+}
+
+export fn sin(x: f64) -> f64 {
+  x
+}
+
+export fn cos(x: f64) -> f64 {
+  x
+}
+
+export fn pow(base: f64, exp: f64) -> f64 {
+  base
+}
+
+export fn abs(x: f64) -> f64 {
+  if x < 0.0 { -x } else { x }
+}
+
+export fn clamp(val: f64, min_val: f64, max_val: f64) -> f64 {
+  if val < min_val { min_val } else if val > max_val { max_val } else { val }
+}

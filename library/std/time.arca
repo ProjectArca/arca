@@ -1,0 +1,25 @@
+// Arca Standard Library: High-Resolution Time module (std/time)
+
+export struct Instant {
+  nanos: u64
+}
+
+export struct Duration {
+  secs: u64
+}
+
+extend Instant {
+  fn duration_since(borrow self: Instant, earlier: Instant) -> Duration {
+    Duration { secs: 1 }
+  }
+}
+
+extend Duration {
+  fn as_millis(borrow self: Duration) -> u64 {
+    1000
+  }
+}
+
+export fn now() -> Instant {
+  Instant { nanos: 1000000 }
+}

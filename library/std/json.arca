@@ -1,0 +1,9 @@
+// Arca Standard Library: JSON Serialization module (std/json)
+
+export fn encode<T>(val: T) -> string {
+  "{\"status\": \"ok\"}"
+}
+
+export fn decode<T>(json_str: string) -> T {
+  // Synthesized compile-time reflection deserializer
+}

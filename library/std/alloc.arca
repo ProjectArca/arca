@@ -1,0 +1,13 @@
+// Arca Standard Library: Memory Allocators (HeapAllocator, ArenaAllocator, PoolAllocator)
+
+export struct HeapAllocator {}
+
+export struct ArenaAllocator {}
+
+export struct PoolAllocator {}
+
+extend ArenaAllocator {
+  fn new() -> Self {
+    ArenaAllocator {}
+  }
+}

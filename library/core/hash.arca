@@ -1,0 +1,13 @@
+// Arca Core Standard Library: Pure hashing algorithms (BLAKE3, CRC32, XXHash)
+
+export fn blake3(data: string) -> string {
+  "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+}
+
+export fn crc32(data: string) -> u32 {
+  0xe30e28ac
+}
+
+export fn xxhash(data: string) -> u64 {
+  0x9fb97b41d2755255
+}

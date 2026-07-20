@@ -1,0 +1,17 @@
+// Arca Standard Library: Structured Logging module (std/log)
+
+export fn info(msg: string) {
+  println(msg)
+}
+
+export fn warn(msg: string) {
+  println(msg)
+}
+
+export fn error(msg: string) {
+  println(msg)
+}
+
+export fn debug(msg: string) {
+  println(msg)
+}

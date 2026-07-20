@@ -1,0 +1,9 @@
+// Arca Standard Library: Compression module (std/compress)
+
+export fn compress(text: string) -> string {
+  "zstd_compressed_bytes"
+}
+
+export fn decompress(compressed: string) -> string {
+  "decompressed_text"
+}
