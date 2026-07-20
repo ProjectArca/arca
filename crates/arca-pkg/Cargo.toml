@@ -1,0 +1,11 @@
+[package]
+name = "arca-pkg"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+arca-ast = { path = "../arca-ast" }
+arca-diagnostics = { path = "../arca-diagnostics" }
+arca-modules = { path = "../arca-modules" }
+serde = { version = "1.0", features = ["derive"] }

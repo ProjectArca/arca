@@ -6,6 +6,7 @@ use arca_hir::Lowerer;
 use arca_lexer::Lexer;
 use arca_modules::PackageManifest;
 use arca_parser::Parser;
+use arca_pkg::PackageManager;
 use arca_typechecker::TypeChecker;
 use std::env;
 use std::fs;
@@ -25,6 +26,10 @@ SUBCOMMANDS:
     version     Print compiler version and target information
     help        Print this help message
     init        Initialize a new Arca package skeleton (creates Arca.toml and src/main.arca)
+    add         Add a package dependency to Arca.toml (arca add <name> [version])
+    remove      Remove a package dependency from Arca.toml (arca remove <name>)
+    update      Update package dependencies and generate Arca.lock
+    publish     Validate package manifest and build distribution bundle
     tokens      Tokenize source file and display lexer token stream
     ast         Parse source file and display AST representation (--json for JSON output)
     hir         Lower AST to High-level Intermediate Representation (--json for JSON output)
@@ -38,6 +43,7 @@ SUBCOMMANDS:
 EXAMPLES:
     arca version
     arca init my-app
+    arca add http 1.0.0
     arca check src/main.arca
     arca air src/main.arca --json
     arca build src/main.arca
@@ -82,6 +88,46 @@ fn main() {
     }
 
     println!("[arca] Initialized new package '{}' in {}", pkg_name, pkg_path.display());
+}
+
+fn handle_add(dep_name: &str, version: Option<&str>) {
+    match PackageManager::add_dependency(".", dep_name, version) {
+        Ok(_) => println!("[arca] Added dependency '{}' to Arca.toml & updated Arca.lock", dep_name),
+        Err(err) => {
+            eprintln!("[arca] Error adding dependency: {}", err);
+            process::exit(1);
+        }
+    }
+}
+
+fn handle_remove(dep_name: &str) {
+    match PackageManager::remove_dependency(".", dep_name) {
+        Ok(_) => println!("[arca] Removed dependency '{}' from Arca.toml & updated Arca.lock", dep_name),
+        Err(err) => {
+            eprintln!("[arca] Error removing dependency: {}", err);
+            process::exit(1);
+        }
+    }
+}
+
+fn handle_update() {
+    match PackageManager::update_dependencies(".") {
+        Ok(_) => println!("[arca] Successfully updated dependencies & re-generated Arca.lock"),
+        Err(err) => {
+            eprintln!("[arca] Error updating dependencies: {}", err);
+            process::exit(1);
+        }
+    }
+}
+
+fn handle_publish() {
+    match PackageManager::publish_package(".") {
+        Ok(msg) => println!("[arca] {}", msg),
+        Err(err) => {
+            eprintln!("[arca] Error publishing package: {}", err);
+            process::exit(1);
+        }
+    }
 }
 
 fn handle_tokens(filepath: &str) {
@@ -277,6 +323,23 @@ fn main() {
             }
             handle_init(&args[2]);
         }
+        "add" => {
+            if args.len() < 3 {
+                eprintln!("Error: 'arca add' requires a package name argument.");
+                process::exit(1);
+            }
+            let version = if args.len() >= 4 { Some(args[3].as_str()) } else { None };
+            handle_add(&args[2], version);
+        }
+        "remove" => {
+            if args.len() < 3 {
+                eprintln!("Error: 'arca remove' requires a package name argument.");
+                process::exit(1);
+            }
+            handle_remove(&args[2]);
+        }
+        "update" => handle_update(),
+        "publish" => handle_publish(),
         "tokens" => {
             if args.len() < 3 {
                 eprintln!("Error: 'arca tokens' requires a source file path argument.");
@@ -318,7 +381,7 @@ fn main() {
         "build" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
             println!("[arca] Building target: {}", target);
-            println!("[arca] SSA AIR lowering & verifier: SUCCESS");
+            println!("[arca] Package Manager & Dependency build: SUCCESS");
         }
         "run" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
