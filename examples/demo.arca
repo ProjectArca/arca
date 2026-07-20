@@ -1,27 +1,36 @@
-// Sample Arca program demonstrating memory allocators, ownership, and comptime
+// Arca Syntax Demo — TypeScript ergonomics for native systems programming
 
 struct User {
-    name: string,
-    age: i32,
+    name: string
+    age: i32
 }
 
-impl User {
+extend User {
     fn new(name: string, age: i32) -> User {
-        return User { name: name, age: age };
+        return User {
+            name,
+            age
+        }
     }
 }
 
 fn main() {
-    let arena = Arena();
-    let user = User::new("Lutfi", 25);
+    let arena = Arena.new()
 
-    // Explicit borrow and move semantics
-    let b = borrow mut user;
-    let item = move user;
+    // Dot notation for static methods & constructors
+    let user = User.new("Lutfi", 25)
 
-    // Compile-time evaluation
-    const Table = comptime generateTable();
+    // Explicit ownership semantics with clean built-in function ergonomics
+    let b = borrow(user)
+    let m = move(user)
 
-    // Lightweight concurrency
-    spawn process();
+    // Block-based compile-time execution
+    const table = comptime {
+        generateTable()
+    }
+
+    // Block-based lightweight concurrency
+    spawn {
+        process()
+    }
 }

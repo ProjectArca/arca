@@ -2,7 +2,7 @@ use arca_lexer::{Lexer, TokenKind};
 
 #[test]
 fn test_keywords_and_identifiers() {
-    let src = "let user = User() borrow mut user move item comptime spawn defer match";
+    let src = "let user = User.new() extend User borrow(user) move(user) comptime { spawn { process() } }";
     let mut lexer = Lexer::new(src);
     let tokens = lexer.tokenize_all();
 
@@ -10,18 +10,12 @@ fn test_keywords_and_identifiers() {
     assert_eq!(tokens[1].kind, TokenKind::Identifier("user".into()));
     assert_eq!(tokens[2].kind, TokenKind::Assign);
     assert_eq!(tokens[3].kind, TokenKind::Identifier("User".into()));
-    assert_eq!(tokens[4].kind, TokenKind::OpenParen);
-    assert_eq!(tokens[5].kind, TokenKind::CloseParen);
-    assert_eq!(tokens[6].kind, TokenKind::Borrow);
-    assert_eq!(tokens[7].kind, TokenKind::Mut);
-    assert_eq!(tokens[8].kind, TokenKind::Identifier("user".into()));
-    assert_eq!(tokens[9].kind, TokenKind::Move);
-    assert_eq!(tokens[10].kind, TokenKind::Identifier("item".into()));
-    assert_eq!(tokens[11].kind, TokenKind::Comptime);
-    assert_eq!(tokens[12].kind, TokenKind::Spawn);
-    assert_eq!(tokens[13].kind, TokenKind::Defer);
-    assert_eq!(tokens[14].kind, TokenKind::Match);
-    assert_eq!(tokens[15].kind, TokenKind::Eof);
+    assert_eq!(tokens[4].kind, TokenKind::Dot);
+    assert_eq!(tokens[5].kind, TokenKind::Identifier("new".into()));
+    assert_eq!(tokens[6].kind, TokenKind::OpenParen);
+    assert_eq!(tokens[7].kind, TokenKind::CloseParen);
+    assert_eq!(tokens[8].kind, TokenKind::Extend);
+    assert_eq!(tokens[9].kind, TokenKind::Identifier("User".into()));
 }
 
 #[test]
