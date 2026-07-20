@@ -67,6 +67,7 @@ pub enum TypeAnnotation {
     Generic { name: String, args: Vec<TypeAnnotation> },
     Reference { is_mut: bool, inner: Box<TypeAnnotation> },
     Fn { params: Vec<TypeAnnotation>, return_type: Box<TypeAnnotation> },
+    Union(Vec<TypeAnnotation>),
 }
 
 impl fmt::Display for TypeAnnotation {
@@ -87,6 +88,10 @@ impl fmt::Display for TypeAnnotation {
             TypeAnnotation::Fn { params, return_type } => {
                 let params_str: Vec<String> = params.iter().map(|p| format!("{}", p)).collect();
                 write!(f, "({}) -> {}", params_str.join(", "), return_type)
+            }
+            TypeAnnotation::Union(variants) => {
+                let strs: Vec<String> = variants.iter().map(|v| format!("{}", v)).collect();
+                write!(f, "{}", strs.join(" | "))
             }
         }
     }
@@ -188,6 +193,19 @@ pub enum Expr {
         body: BlockExpr,
         span: Span,
     },
+    TryBlock {
+        body: BlockExpr,
+        span: Span,
+    },
+    GroupBlock {
+        body: BlockExpr,
+        span: Span,
+    },
+    Closure {
+        params: Vec<ParamDef>,
+        body: Box<Expr>,
+        span: Span,
+    },
     IntrinsicCall {
         name: String,
         args: Vec<Expr>,
@@ -210,6 +228,9 @@ impl Expr {
             | Expr::Match { span, .. }
             | Expr::ComptimeBlock { span, .. }
             | Expr::SpawnBlock { span, .. }
+            | Expr::TryBlock { span, .. }
+            | Expr::GroupBlock { span, .. }
+            | Expr::Closure { span, .. }
             | Expr::IntrinsicCall { span, .. } => *span,
             Expr::Block(b) => b.span,
         }
@@ -223,6 +244,12 @@ pub enum Stmt {
         name: String,
         type_ann: Option<TypeAnnotation>,
         init: Option<Expr>,
+        span: Span,
+    },
+    Destructure {
+        struct_name: String,
+        fields: Vec<String>,
+        init: Box<Expr>,
         span: Span,
     },
     Return {

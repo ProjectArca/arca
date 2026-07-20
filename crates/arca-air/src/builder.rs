@@ -114,6 +114,21 @@ impl AirBuilder {
                 HirStmt::Defer(expr) => {
                     self.lower_expr(expr, &mut instrs, &var_map);
                 }
+                HirStmt::Destructure { fields, init, .. } => {
+                    let init_val = self.lower_expr(init, &mut instrs, &var_map);
+                    for fname in fields {
+                        let ptr_reg = self.fresh_reg();
+                        instrs.push(AirInstruction::Alloca {
+                            target: ptr_reg,
+                            ty: Type::Primitive(PrimitiveType::I32),
+                        });
+                        var_map.insert(fname.clone(), ptr_reg);
+                        instrs.push(AirInstruction::Store {
+                            ptr: ptr_reg,
+                            val: init_val.clone(),
+                        });
+                    }
+                }
             }
         }
 
@@ -216,6 +231,21 @@ impl AirBuilder {
             }
             HirExpr::Comptime(b) => {
                 // Comptime evaluation folds constant expression into pure literal value
+                if let Some(ref fe) = b.final_expr {
+                    self.lower_expr(fe, instrs, var_map)
+                } else {
+                    AirValue::ConstInt(0)
+                }
+            }
+            HirExpr::GroupBlock(b) => {
+                if let Some(ref fe) = b.final_expr {
+                    self.lower_expr(fe, instrs, var_map)
+                } else {
+                    AirValue::ConstInt(0)
+                }
+            }
+            HirExpr::Closure { body, .. } => self.lower_expr(body, instrs, var_map),
+            HirExpr::TryBlock(b) => {
                 if let Some(ref fe) = b.final_expr {
                     self.lower_expr(fe, instrs, var_map)
                 } else {

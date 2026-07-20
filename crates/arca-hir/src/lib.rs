@@ -44,6 +44,12 @@ pub enum HirExpr {
     Move(Box<HirExpr>),
     Comptime(HirBlock),
     Spawn(HirBlock),
+    TryBlock(HirBlock),
+    GroupBlock(HirBlock),
+    Closure {
+        params: Vec<ParamDef>,
+        body: Box<HirExpr>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -66,6 +72,11 @@ pub enum HirStmt {
         name: String,
         type_ann: Option<TypeAnnotation>,
         init: Option<HirExpr>,
+    },
+    Destructure {
+        struct_name: String,
+        fields: Vec<String>,
+        init: Box<HirExpr>,
     },
     Return(Option<HirExpr>),
     Defer(HirExpr),
@@ -196,6 +207,15 @@ impl Lowerer {
                 type_ann: type_ann.clone(),
                 init: init.as_ref().map(|e| self.lower_expr(e)),
             },
+            Stmt::Destructure { struct_name: _, fields, init, .. } => {
+                // Desugar into last field assignment — front-end handles expansion
+                let init_hir = self.lower_expr(init);
+                HirStmt::Destructure {
+                    struct_name: String::new(),
+                    fields: fields.clone(),
+                    init: Box::new(init_hir),
+                }
+            }
             Stmt::Return { value, .. } => HirStmt::Return(value.as_ref().map(|e| self.lower_expr(e))),
             Stmt::Defer { body, .. } => HirStmt::Defer(self.lower_expr(body)),
             Stmt::Expr { expr, .. } => HirStmt::Expr(self.lower_expr(expr)),
@@ -296,6 +316,12 @@ impl Lowerer {
             Expr::Block(b) => HirExpr::Block(self.lower_block(b)),
             Expr::ComptimeBlock { body, .. } => HirExpr::Comptime(self.lower_block(body)),
             Expr::SpawnBlock { body, .. } => HirExpr::Spawn(self.lower_block(body)),
+            Expr::TryBlock { body, .. } => HirExpr::TryBlock(self.lower_block(body)),
+            Expr::GroupBlock { body, .. } => HirExpr::GroupBlock(self.lower_block(body)),
+            Expr::Closure { params, body, .. } => HirExpr::Closure {
+                params: params.clone(),
+                body: Box::new(self.lower_expr(body)),
+            },
             Expr::NullCoalesce { left, right, .. } => HirExpr::Binary {
                 left: Box::new(self.lower_expr(left)),
                 op: BinaryOp::Equal, // Desugars into null check in lowering

@@ -2,7 +2,7 @@
 
 use crate::env::TypeEnv;
 use crate::types::{FnType, PrimitiveType, Type};
-use arca_ast::{BinaryOp, LiteralKind, TypeAnnotation, UnaryOp};
+use arca_ast::{BinaryOp, LiteralKind, Pattern, TypeAnnotation, UnaryOp};
 use arca_diagnostics::Diagnostic;
 use arca_hir::*;
 use std::collections::HashMap;
@@ -77,6 +77,13 @@ impl TypeChecker {
                 .map(|r| self.resolve_ast_type(r))
                 .unwrap_or(Type::Primitive(PrimitiveType::Void));
 
+            let ret_type = if let Some(throws) = &hir_fn.throws_type {
+                let throws_ty = self.resolve_ast_type(throws);
+                Type::Result(Box::new(ret_type), Box::new(throws_ty))
+            } else {
+                ret_type
+            };
+
             self.env.functions.insert(
                 name.clone(),
                 FnType {
@@ -124,6 +131,9 @@ impl TypeChecker {
                 params: params.iter().map(|p| self.resolve_ast_type(p)).collect(),
                 return_type: Box::new(self.resolve_ast_type(return_type)),
             }),
+            TypeAnnotation::Union(variants) => Type::ErrorUnion(
+                variants.iter().map(|v| self.resolve_ast_type(v)).collect(),
+            ),
         }
     }
 
@@ -166,6 +176,36 @@ impl TypeChecker {
         }
 
         self.env.pop_scope();
+    }
+
+    fn bind_pattern_vars(&mut self, pattern: &Pattern, matched_type: &Type) {
+        match pattern {
+            Pattern::Identifier(name) => {
+                self.env.insert_var(name.clone(), matched_type.clone());
+            }
+            Pattern::Variant { variant, inner, .. } => {
+                for (i, subpat) in inner.iter().enumerate() {
+                    let sub_ty = match matched_type {
+                        Type::Result(ok_ty, _) if variant == "Ok" => {
+                            if i == 0 { *ok_ty.clone() } else { Type::Unknown }
+                        }
+                        Type::Result(_, err_ty) if variant == "Err" => {
+                            if i == 0 { *err_ty.clone() } else { Type::Unknown }
+                        }
+                        Type::Enum { variants, .. } => {
+                            if let Some(payloads) = variants.get(variant) {
+                                payloads.get(i).cloned().unwrap_or(Type::Unknown)
+                            } else {
+                                Type::Unknown
+                            }
+                        }
+                        _ => Type::Unknown,
+                    };
+                    self.bind_pattern_vars(subpat, &sub_ty);
+                }
+            }
+            _ => {}
+        }
     }
 
     fn check_stmt(&mut self, stmt: &HirStmt, expected_ret: &Type) {
@@ -220,6 +260,23 @@ impl TypeChecker {
             }
             HirStmt::Expr(expr) => {
                 self.infer_expr(expr);
+            }
+            HirStmt::Destructure { struct_name: _, fields, init } => {
+                let init_ty = self.infer_expr(init);
+                let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+                    fmap.keys().cloned().collect()
+                } else {
+                    fields.clone()
+                };
+                for fname in fields {
+                    let fty = match &init_ty {
+                        Type::Struct { fields: fmap, .. } => {
+                            fmap.get(fname).cloned().unwrap_or(Type::Unknown)
+                        }
+                        _ => Type::Unknown,
+                    };
+                    self.env.insert_var(fname.clone(), fty);
+                }
             }
         }
     }
@@ -418,6 +475,8 @@ impl TypeChecker {
                 let mut first_arm_ty = Type::Unknown;
 
                 for (idx, arm) in arms.iter().enumerate() {
+                    self.env.push_scope();
+                    self.bind_pattern_vars(&arm.pattern, &val_ty);
                     let arm_body_ty = self.infer_expr(&arm.body);
                     if idx == 0 {
                         first_arm_ty = arm_body_ty;
@@ -427,6 +486,7 @@ impl TypeChecker {
                             first_arm_ty, arm_body_ty
                         )));
                     }
+                    self.env.pop_scope();
                 }
 
                 let _ = val_ty;
@@ -446,6 +506,29 @@ impl TypeChecker {
             }
             HirExpr::Move(inner) => self.infer_expr(inner),
             HirExpr::Comptime(b) => b
+                .final_expr
+                .as_ref()
+                .map(|e| self.infer_expr(e))
+                .unwrap_or(Type::Primitive(PrimitiveType::Void)),
+            HirExpr::GroupBlock(b) => b
+                .final_expr
+                .as_ref()
+                .map(|e| self.infer_expr(e))
+                .unwrap_or(Type::Primitive(PrimitiveType::Void)),
+            HirExpr::Closure { params, body } => {
+                self.env.push_scope();
+                for p in params {
+                    let pty = self.resolve_ast_type(&p.type_ann);
+                    self.env.insert_var(p.name.clone(), pty);
+                }
+                let ret_ty = self.infer_expr(body);
+                self.env.pop_scope();
+                Type::Fn(FnType {
+                    params: params.iter().map(|p| self.resolve_ast_type(&p.type_ann)).collect(),
+                    return_type: Box::new(ret_ty),
+                })
+            }
+            HirExpr::TryBlock(b) => b
                 .final_expr
                 .as_ref()
                 .map(|e| self.infer_expr(e))

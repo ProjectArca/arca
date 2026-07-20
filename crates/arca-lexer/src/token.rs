@@ -35,9 +35,12 @@ pub enum TokenKind {
     Async,
     Await,
     Actor,
+    ErrorKw,
     True,
     False,
     Nil,
+    Try,
+    Group,
 
     // Identifiers & Literals
     Identifier(String),
@@ -60,7 +63,8 @@ pub enum TokenKind {
     Greater,       // >
     GreaterEqual,  // >=
     And,           // &&
-    Or,            // ||
+    Or,           // ||
+    Pipe,         // |
     Not,           // !
     Question,      // ?
     OptionalChain, // ?.
@@ -118,9 +122,12 @@ impl fmt::Display for TokenKind {
             TokenKind::Async => write!(f, "async"),
             TokenKind::Await => write!(f, "await"),
             TokenKind::Actor => write!(f, "actor"),
+            TokenKind::ErrorKw => write!(f, "error"),
             TokenKind::True => write!(f, "true"),
             TokenKind::False => write!(f, "false"),
             TokenKind::Nil => write!(f, "nil"),
+            TokenKind::Try => write!(f, "try"),
+            TokenKind::Group => write!(f, "group"),
             TokenKind::Identifier(id) => write!(f, "Identifier({})", id),
             TokenKind::IntLiteral(n) => write!(f, "IntLiteral({})", n),
             TokenKind::FloatLiteral(fl) => write!(f, "FloatLiteral({})", fl),
@@ -140,6 +147,7 @@ impl fmt::Display for TokenKind {
             TokenKind::GreaterEqual => write!(f, ">="),
             TokenKind::And => write!(f, "&&"),
             TokenKind::Or => write!(f, "||"),
+            TokenKind::Pipe => write!(f, "|"),
             TokenKind::Not => write!(f, "!"),
             TokenKind::Question => write!(f, "?"),
             TokenKind::OptionalChain => write!(f, "?."),

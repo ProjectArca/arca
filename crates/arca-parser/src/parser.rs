@@ -72,8 +72,9 @@ impl<'a> Parser<'a> {
     fn parse_declaration(&mut self) -> Option<Decl> {
         match &self.current_token.kind {
             TokenKind::Struct => self.parse_struct_decl(),
+            TokenKind::Actor => self.parse_struct_decl(),
             TokenKind::Extend => self.parse_extend_decl(),
-            TokenKind::Enum => self.parse_enum_decl(),
+            TokenKind::Enum | TokenKind::ErrorKw => self.parse_enum_decl(),
             TokenKind::Capability => self.parse_capability_decl(),
             TokenKind::Fn => self.parse_fn_decl().map(Decl::Fn),
             TokenKind::Import => self.parse_import_decl(),
@@ -139,6 +140,21 @@ impl<'a> Parser<'a> {
                 let fspan = self.current_token.span;
                 self.advance();
 
+                // Skip block-like members (e.g. `receive { ... }` in actors)
+                if self.current_token.kind == TokenKind::OpenBrace {
+                    let mut depth = 1;
+                    while depth > 0 && self.current_token.kind != TokenKind::Eof {
+                        self.advance();
+                        if self.current_token.kind == TokenKind::OpenBrace {
+                            depth += 1;
+                        } else if self.current_token.kind == TokenKind::CloseBrace {
+                            depth -= 1;
+                        }
+                    }
+                    self.advance();
+                    continue;
+                }
+
                 if !self.expect(TokenKind::Colon) {
                     break;
                 }
@@ -193,6 +209,20 @@ impl<'a> Parser<'a> {
             }
         };
         self.advance();
+
+        // Skip optional generic args like Array<User>
+        if self.current_token.kind == TokenKind::Less {
+            let mut depth = 1;
+            while depth > 0 && self.current_token.kind != TokenKind::Eof {
+                self.advance();
+                if self.current_token.kind == TokenKind::Less {
+                    depth += 1;
+                } else if self.current_token.kind == TokenKind::Greater {
+                    depth -= 1;
+                }
+            }
+            self.advance();
+        }
 
         if !self.expect(TokenKind::OpenBrace) {
             return None;
@@ -257,8 +287,17 @@ impl<'a> Parser<'a> {
                     while self.current_token.kind != TokenKind::CloseParen
                         && self.current_token.kind != TokenKind::Eof
                     {
+                        // Only skip named params `name: type`, not bare types
+                        if let TokenKind::Identifier(_) = &self.current_token.kind {
+                            if self.peek_token.kind == TokenKind::Colon {
+                                self.advance(); // skip param name
+                                self.advance(); // skip :
+                            }
+                        }
                         if let Some(t) = self.parse_type_annotation() {
                             payload.push(t);
+                        } else {
+                            self.advance();
                         }
                         if self.current_token.kind == TokenKind::Comma {
                             self.advance();
@@ -508,6 +547,22 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_type_annotation(&mut self) -> Option<TypeAnnotation> {
+        let first = self.parse_single_type()?;
+        if self.current_token.kind == TokenKind::Pipe {
+            let mut variants = vec![first];
+            while self.current_token.kind == TokenKind::Pipe {
+                self.advance();
+                if let Some(t) = self.parse_single_type() {
+                    variants.push(t);
+                }
+            }
+            Some(TypeAnnotation::Union(variants))
+        } else {
+            Some(first)
+        }
+    }
+
+    fn parse_single_type(&mut self) -> Option<TypeAnnotation> {
         match &self.current_token.kind {
             TokenKind::Identifier(name) => {
                 let n = name.clone();
@@ -647,6 +702,22 @@ impl<'a> Parser<'a> {
                     return self.parse_struct_literal(name, token.span);
                 }
 
+                // Skip generic type args in expressions: `Channel<i32>()`
+                if self.current_token.kind == TokenKind::Less
+                    && name.chars().next().map_or(false, |c| c.is_uppercase())
+                {
+                    let mut depth = 1;
+                    while depth > 0 && self.current_token.kind != TokenKind::Eof {
+                        self.advance();
+                        if self.current_token.kind == TokenKind::Less {
+                            depth += 1;
+                        } else if self.current_token.kind == TokenKind::Greater {
+                            depth -= 1;
+                        }
+                    }
+                    self.advance();
+                }
+
                 Some(Expr::Identifier {
                     name,
                     span: token.span,
@@ -657,6 +728,49 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_expression(Precedence::Lowest)?;
                 self.expect(TokenKind::CloseParen);
                 Some(expr)
+            }
+            TokenKind::Pipe => {
+                // Closure: `|params| expr`
+                self.advance(); // |
+                let mut params = Vec::new();
+                while self.current_token.kind != TokenKind::Pipe
+                    && self.current_token.kind != TokenKind::Eof
+                {
+                    if let TokenKind::Identifier(pname) = &self.current_token.kind {
+                        let pn = pname.clone();
+                        let pspan = self.current_token.span;
+                        self.advance();
+                        let type_ann = if self.current_token.kind == TokenKind::Colon {
+                            self.advance();
+                            self.parse_type_annotation()
+                        } else {
+                            None
+                        };
+                        params.push(ParamDef {
+                            name: pn,
+                            type_ann: type_ann.unwrap_or(TypeAnnotation::Named("void".into())),
+                            span: pspan,
+                        });
+                    } else {
+                        self.advance();
+                    }
+                    if self.current_token.kind == TokenKind::Comma {
+                        self.advance();
+                    }
+                }
+                self.expect(TokenKind::Pipe);
+                let body = self.parse_expression(Precedence::Lowest)?;
+                let end_span = body.span();
+                Some(Expr::Closure {
+                    params,
+                    body: Box::new(body),
+                    span: Span::new(
+                        token.span.start,
+                        end_span.end,
+                        token.span.start_loc,
+                        end_span.end_loc,
+                    ),
+                })
             }
             TokenKind::Minus => {
                 self.advance();
@@ -724,8 +838,53 @@ impl<'a> Parser<'a> {
             }
             TokenKind::Spawn => {
                 self.advance(); // spawn
+                if self.current_token.kind == TokenKind::OpenBrace {
+                    let block = self.parse_block_expr()?;
+                    Some(Expr::SpawnBlock {
+                        span: Span::new(
+                            token.span.start,
+                            block.span.end,
+                            token.span.start_loc,
+                            block.span.end_loc,
+                        ),
+                        body: block,
+                    })
+                } else if let Some(expr) = self.parse_expression(Precedence::Primary) {
+                    let end_span = expr.span();
+                    Some(Expr::SpawnBlock {
+                        span: Span::new(
+                            token.span.start,
+                            end_span.end,
+                            token.span.start_loc,
+                            end_span.end_loc,
+                        ),
+                        body: BlockExpr {
+                            statements: Vec::new(),
+                            final_expr: Some(Box::new(expr)),
+                            span: end_span,
+                        },
+                    })
+                } else {
+                    None
+                }
+            }
+            TokenKind::Try => {
+                self.advance(); // try
                 let block = self.parse_block_expr()?;
-                Some(Expr::SpawnBlock {
+                Some(Expr::TryBlock {
+                    span: Span::new(
+                        token.span.start,
+                        block.span.end,
+                        token.span.start_loc,
+                        block.span.end_loc,
+                    ),
+                    body: block,
+                })
+            }
+            TokenKind::Group => {
+                self.advance(); // group
+                let block = self.parse_block_expr()?;
+                Some(Expr::GroupBlock {
                     span: Span::new(
                         token.span.start,
                         block.span.end,
@@ -848,6 +1007,70 @@ impl<'a> Parser<'a> {
         let start_span = self.current_token.span;
         self.advance(); // if
 
+        // Check for `if let pattern = expr` syntax
+        if self.current_token.kind == TokenKind::Let {
+            self.advance(); // let
+            let pattern = self.parse_pattern()?;
+            self.expect(TokenKind::Assign);
+            let value = self.parse_expression(Precedence::Lowest)?;
+            let then_branch = self.parse_block_expr()?;
+
+            let else_branch = if self.current_token.kind == TokenKind::Else {
+                self.advance();
+                if self.current_token.kind == TokenKind::If {
+                    self.parse_if_expr()
+                } else {
+                    self.parse_block_expr().map(Expr::Block)
+                }
+            } else {
+                None
+            };
+
+            let end_span = else_branch
+                .as_ref()
+                .map(|e| e.span())
+                .unwrap_or(then_branch.span);
+
+            // Desugar if-let into match expression
+            return Some(Expr::Match {
+                value: Box::new(value),
+                arms: vec![
+                    MatchArm {
+                        pattern,
+                        guard: None,
+                        body: Expr::Block(then_branch),
+                        span: Span::new(
+                            start_span.start,
+                            end_span.end,
+                            start_span.start_loc,
+                            end_span.end_loc,
+                        ),
+                    },
+                    MatchArm {
+                        pattern: Pattern::Wildcard,
+                        guard: None,
+                        body: else_branch.unwrap_or(Expr::Block(BlockExpr {
+                            statements: Vec::new(),
+                            final_expr: None,
+                            span: end_span,
+                        })),
+                        span: Span::new(
+                            start_span.start,
+                            end_span.end,
+                            start_span.start_loc,
+                            end_span.end_loc,
+                        ),
+                    },
+                ],
+                span: Span::new(
+                    start_span.start,
+                    end_span.end,
+                    start_span.start_loc,
+                    end_span.end_loc,
+                ),
+            });
+        }
+
         let cond = self.parse_expression(Precedence::Lowest)?;
         let then_branch = self.parse_block_expr()?;
 
@@ -956,6 +1179,27 @@ impl<'a> Parser<'a> {
                 self.advance();
                 if name == "_" {
                     Some(Pattern::Wildcard)
+                } else if self.current_token.kind == TokenKind::OpenParen {
+                    self.advance();
+                    let mut inner = Vec::new();
+                    while self.current_token.kind != TokenKind::CloseParen
+                        && self.current_token.kind != TokenKind::Eof
+                    {
+                        if let Some(p) = self.parse_pattern() {
+                            inner.push(p);
+                        } else {
+                            self.advance();
+                        }
+                        if self.current_token.kind == TokenKind::Comma {
+                            self.advance();
+                        }
+                    }
+                    self.expect(TokenKind::CloseParen);
+                    Some(Pattern::Variant {
+                        enum_name: None,
+                        variant: name,
+                        inner,
+                    })
                 } else {
                     Some(Pattern::Identifier(name))
                 }
@@ -1138,6 +1382,43 @@ impl<'a> Parser<'a> {
                 };
                 self.advance();
 
+                // Check for struct destructuring: `let Point { x, y } = expr`
+                if self.current_token.kind == TokenKind::OpenBrace
+                    && name.chars().next().map_or(false, |c| c.is_uppercase())
+                {
+                    self.advance(); // {
+                    let mut fields = Vec::new();
+                    while self.current_token.kind != TokenKind::CloseBrace
+                        && self.current_token.kind != TokenKind::Eof
+                    {
+                        if let TokenKind::Identifier(fname) = &self.current_token.kind {
+                            fields.push(fname.clone());
+                            self.advance();
+                        }
+                        if self.current_token.kind == TokenKind::Comma {
+                            self.advance();
+                        }
+                    }
+                    self.expect(TokenKind::CloseBrace);
+                    self.expect(TokenKind::Assign);
+                    let init = self.parse_expression(Precedence::Lowest)?;
+                    if self.current_token.kind == TokenKind::Semicolon {
+                        self.advance();
+                    }
+                    let end_span = self.current_token.span;
+                    return Some(Stmt::Destructure {
+                        struct_name: name,
+                        fields,
+                        init: Box::new(init),
+                        span: Span::new(
+                            start_span.start,
+                            end_span.end,
+                            start_span.start_loc,
+                            end_span.end_loc,
+                        ),
+                    });
+                }
+
                 let type_ann = if self.current_token.kind == TokenKind::Colon {
                     self.advance();
                     self.parse_type_annotation()
@@ -1246,9 +1527,13 @@ impl<'a> Parser<'a> {
                 TokenKind::Struct
                 | TokenKind::Extend
                 | TokenKind::Enum
+                | TokenKind::ErrorKw
+                | TokenKind::Actor
                 | TokenKind::Fn
                 | TokenKind::Import
-                | TokenKind::Export => {
+                | TokenKind::Export
+                | TokenKind::Spawn
+                | TokenKind::Group => {
                     break;
                 }
                 _ => self.advance(),

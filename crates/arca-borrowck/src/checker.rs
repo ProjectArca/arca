@@ -77,6 +77,12 @@ impl BorrowChecker {
             HirStmt::Expr(expr) => {
                 self.check_expr(expr);
             }
+            HirStmt::Destructure { fields, init, .. } => {
+                self.check_expr(init);
+                for f in fields {
+                    self.tracker.declare_var(f.clone());
+                }
+            }
         }
     }
 
@@ -141,6 +147,18 @@ impl BorrowChecker {
                 self.check_block(b);
             }
             HirExpr::Comptime(b) => {
+                self.check_block(b);
+            }
+            HirExpr::GroupBlock(b) => {
+                self.check_block(b);
+            }
+            HirExpr::Closure { params, body } => {
+                for p in params {
+                    self.tracker.declare_var(p.name.clone());
+                }
+                self.check_expr(body);
+            }
+            HirExpr::TryBlock(b) => {
                 self.check_block(b);
             }
             HirExpr::Spawn(b) => {

@@ -167,7 +167,7 @@ impl<'a> Lexer<'a> {
                     self.next_char();
                     TokenKind::Or
                 } else {
-                    TokenKind::Error("Unexpected '|', did you mean '||'?".into())
+                    TokenKind::Pipe
                 }
             }
 
@@ -293,9 +293,12 @@ impl<'a> Lexer<'a> {
             "async" => TokenKind::Async,
             "await" => TokenKind::Await,
             "actor" => TokenKind::Actor,
+            "error" => TokenKind::ErrorKw,
             "true" => TokenKind::True,
             "false" => TokenKind::False,
             "nil" => TokenKind::Nil,
+            "try" => TokenKind::Try,
+            "group" => TokenKind::Group,
             _ => TokenKind::Identifier(text),
         }
     }
