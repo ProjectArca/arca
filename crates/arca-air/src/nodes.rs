@@ -86,3 +86,12 @@ pub struct AirModule {
     pub name: String,
     pub functions: HashMap<String, AirFunction>,
 }
+
+impl AirModule {
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            functions: HashMap::new(),
+        }
+    }
+}
