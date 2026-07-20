@@ -9,6 +9,7 @@ members = [
     "crates/arca-typechecker",
     "crates/arca-modules",
     "crates/arca-capabilities",
+    "crates/arca-air",
 ]
 resolver = "2"
 

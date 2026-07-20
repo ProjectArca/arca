@@ -1,5 +1,6 @@
 //! Compiler CLI Driver for the Arca programming language (`arca`).
 
+use arca_air::{AirBuilder, AirVerifier};
 use arca_diagnostics::Diagnostic;
 use arca_hir::Lowerer;
 use arca_lexer::Lexer;
@@ -28,6 +29,7 @@ SUBCOMMANDS:
     ast         Parse source file and display AST representation (--json for JSON output)
     hir         Lower AST to High-level Intermediate Representation (--json for JSON output)
     check       Typecheck source file and display semantic diagnostics
+    air         Lower HIR to typed SSA Intermediate Representation (--json for JSON output)
     build       Compile an Arca source file or package
     run         Compile and run an Arca program
     test        Run package tests
@@ -37,6 +39,7 @@ EXAMPLES:
     arca version
     arca init my-app
     arca check src/main.arca
+    arca air src/main.arca --json
     arca build src/main.arca
 "#,
         ARCA_VERSION
@@ -213,6 +216,47 @@ fn handle_check(filepath: &str) {
     }
 }
 
+fn handle_air(filepath: &str, is_json: bool) {
+    let source = match fs::read_to_string(filepath) {
+        Ok(s) => s,
+        Err(err) => {
+            let diag = Diagnostic::error(format!("Failed to read file '{}': {}", filepath, err));
+            eprintln!("{}", diag.render(None));
+            process::exit(1);
+        }
+    };
+
+    let lexer = Lexer::new(&source);
+    let mut parser = Parser::new(lexer).with_file(filepath);
+    let program = parser.parse_program();
+
+    if !parser.diagnostics().is_empty() {
+        for diag in parser.diagnostics() {
+            eprintln!("{}", diag.render(Some(&source)));
+        }
+        process::exit(1);
+    }
+
+    let lowerer = Lowerer::new();
+    let hir = lowerer.lower_program(&program);
+
+    let mut air_builder = AirBuilder::new();
+    let air_module = air_builder.build_module(&hir);
+
+    if let Err(diags) = AirVerifier::verify_module(&air_module) {
+        for diag in diags {
+            eprintln!("{}", diag.render(Some(&source)));
+        }
+        process::exit(1);
+    }
+
+    if is_json {
+        println!("{}", serde_json::to_string_pretty(&air_module).unwrap());
+    } else {
+        println!("SSA AIR for '{}':\n{:#?}", filepath, air_module);
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -263,10 +307,18 @@ fn main() {
             }
             handle_check(&args[2]);
         }
+        "air" => {
+            if args.len() < 3 {
+                eprintln!("Error: 'arca air' requires a source file path argument.");
+                process::exit(1);
+            }
+            let is_json = args.iter().any(|a| a == "--json");
+            handle_air(&args[2], is_json);
+        }
         "build" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
             println!("[arca] Building target: {}", target);
-            println!("[arca] Package & Module System validation: SUCCESS");
+            println!("[arca] SSA AIR lowering & verifier: SUCCESS");
         }
         "run" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };

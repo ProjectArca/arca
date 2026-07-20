@@ -1,5 +1,5 @@
 [package]
-name = "arca-cli"
+name = "arca-air"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -7,11 +7,11 @@ license.workspace = true
 [dependencies]
 arca-ast = { path = "../arca-ast" }
 arca-diagnostics = { path = "../arca-diagnostics" }
-arca-lexer = { path = "../arca-lexer" }
-arca-parser = { path = "../arca-parser" }
 arca-hir = { path = "../arca-hir" }
 arca-typechecker = { path = "../arca-typechecker" }
-arca-modules = { path = "../arca-modules" }
-arca-capabilities = { path = "../arca-capabilities" }
-arca-air = { path = "../arca-air" }
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[dev-dependencies]
+arca-lexer = { path = "../arca-lexer" }
+arca-parser = { path = "../arca-parser" }
