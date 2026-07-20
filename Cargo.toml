@@ -4,6 +4,7 @@ members = [
     "crates/arca-lexer",
     "crates/arca-diagnostics",
     "crates/arca-ast",
+    "crates/arca-parser",
 ]
 resolver = "2"
 
