@@ -13,8 +13,15 @@ pub struct PackageMetadata {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LanguageConfig {
+    pub version: String,
+    pub capabilities: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PackageManifest {
     pub package: PackageMetadata,
+    pub language: LanguageConfig,
     pub dependencies: HashMap<String, String>,
 }
 
@@ -24,6 +31,9 @@ impl PackageManifest {
         let mut version = "0.1.0".to_string();
         let mut edition = "2026".to_string();
         let mut dependencies = HashMap::new();
+
+        let mut lang_version = "1.0".to_string();
+        let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
 
         let mut current_section = "";
 
@@ -49,6 +59,10 @@ impl PackageManifest {
                         "edition" => edition = v.to_string(),
                         _ => {}
                     },
+                    "language" => match k {
+                        "version" => lang_version = v.to_string(),
+                        _ => {}
+                    },
                     "dependencies" => {
                         dependencies.insert(k.to_string(), v.to_string());
                     }
@@ -66,6 +80,10 @@ impl PackageManifest {
                 name,
                 version,
                 edition,
+            },
+            language: LanguageConfig {
+                version: lang_version,
+                capabilities,
             },
             dependencies,
         })
@@ -91,6 +109,10 @@ impl PackageManifest {
 name = "{}"
 version = "0.1.0"
 edition = "2026"
+
+[language]
+version = "1.0"
+capabilities = ["ffi", "comptime", "actors", "simd"]
 
 [dependencies]
 "#,

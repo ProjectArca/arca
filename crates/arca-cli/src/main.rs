@@ -60,6 +60,7 @@ EXAMPLES:
 fn print_version() {
     println!("arca compiler version {} (darwin/arm64)", ARCA_VERSION);
     println!("native backend target: aarch64-apple-darwin");
+    println!("language capabilities: [ffi, comptime, actors, simd, allocators, throws]");
 }
 
 fn handle_init(pkg_name: &str) {
