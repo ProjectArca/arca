@@ -1,0 +1,17 @@
+[workspace]
+members = [
+    "crates/arca-cli",
+    "crates/arca-lexer",
+    "crates/arca-diagnostics",
+    "crates/arca-ast",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Arca Language Team"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/lutfi-haslab/project-arca"
+repository = "https://github.com/lutfi-haslab/project-arca"
+readme = "README.md"
