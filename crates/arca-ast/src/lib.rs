@@ -1,14 +1,15 @@
 //! Abstract Syntax Tree definitions for the Arca programming language.
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 pub struct Location {
     pub line: usize,
     pub column: usize,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 pub struct Span {
     pub start: usize,
     pub end: usize,
@@ -27,7 +28,7 @@ impl Span {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum LiteralKind {
     Int(i64),
     Float(f64),
@@ -36,7 +37,7 @@ pub enum LiteralKind {
     Bool(bool),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -53,13 +54,13 @@ pub enum BinaryOp {
     Or,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UnaryOp {
     Neg,
     Not,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TypeAnnotation {
     Named(String),
     Generic { name: String, args: Vec<TypeAnnotation> },
@@ -104,7 +105,7 @@ pub struct BlockExpr {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Pattern {
     Literal(LiteralKind),
     Identifier(String),
@@ -238,14 +239,14 @@ pub enum Stmt {
     },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldDef {
     pub name: String,
     pub type_ann: TypeAnnotation,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ParamDef {
     pub name: String,
     pub type_ann: TypeAnnotation,

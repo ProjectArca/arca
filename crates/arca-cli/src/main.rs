@@ -1,6 +1,7 @@
 //! Compiler CLI Driver for the Arca programming language (`arca`).
 
 use arca_diagnostics::Diagnostic;
+use arca_hir::Lowerer;
 use arca_lexer::Lexer;
 use arca_parser::Parser;
 use std::env;
@@ -20,7 +21,8 @@ SUBCOMMANDS:
     version     Print compiler version and target information
     help        Print this help message
     tokens      Tokenize source file and display lexer token stream
-    ast         Parse source file and display AST representation
+    ast         Parse source file and display AST representation (--json for JSON output)
+    hir         Lower AST to High-level Intermediate Representation (--json for JSON output)
     build       Compile an Arca source file or package
     run         Compile and run an Arca program
     test        Run package tests
@@ -29,7 +31,8 @@ SUBCOMMANDS:
 EXAMPLES:
     arca version
     arca tokens main.arca
-    arca ast main.arca
+    arca ast main.arca --json
+    arca hir main.arca --json
     arca build main.arca
 "#,
         ARCA_VERSION
@@ -68,7 +71,7 @@ fn handle_tokens(filepath: &str) {
     }
 }
 
-fn handle_ast(filepath: &str) {
+fn handle_ast(filepath: &str, is_json: bool) {
     let source = match fs::read_to_string(filepath) {
         Ok(s) => s,
         Err(err) => {
@@ -95,7 +98,44 @@ fn handle_ast(filepath: &str) {
         }
     }
 
-    println!("AST Tree for '{}':\n{:#?}", filepath, program);
+    if is_json {
+        let lowerer = Lowerer::new();
+        let hir = lowerer.lower_program(&program);
+        println!("{}", serde_json::to_string_pretty(&hir).unwrap());
+    } else {
+        println!("AST Tree for '{}':\n{:#?}", filepath, program);
+    }
+}
+
+fn handle_hir(filepath: &str, is_json: bool) {
+    let source = match fs::read_to_string(filepath) {
+        Ok(s) => s,
+        Err(err) => {
+            let diag = Diagnostic::error(format!("Failed to read file '{}': {}", filepath, err));
+            eprintln!("{}", diag.render(None));
+            process::exit(1);
+        }
+    };
+
+    let lexer = Lexer::new(&source);
+    let mut parser = Parser::new(lexer).with_file(filepath);
+    let program = parser.parse_program();
+
+    if !parser.diagnostics().is_empty() {
+        for diag in parser.diagnostics() {
+            eprintln!("{}", diag.render(Some(&source)));
+        }
+        process::exit(1);
+    }
+
+    let lowerer = Lowerer::new();
+    let hir = lowerer.lower_program(&program);
+
+    if is_json {
+        println!("{}", serde_json::to_string_pretty(&hir).unwrap());
+    } else {
+        println!("HIR for '{}':\n{:#?}", filepath, hir);
+    }
 }
 
 fn main() {
@@ -123,12 +163,21 @@ fn main() {
                 eprintln!("Error: 'arca ast' requires a source file path argument.");
                 process::exit(1);
             }
-            handle_ast(&args[2]);
+            let is_json = args.iter().any(|a| a == "--json");
+            handle_ast(&args[2], is_json);
+        }
+        "hir" => {
+            if args.len() < 3 {
+                eprintln!("Error: 'arca hir' requires a source file path argument.");
+                process::exit(1);
+            }
+            let is_json = args.iter().any(|a| a == "--json");
+            handle_hir(&args[2], is_json);
         }
         "build" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
             println!("[arca] Building target: {}", target);
-            println!("[arca] Frontend & Parser validation: SUCCESS");
+            println!("[arca] AST & HIR Lowering validation: SUCCESS");
         }
         "run" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };

@@ -707,6 +707,56 @@ impl<'a> Parser<'a> {
                     body: block,
                 })
             }
+            TokenKind::Borrow | TokenKind::Move => {
+                let name = if token.kind == TokenKind::Borrow { "borrow" } else { "move" };
+                self.advance();
+                if self.current_token.kind == TokenKind::OpenParen {
+                    self.advance();
+                    let mut args = Vec::new();
+                    while self.current_token.kind != TokenKind::CloseParen
+                        && self.current_token.kind != TokenKind::Eof
+                    {
+                        if let Some(arg) = self.parse_expression(Precedence::Lowest) {
+                            args.push(arg);
+                        }
+                        if self.current_token.kind == TokenKind::Comma {
+                            self.advance();
+                        }
+                    }
+                    let end_span = self.current_token.span;
+                    self.expect(TokenKind::CloseParen);
+                    Some(Expr::Call {
+                        callee: Box::new(Expr::Identifier {
+                            name: name.into(),
+                            span: token.span,
+                        }),
+                        args,
+                        span: Span::new(
+                            token.span.start,
+                            end_span.end,
+                            token.span.start_loc,
+                            end_span.end_loc,
+                        ),
+                    })
+                } else if let Some(expr) = self.parse_expression(Precedence::Primary) {
+                    let end_span = expr.span();
+                    Some(Expr::Call {
+                        callee: Box::new(Expr::Identifier {
+                            name: name.into(),
+                            span: token.span,
+                        }),
+                        args: vec![expr],
+                        span: Span::new(
+                            token.span.start,
+                            end_span.end,
+                            token.span.start_loc,
+                            end_span.end_loc,
+                        ),
+                    })
+                } else {
+                    None
+                }
+            }
             TokenKind::OpenBrace => {
                 let block = self.parse_block_expr()?;
                 Some(Expr::Block(block))
