@@ -15,4 +15,5 @@ arca-modules = { path = "../arca-modules" }
 arca-capabilities = { path = "../arca-capabilities" }
 arca-air = { path = "../arca-air" }
 arca-pkg = { path = "../arca-pkg" }
+arca-borrowck = { path = "../arca-borrowck" }
 serde_json = "1.0"

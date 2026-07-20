@@ -248,16 +248,19 @@ fn handle_check(filepath: &str) {
     let lowerer = Lowerer::new();
     let hir = lowerer.lower_program(&program);
 
-    let mut checker = TypeChecker::new();
-    let diags = checker.check_program(&hir);
+    let mut type_checker = TypeChecker::new();
+    let mut diags = type_checker.check_program(&hir);
+
+    let mut borrow_checker = arca_borrowck::BorrowChecker::new();
+    diags.extend(borrow_checker.check_program(&hir));
 
     if diags.is_empty() {
-        println!("[arca] Type checking '{}': SUCCESS (0 errors)", filepath);
+        println!("[arca] Type & Borrow checking '{}': SUCCESS (0 errors)", filepath);
     } else {
         for diag in &diags {
             eprintln!("{}", diag.render(Some(&source)));
         }
-        println!("[arca] Type checking '{}': FAILED ({} errors)", filepath, diags.len());
+        println!("[arca] Type & Borrow checking '{}': FAILED ({} errors)", filepath, diags.len());
         process::exit(1);
     }
 }
