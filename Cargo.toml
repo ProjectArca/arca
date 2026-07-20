@@ -13,6 +13,7 @@ members = [
     "crates/arca-pkg",
     "crates/arca-borrowck",
     "crates/arca-ffi",
+    "crates/arca-rt",
 ]
 resolver = "2"
 
