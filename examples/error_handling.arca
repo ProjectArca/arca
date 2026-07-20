@@ -1,0 +1,55 @@
+// Arca Example: Error Handling, Result/Option Types & Synthesized Error Unions
+
+enum IOError {
+  NotFound,
+  PermissionDenied,
+}
+
+enum ParseError {
+  InvalidSyntax,
+  UnexpectedEof,
+}
+
+struct Config {
+  port: i32,
+}
+
+// Function returning synthesized error union IOError | ParseError
+fn load_config(path: string) -> Result<Config, IOError | ParseError> {
+  // try { ... } block expression propagates errors with ? operator
+  let config = try {
+    let file_text = read_file(path)?
+    let cfg = parse_json(file_text)?
+    cfg
+  }
+
+  Ok(config)
+}
+
+fn read_file(path: string) -> Result<string, IOError> {
+  Ok("{\"port\": 8080}")
+}
+
+fn parse_json(text: string) -> Result<Config, ParseError> {
+  Ok(Config { port: 8080 })
+}
+
+fn main() {
+  let path = "config.json"
+
+  // Explicit pattern matching over Result
+  match load_config(path) {
+    Ok(cfg) => {
+      println("Config loaded successfully! Port:")
+      println(cfg.port)
+    }
+    Err(err) => {
+      println("Failed to load configuration")
+    }
+  }
+
+  // Option<T> & T? shorthand with null-coalescing ??
+  let opt_user: Config? = None
+  let active_config = opt_user ?? Config { port: 3000 }
+  println(active_config.port)
+}

@@ -69,10 +69,8 @@ pub enum Type {
         inner: Box<Type>,
     },
     Option(Box<Type>),
-    Result {
-        ok: Box<Type>,
-        err: Box<Type>,
-    },
+    Result(Box<Type>, Box<Type>),
+    ErrorUnion(Vec<Type>),
     Unknown,
 }
 
@@ -143,8 +141,12 @@ impl fmt::Display for Type {
                 }
             }
             Type::Option(inner) => write!(f, "Option<{}>", inner),
-            Type::Result { ok, err } => write!(f, "Result<{}, {}>", ok, err),
-            Type::Unknown => write!(f, "<unknown>"),
+            Type::Result(ok, err) => write!(f, "Result<{}, {}>", ok, err),
+            Type::ErrorUnion(variants) => {
+                let strs: Vec<String> = variants.iter().map(|v| format!("{}", v)).collect();
+                write!(f, "{}", strs.join(" | "))
+            }
+            Type::Unknown => write!(f, "Unknown"),
         }
     }
 }
