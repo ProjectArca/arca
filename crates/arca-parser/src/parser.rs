@@ -77,6 +77,7 @@ impl<'a> Parser<'a> {
             TokenKind::Enum | TokenKind::ErrorKw => self.parse_enum_decl(),
             TokenKind::Capability => self.parse_capability_decl(),
             TokenKind::Fn => self.parse_fn_decl().map(Decl::Fn),
+            TokenKind::Extern => self.parse_extern_decl(),
             TokenKind::Import => self.parse_import_decl(),
             TokenKind::Export => {
                 let start_span = self.current_token.span;
@@ -462,6 +463,69 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_extern_decl(&mut self) -> Option<Decl> {
+        let start_span = self.current_token.span;
+        self.advance(); // extern
+
+        if !self.expect(TokenKind::Fn) {
+            return None;
+        }
+
+        let name = match &self.current_token.kind {
+            TokenKind::Identifier(id) => id.clone(),
+            _ => {
+                self.diagnostics.push(
+                    Diagnostic::error("Expected extern function name identifier")
+                        .with_span(self.current_token.span),
+                );
+                return None;
+            }
+        };
+        self.advance();
+
+        let params = self.parse_fn_params();
+
+        let return_type = if self.current_token.kind == TokenKind::Arrow {
+            self.advance();
+            self.parse_type_annotation()
+        } else {
+            None
+        };
+
+        let body = if self.current_token.kind == TokenKind::OpenBrace {
+            self.advance();
+            let body = match &self.current_token.kind {
+                TokenKind::StringLiteral(s) => s.clone(),
+                _ => {
+                    self.diagnostics.push(
+                        Diagnostic::error("Expected string literal for extern function body")
+                            .with_span(self.current_token.span),
+                    );
+                    return None;
+                }
+            };
+            self.advance();
+            self.expect(TokenKind::CloseBrace);
+            body
+        } else {
+            String::new()
+        };
+
+        let end_span = self.current_token.span;
+        Some(Decl::Extern {
+            name,
+            params,
+            return_type,
+            body,
+            span: Span::new(
+                start_span.start,
+                end_span.end,
+                start_span.start_loc,
+                end_span.end_loc,
+            ),
+        })
+    }
+
     fn parse_fn_params(&mut self) -> Vec<ParamDef> {
         let mut params = Vec::new();
         if !self.expect(TokenKind::OpenParen) {
@@ -835,6 +899,19 @@ impl<'a> Parser<'a> {
                 } else {
                     None
                 }
+            }
+            TokenKind::Loop => {
+                self.advance(); // loop
+                let block = self.parse_block_expr()?;
+                Some(Expr::Loop {
+                    span: Span::new(
+                        token.span.start,
+                        block.span.end,
+                        token.span.start_loc,
+                        block.span.end_loc,
+                    ),
+                    body: block,
+                })
             }
             TokenKind::Spawn => {
                 self.advance(); // spawn
@@ -1549,7 +1626,8 @@ fn inner_decl_span(decl: &Decl) -> Span {
         | Decl::Enum { span, .. }
         | Decl::Capability { span, .. }
         | Decl::Import { span, .. }
-        | Decl::Export { span, .. } => *span,
+        | Decl::Export { span, .. }
+        | Decl::Extern { span, .. } => *span,
         Decl::Fn(f) => f.span,
     }
 }

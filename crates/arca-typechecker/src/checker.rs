@@ -93,6 +93,23 @@ impl TypeChecker {
             );
         }
 
+        // Register extern functions
+        for ext in &hir.externs {
+            let param_types = ext.params.iter()
+                .map(|p| self.resolve_ast_type(&p.type_ann))
+                .collect();
+            let ret_type = ext.return_type.as_ref()
+                .map(|r| self.resolve_ast_type(r))
+                .unwrap_or(Type::Primitive(PrimitiveType::Void));
+            self.env.functions.insert(
+                ext.name.clone(),
+                FnType {
+                    params: param_types,
+                    return_type: Box::new(ret_type),
+                },
+            );
+        }
+
         // Check struct methods
         for hir_struct in hir.structs.values() {
             let st_ty = &self.env.structs.get(&hir_struct.name).cloned();
@@ -534,6 +551,11 @@ impl TypeChecker {
                 .map(|e| self.infer_expr(e))
                 .unwrap_or(Type::Primitive(PrimitiveType::Void)),
             HirExpr::Spawn(b) => b
+                .final_expr
+                .as_ref()
+                .map(|e| self.infer_expr(e))
+                .unwrap_or(Type::Primitive(PrimitiveType::Void)),
+            HirExpr::Loop(b) => b
                 .final_expr
                 .as_ref()
                 .map(|e| self.infer_expr(e))

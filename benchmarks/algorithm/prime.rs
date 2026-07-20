@@ -1,0 +1,20 @@
+use std::time::Instant;
+
+fn is_prime(n: i32, d: i32) -> bool {
+    if d * d > n { true }
+    else if n % d == 0 { false }
+    else { is_prime(n, d + 1) }
+}
+
+fn count_primes(limit: i32, cur: i32) -> i32 {
+    if cur > limit { 0 }
+    else { (if is_prime(cur, 2) { 1 } else { 0 }) + count_primes(limit, cur + 1) }
+}
+
+fn main() {
+    let n = 5000;
+    let start = Instant::now();
+    let result = count_primes(n, 2);
+    let elapsed = start.elapsed().as_millis();
+    println!("primes under {} = {} ({}ms)", n, result, elapsed);
+}

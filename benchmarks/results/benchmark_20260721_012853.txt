@@ -1,0 +1,38 @@
+
+===== ARCA BENCHMARKS =====
+
+===== Benchmark: fib =====
+--- Arca fib ---
+Arca fib(45) = 
+1134903170
+  (Arca runtime: 12925ms)
+OK
+
+===== Benchmark: prime =====
+--- Arca prime ---
+Arca primes under 5000 = 
+669
+  (Arca runtime: 426ms)
+OK
+
+===== Benchmark: sort =====
+--- Arca sort ---
+Arca sorted: 
+3
+7
+9
+  (Arca runtime: 684ms)
+OK
+
+===== WEB API =====
+--- Arca Web Server ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   14103ms
+  RPS:        3545
+  Errors:     0
+  (Wall time: 14250ms)
+OK

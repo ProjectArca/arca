@@ -206,6 +206,10 @@ pub enum Expr {
         body: Box<Expr>,
         span: Span,
     },
+    Loop {
+        body: BlockExpr,
+        span: Span,
+    },
     IntrinsicCall {
         name: String,
         args: Vec<Expr>,
@@ -231,6 +235,7 @@ impl Expr {
             | Expr::TryBlock { span, .. }
             | Expr::GroupBlock { span, .. }
             | Expr::Closure { span, .. }
+            | Expr::Loop { span, .. }
             | Expr::IntrinsicCall { span, .. } => *span,
             Expr::Block(b) => b.span,
         }
@@ -330,6 +335,13 @@ pub enum Decl {
         span: Span,
     },
     Fn(FnDecl),
+    Extern {
+        name: String,
+        params: Vec<ParamDef>,
+        return_type: Option<TypeAnnotation>,
+        body: String,
+        span: Span,
+    },
     Import {
         namespace: Option<String>,
         items: Vec<String>,

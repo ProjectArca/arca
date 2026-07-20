@@ -11,4 +11,5 @@ repository.workspace = true
 arca-air = { path = "../arca-air" }
 arca-ast = { path = "../arca-ast" }
 arca-hir = { path = "../arca-hir" }
+arca-typechecker = { path = "../arca-typechecker" }
 arca-diagnostics = { path = "../arca-diagnostics" }

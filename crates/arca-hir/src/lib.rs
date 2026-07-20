@@ -50,6 +50,7 @@ pub enum HirExpr {
         params: Vec<ParamDef>,
         body: Box<HirExpr>,
     },
+    Loop(HirBlock),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -100,14 +101,24 @@ pub struct HirStruct {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HirExternFn {
+    pub name: String,
+    pub params: Vec<ParamDef>,
+    pub return_type: Option<TypeAnnotation>,
+    pub body: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HirProgram {
     pub structs: HashMap<String, HirStruct>,
     pub functions: HashMap<String, HirFn>,
+    pub externs: Vec<HirExternFn>,
 }
 
 pub struct Lowerer {
     structs: HashMap<String, HirStruct>,
     functions: HashMap<String, HirFn>,
+    externs: Vec<HirExternFn>,
 }
 
 impl Lowerer {
@@ -115,6 +126,7 @@ impl Lowerer {
         Self {
             structs: HashMap::new(),
             functions: HashMap::new(),
+            externs: Vec::new(),
         }
     }
 
@@ -169,9 +181,22 @@ impl Lowerer {
             }
         }
 
+        // Fourth pass: collect extern declarations
+        for decl in &program.declarations {
+            if let Decl::Extern { name, params, return_type, body, .. } = decl {
+                self.externs.push(HirExternFn {
+                    name: name.clone(),
+                    params: params.clone(),
+                    return_type: return_type.clone(),
+                    body: body.clone(),
+                });
+            }
+        }
+
         HirProgram {
             structs: self.structs,
             functions: self.functions,
+            externs: self.externs,
         }
     }
 
@@ -314,6 +339,7 @@ impl Lowerer {
                 }
             }
             Expr::Block(b) => HirExpr::Block(self.lower_block(b)),
+            Expr::Loop { body, .. } => HirExpr::Loop(self.lower_block(body)),
             Expr::ComptimeBlock { body, .. } => HirExpr::Comptime(self.lower_block(body)),
             Expr::SpawnBlock { body, .. } => HirExpr::Spawn(self.lower_block(body)),
             Expr::TryBlock { body, .. } => HirExpr::TryBlock(self.lower_block(body)),

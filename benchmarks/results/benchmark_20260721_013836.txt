@@ -1,0 +1,114 @@
+
+===== WEB API BENCHMARKS =====
+--- Arca Web Server ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   14567ms
+  RPS:        3432
+  Errors:     0
+
+--- Rust (std::net) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   16614ms
+  RPS:        3010
+  Errors:     0
+
+--- Go (net/http) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   7028ms
+  RPS:        7114
+  Errors:     0
+
+--- Bun (Bun.serve) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   9296ms
+  RPS:        5379
+  Errors:     0
+
+
+===== ALGORITHM BENCHMARKS =====
+
+===== Benchmark: fib =====
+--- Arca fib ---
+[bench] Running Arca fib...
+1134903170
+  (Arca runtime: 37886ms)
+OK
+
+--- Rust fib ---
+[bench] Compiling Rust fib...
+[bench] Running Rust fib...
+Rust fib(45) = 1134903170 (6768ms)
+OK
+--- Go fib ---
+[bench] Running Go fib...
+Go fib(45) = 1134903170 (7525ms)
+OK
+--- Bun fib ---
+[bench] Running Bun fib...
+Bun fib(45) = 1134903170 (10213ms)
+OK
+
+
+===== Benchmark: prime =====
+--- Arca prime ---
+[bench] Running Arca prime...
+669
+  (Arca runtime: 929ms)
+OK
+
+--- Rust prime ---
+[bench] Compiling Rust prime...
+[bench] Running Rust prime...
+primes under 5000 = 669 (0ms)
+OK
+--- Go prime ---
+[bench] Running Go prime...
+primes under 5000 = 669 (0ms)
+OK
+--- Bun prime ---
+[bench] Running Bun prime...
+primes under 5000 = 669 (4ms)
+OK
+
+
+===== Benchmark: sort =====
+--- Arca sort ---
+[bench] Running Arca sort...
+3
+7
+9
+  (Arca runtime: 583ms)
+OK
+
+--- Rust sort ---
+[bench] Compiling Rust sort...
+[bench] Running Rust sort...
+3 7 9 (41ns)
+OK
+--- Go sort ---
+[bench] Running Go sort...
+3 7 9 (24750ns)
+OK
+--- Bun sort ---
+[bench] Running Bun sort...
+3 7 9 (84834ns)
+OK
+
+
+===== SUMMARY =====

@@ -1,0 +1,43 @@
+// Arca web API server benchmark
+// JSON echo server on port 3000
+
+struct SockaddrIn {
+  sin_len: i8
+  sin_family: i8
+  sin_port: i16
+  sin_addr: i32
+  sin_zero_0: i32
+  sin_zero_1: i32
+}
+
+extern fn arca_socket(d: i32, t: i32, p: i32) -> i32
+extern fn arca_setsockopt(fd: i32, l: i32, n: i32, v: c_void_ptr, l2: i32) -> i32
+extern fn arca_bind(fd: i32, a: c_void_ptr, l: i32) -> i32
+extern fn arca_listen(fd: i32, b: i32) -> i32
+extern fn arca_accept(fd: i32, a: c_void_ptr, l: c_void_ptr) -> i32
+extern fn arca_close(fd: i32) -> i32
+extern fn arca_write(fd: i32, b: c_void_ptr, c: i32) -> i32
+extern fn arca_htons(h: i16) -> i16
+
+extern fn arca_socket(d: i32, t: i32, p: i32) -> i32 { "#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\nint32_t arca_socket(int32_t d,int32_t t,int32_t p){return socket(d,t,p);}\nint32_t arca_setsockopt(int32_t fd,int32_t l,int32_t n,void*v,int32_t l2){return setsockopt(fd,l,n,v,(socklen_t)l2);}\nint32_t arca_bind(int32_t fd,void*a,int32_t l){return bind(fd,(struct sockaddr*)a,(socklen_t)l);}\nint32_t arca_listen(int32_t fd,int32_t b){return listen(fd,b);}\nint32_t arca_accept(int32_t fd,void*a,void*l){return accept(fd,(struct sockaddr*)a,(socklen_t*)l);}\nint32_t arca_close(int32_t fd){return close(fd);}\nint32_t arca_write(int32_t fd,void*b,int32_t c){return write(fd,b,(size_t)c);}\nint16_t arca_htons(int16_t h){return htons((uint16_t)h);}" }
+
+fn main() {
+  let sock = arca_socket(2, 1, 0)
+
+  let optval: i32 = 1
+  arca_setsockopt(sock, 1, 4, borrow optval, 4)
+
+  let addr = SockaddrIn { sin_len: 16, sin_family: 2, sin_port: arca_htons(3000), sin_addr: 0, sin_zero_0: 0, sin_zero_1: 0 }
+  arca_bind(sock, borrow addr, 16)
+  arca_listen(sock, 128)
+
+  loop {
+    let addrlen: i32 = 16
+    let client = arca_accept(sock, borrow addr, borrow addrlen)
+    if client >= 0 {
+      let response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 20\r\nConnection: close\r\n\r\n{\"message\": \"hello\"}"
+      arca_write(client, response, 113)
+      arca_close(client)
+    }
+  }
+}

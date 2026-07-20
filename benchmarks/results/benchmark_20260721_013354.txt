@@ -1,0 +1,114 @@
+
+===== ALGORITHM BENCHMARKS =====
+
+===== Benchmark: fib =====
+--- Rust fib ---
+[bench] Compiling Rust fib...
+[bench] Running Rust fib...
+Rust fib(45) = 1134903170 (6024ms)
+OK
+--- Go fib ---
+[bench] Running Go fib...
+Go fib(45) = 1134903170 (6963ms)
+OK
+--- Bun fib ---
+[bench] Running Bun fib...
+Bun fib(45) = 1134903170 (9460ms)
+OK
+--- Arca fib ---
+[bench] Running Arca fib...
+1134903170
+  (Arca runtime: 13399ms)
+OK
+
+
+===== Benchmark: prime =====
+--- Rust prime ---
+[bench] Compiling Rust prime...
+[bench] Running Rust prime...
+primes under 5000 = 669 (0ms)
+OK
+--- Go prime ---
+[bench] Running Go prime...
+primes under 5000 = 669 (0ms)
+OK
+--- Bun prime ---
+[bench] Running Bun prime...
+primes under 5000 = 669 (14ms)
+OK
+--- Arca prime ---
+[bench] Running Arca prime...
+669
+  (Arca runtime: 2146ms)
+OK
+
+
+===== Benchmark: sort =====
+--- Rust sort ---
+[bench] Compiling Rust sort...
+[bench] Running Rust sort...
+3 7 9 (83ns)
+OK
+--- Go sort ---
+[bench] Running Go sort...
+3 7 9 (15709ns)
+OK
+--- Bun sort ---
+[bench] Running Bun sort...
+3 7 9 (129917ns)
+OK
+--- Arca sort ---
+[bench] Running Arca sort...
+3
+7
+9
+  (Arca runtime: 1087ms)
+OK
+
+
+===== WEB API BENCHMARKS =====
+--- Rust (std::net) Server ---
+  Server started (PID 55936)
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   14761ms
+  RPS:        3387
+  Errors:     0
+
+--- Go (net/http) Server ---
+  Server started (PID 56075)
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   4931ms
+  RPS:        10140
+  Errors:     0
+
+--- Bun (Bun.serve) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   6234ms
+  RPS:        8021
+  Errors:     0
+--- Arca Web Server ---
+[arca-backend] Emitted build/output.c
+[arca] Build status: SUCCESS
+/Users/hy4-mac-002/hasdev/research/project-arca/build/output.c:61:28: warning: passing 'const char *' to parameter of type 'void *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
+   61 |       arca_write(client_4, response_5, 113);
+      |                            ^~~~~~~~~~
+/Users/hy4-mac-002/hasdev/research/project-arca/build/output.c:46:36: note: passing argument to parameter 'b' here
+   46 | int32_t arca_write(int32_t fd,void*b,int32_t c){return write(fd,b,(size_t)c);}
+      |                                    ^
+1 warning generated.
+  Server failed to start
+
+
+===== SUMMARY =====

@@ -120,6 +120,8 @@ impl Type {
             (Type::Null, Type::Reference { .. }) => true,
             (Type::Null, Type::Option(_)) => true,
             (Type::Null, Type::Primitive(PrimitiveType::Void)) => true,
+            (Type::Reference { .. }, Type::Primitive(PrimitiveType::Void)) => true,
+            (Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::Void)) => true,
             _ => false,
         }
     }

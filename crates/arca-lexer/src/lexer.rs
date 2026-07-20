@@ -286,7 +286,7 @@ impl<'a> Lexer<'a> {
             "return" => TokenKind::Return,
             "for" => TokenKind::For,
             "while" => TokenKind::While,
-            "loop" => TokenKind::Loop,
+            "loop" => TokenKind::Loop, // already exists
             "mut" => TokenKind::Mut,
             "type" => TokenKind::Type,
             "interface" => TokenKind::Interface,
@@ -294,6 +294,7 @@ impl<'a> Lexer<'a> {
             "await" => TokenKind::Await,
             "actor" => TokenKind::Actor,
             "error" => TokenKind::ErrorKw,
+            "extern" => TokenKind::Extern,
             "true" => TokenKind::True,
             "false" => TokenKind::False,
             "nil" => TokenKind::Nil,

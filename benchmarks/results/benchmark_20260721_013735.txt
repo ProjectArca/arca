@@ -1,0 +1,7 @@
+
+===== ALGORITHM BENCHMARKS =====
+
+===== Benchmark: fib =====
+--- Rust fib ---
+[bench] Compiling Rust fib...
+[bench] Running Rust fib...

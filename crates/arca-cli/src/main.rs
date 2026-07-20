@@ -1,6 +1,7 @@
 //! Compiler CLI Driver for the Arca programming language (`arca`).
 
 use arca_air::{AirBuilder, AirVerifier};
+use arca_backend::{BackendKind, CodeGenerator, TargetArch};
 use arca_diagnostics::Diagnostic;
 use arca_hir::Lowerer;
 use arca_lexer::Lexer;
@@ -388,22 +389,117 @@ fn main() {
             handle_air(&args[2], is_json);
         }
         "build" => {
-            let target = if args.len() >= 3 && !args[2].starts_with("--") { &args[2] } else { "." };
+            if args.len() < 3 {
+                eprintln!("Error: 'arca build' requires a source file path argument.");
+                process::exit(1);
+            }
+            let target = &args[2];
             let backend_flag = args.iter().find(|a| a.starts_with("--backend=")).map(|a| &a[10..]).unwrap_or("native");
-            let target_arch = args.iter().find(|a| a.starts_with("--target=")).map(|a| &a[9..]).unwrap_or("arm64");
-            println!("[arca] Building target '{}' (backend: {}, target: {})...", target, backend_flag, target_arch);
+
+            let source = fs::read_to_string(target).unwrap_or_else(|e| {
+                eprintln!("Error: failed to read '{}': {}", target, e);
+                process::exit(1);
+            });
+
+            let lexer = Lexer::new(&source);
+            let mut parser = Parser::new(lexer).with_file(target);
+            let program = parser.parse_program();
+            if !parser.diagnostics().is_empty() {
+                for diag in parser.diagnostics() { eprintln!("{}", diag.render(Some(&source))); }
+                process::exit(1);
+            }
+
+            let lowerer = Lowerer::new();
+            let hir = lowerer.lower_program(&program);
+
+            let mut type_checker = TypeChecker::new();
+            let mut diags = type_checker.check_program(&hir);
+            let mut borrow_checker = arca_borrowck::BorrowChecker::new();
+            diags.extend(borrow_checker.check_program(&hir));
+            if !diags.is_empty() {
+                for diag in &diags { eprintln!("{}", diag.render(Some(&source))); }
+                process::exit(1);
+            }
+
             if backend_flag == "c" {
+                let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+                let c_code = cg.generate_c_from_hir(&hir);
+                let out_path = "build/output.c";
+                fs::create_dir_all("build").ok();
+                fs::write(out_path, &c_code).unwrap_or_else(|e| {
+                    eprintln!("Error: failed to write '{}': {}", out_path, e);
+                    process::exit(1);
+                });
                 println!("[arca-backend] Portable C Code Generator: Emitted build/output.c");
-            } else if backend_flag == "llvm" {
-                println!("[arca-backend] LLVM IR Generator: Emitted build/output.ll");
             } else {
-                println!("[arca-backend] Arca Native Backend (ANB): Emitted binary executable");
+                let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+                let c_code = cg.generate_c_from_hir(&hir);
+                fs::create_dir_all("build").ok();
+                fs::write("build/output.c", &c_code).ok();
+                println!("[arca-backend] Emitted build/output.c");
             }
             println!("[arca] Build status: SUCCESS");
         }
         "run" => {
-            let target = if args.len() >= 3 { &args[2] } else { "." };
-            println!("[arca] Compiling and running: {}", target);
+            if args.len() < 3 {
+                eprintln!("Error: 'arca run' requires a source file path argument.");
+                process::exit(1);
+            }
+            let target = &args[2];
+
+            let source = fs::read_to_string(target).unwrap_or_else(|e| {
+                eprintln!("Error: failed to read '{}': {}", target, e);
+                process::exit(1);
+            });
+
+            let lexer = Lexer::new(&source);
+            let mut parser = Parser::new(lexer).with_file(target);
+            let program = parser.parse_program();
+            if !parser.diagnostics().is_empty() {
+                for diag in parser.diagnostics() { eprintln!("{}", diag.render(Some(&source))); }
+                process::exit(1);
+            }
+
+            let lowerer = Lowerer::new();
+            let hir = lowerer.lower_program(&program);
+
+            let mut type_checker = TypeChecker::new();
+            let mut diags = type_checker.check_program(&hir);
+            let mut borrow_checker = arca_borrowck::BorrowChecker::new();
+            diags.extend(borrow_checker.check_program(&hir));
+            if !diags.is_empty() {
+                for diag in &diags { eprintln!("{}", diag.render(Some(&source))); }
+                process::exit(1);
+            }
+
+            let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+            let c_code = cg.generate_c_from_hir(&hir);
+            fs::create_dir_all("build").ok();
+            fs::write("build/output.c", &c_code).ok();
+
+            let status = std::process::Command::new("cc")
+                .args(&["-o", "build/output", "build/output.c"])
+                .status();
+            match status {
+                Ok(s) if s.success() => {
+                    println!("[arca] Running: {}", target);
+                    let run_status = std::process::Command::new("./build/output").status();
+                    match run_status {
+                        Ok(rs) if rs.success() => {}
+                        Ok(rs) => eprintln!("[arca] Program exited with code: {}", rs),
+                        Err(e) => eprintln!("[arca] Failed to run program: {}", e),
+                    }
+                }
+                Ok(s) => {
+                    eprintln!("[arca] C compilation failed with code: {}", s);
+                    process::exit(1);
+                }
+                Err(e) => {
+                    eprintln!("[arca] Failed to invoke C compiler 'cc': {}", e);
+                    eprintln!("       Install clang or gcc to run Arca programs.");
+                    process::exit(1);
+                }
+            }
         }
         "test" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
