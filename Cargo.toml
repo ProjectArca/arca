@@ -8,6 +8,7 @@ members = [
     "crates/arca-hir",
     "crates/arca-typechecker",
     "crates/arca-modules",
+    "crates/arca-capabilities",
 ]
 resolver = "2"
 

@@ -1,0 +1,12 @@
+[package]
+name = "arca-capabilities"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+arca-ast = { path = "../arca-ast" }
+arca-diagnostics = { path = "../arca-diagnostics" }
+arca-hir = { path = "../arca-hir" }
+arca-typechecker = { path = "../arca-typechecker" }
+serde = { version = "1.0", features = ["derive"] }
