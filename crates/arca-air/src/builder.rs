@@ -247,16 +247,10 @@ impl AirBuilder {
                     }
                     _ => ("unknown_callee".to_string(), None),
                 };
-                // Pass timer object as first arg for elapsed methods
-                let final_args = if callee_name.ends_with("elapsed_ms") || callee_name.ends_with("elapsed_ns") {
-                    if let Some(obj) = method_obj {
-                        let mut with_obj = vec![obj];
-                        with_obj.extend(arg_vals);
-                        with_obj
-                    } else { arg_vals }
-                } else { arg_vals };
+                // Normalize built-in method calls to known runtime function names
+                let (normalized_name, final_args) = self.normalize_call(&callee_name, method_obj, &arg_vals);
                 let target = self.fresh_reg();
-                ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: callee_name, args: final_args });
+                ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: normalized_name, args: final_args });
                 AirValue::Register(target)
             }
             HirExpr::StructInit { struct_name, fields } => {
@@ -449,6 +443,49 @@ impl AirBuilder {
         let loaded = self.fresh_reg();
         ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
         AirValue::Register(loaded)
+    }
+
+    /// Normalize method calls to well-known runtime function names.
+    /// Maps x.to_string() → __arca_int_to_str(x), req.path.starts_with(p) → __arca_starts_with(req.path, p), etc.
+    fn normalize_call(&mut self, callee_name: &str, method_obj: Option<AirValue>, args: &[AirValue]) -> (String, Vec<AirValue>) {
+        // Check for known method patterns
+        if callee_name.ends_with(".to_string") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_int_to_str".to_string(), new_args);
+        }
+        if callee_name.ends_with(".starts_with") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_starts_with".to_string(), new_args);
+        }
+        if callee_name.ends_with(".parse_int") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_parse_int".to_string(), new_args);
+        }
+        if callee_name.ends_with(".rfind") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_rfind".to_string(), new_args);
+        }
+        if callee_name.ends_with(".slice") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_slice".to_string(), new_args);
+        }
+        if callee_name.ends_with("elapsed_ms") || callee_name.ends_with("elapsed_ns") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return (callee_name.to_string(), new_args);
+        }
+        (callee_name.to_string(), args.to_vec())
     }
 
     fn lower_loop(&mut self, body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {

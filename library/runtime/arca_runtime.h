@@ -59,6 +59,15 @@ int32_t arca_std_http_serve_handler(int32_t port, ArcaHttpHandlerFn handler);
 int32_t arca_http_add_route(const char* method, const char* pattern, ArcaHttpHandlerFn handler);
 int32_t arca_http_set_default_handler(ArcaHttpHandlerFn handler);
 
+// String helpers for CRUD
+int32_t arca_strcmp(const char* a, const char* b);
+int32_t arca_starts_with(const char* s, const char* prefix);
+const char* arca_strcat(const char* a, const char* b);
+int32_t arca_parse_int(const char* s);
+const char* arca_int_to_str(int32_t n);
+int32_t arca_str_rfind(const char* s, char c);
+const char* arca_str_slice(const char* s, int32_t start);
+
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);

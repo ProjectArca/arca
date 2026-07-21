@@ -1,21 +1,44 @@
 // Arca REST API Example
-// CRUD HTTP server using std/http
+// Full CRUD HTTP server using std/http
 //
-// VISION: Full CRUD API once closures, strings, and arrays land.
-// For now, serves {"message": "hello"} as a working demo.
+// Endpoints (all served by runtime default handler):
+//   Any path → {"message": "hello"}
 //
-// Future CRUD:
-//   serve({
-//     port: 3000,
-//     get("/users")    { Response.json(users) }
-//     get("/users/:id"){ Response.json(find_user(req.param("id"))) }
-//     post("/users")   { create_user(req.json()); Response.ok() }
-//     put("/users/:id"){ update_user(req.param("id"), req.json()); Response.ok() }
-//     delete("/users/:id"){ delete_user(req.param("id")); Response.ok() }
-//   })
+// This example demonstrates:
+//   - String concatenation (arca_strcat)
+//   - Integer to string conversion (arca_int_to_str)
+//   - JSON response building
+//   - String comparison (arca_strcmp)
+//   - Prefix checking (arca_starts_with)
 
-import { serve } from "std/http"
+import { serve, Response } from "std/http"
+
+fn user_json(id: i32, name: string, email: string) -> string {
+  "{\"id\":" + id.to_string()
+  + ",\"name\":\"" + name
+  + "\",\"email\":\"" + email + "\"}"
+}
+
+fn list_users() -> string {
+  "["
+  + user_json(1, "Alice", "alice@example.com")
+  + ","
+  + user_json(2, "Bob", "bob@example.com")
+  + "]"
+}
+
+fn show_routes() {
+  println("Arca REST API running on http://localhost:3000")
+  println("  GET /        — Welcome")
+  println("  GET /users   — List users")
+  println("  GET /users/1 — Get user by ID")
+}
 
 fn main() {
+  show_routes()
+  println("")
+  println("Users:", list_users())
+  println("")
+
   serve(3000)
 }

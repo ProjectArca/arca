@@ -21,6 +21,7 @@ pub struct CodeGenerator {
     output: String,
     indent: usize,
     return_type_is_void: bool,
+    return_type_is_string: bool,
 }
 
 impl CodeGenerator {
@@ -30,7 +31,7 @@ impl CodeGenerator {
             var_names: HashMap::new(), var_types: HashMap::new(),
             copy_sources: HashMap::new(), struct_inits: HashMap::new(),
             next_v: 0, next_block_label: 0,
-            output: String::new(), indent: 0, return_type_is_void: false,
+            output: String::new(),             indent: 0, return_type_is_void: false, return_type_is_string: false,
         }
     }
 
@@ -95,9 +96,21 @@ impl CodeGenerator {
                 | BinaryOp::Greater | BinaryOp::GreaterEqual | BinaryOp::And | BinaryOp::Or => "bool",
                 _ => "int64_t",
             }
-            AirInstruction::Call { .. } => "int64_t",
+            AirInstruction::Call { fn_name, .. } => {
+                if fn_name.starts_with("arca_std_") || fn_name == "arca_time_ns"
+                    || fn_name == "serve" || fn_name == "arca_parse_int"
+                    || fn_name == "arca_strcmp" || fn_name == "arca_starts_with"
+                    || fn_name == "arca_str_rfind" || fn_name == "__arca_parse_int"
+                {
+                    "int64_t"
+                } else if fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_") {
+                    "void"
+                } else {
+                    "const char*"
+                }
+            }
             AirInstruction::StructInit { .. } => "int64_t",
-            AirInstruction::FieldLoad { .. } => "int64_t",
+            AirInstruction::FieldLoad { .. } => "const char*",
             AirInstruction::Ref { .. } => "void*",
             AirInstruction::Deref { .. } => "int64_t",
             _ => "int64_t",
@@ -174,6 +187,7 @@ impl CodeGenerator {
         self.copy_sources.clear(); self.struct_inits.clear();
         self.next_v = 0; self.next_block_label = 0;
         self.return_type_is_void = matches!(&func.return_type, Type::Primitive(PrimitiveType::Void));
+        self.return_type_is_string = matches!(&func.return_type, Type::Primitive(PrimitiveType::String));
 
         let safe_name = if name == "main" { "arca_main" } else { name };
         let ret_c = self.air_type_to_c(&func.return_type);
@@ -236,11 +250,12 @@ impl CodeGenerator {
                         if self.copy_sources.contains_key(target) { None } else { Some(*target) }
                     }
                     AirInstruction::Binary { target, .. } => Some(*target),
-                    AirInstruction::Call { target, .. } => *target,
-                    AirInstruction::StructInit { target, fields, .. } => {
-                        self.struct_inits.insert(*target, fields.clone());
-                        Some(*target)
+                    AirInstruction::Call { target, fn_name, .. } => {
+                        // Skip declarations for void-returning calls
+                        let is_void = fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_");
+                        if is_void { None } else { *target }
                     }
+                    AirInstruction::StructInit { target, .. } => Some(*target),
                     AirInstruction::FieldLoad { target, .. } => Some(*target),
                     AirInstruction::Ref { target, .. } => Some(*target),
                     AirInstruction::Deref { target, .. } => Some(*target),
@@ -317,8 +332,30 @@ impl CodeGenerator {
                     BinaryOp::Greater => " > ", BinaryOp::GreaterEqual => " >= ",
                     BinaryOp::And => " && ", BinaryOp::Or => " || ",
                 };
-                self.emit_indent(); self.emit(&tn); self.emit(" = ");
-                self.emit_air_value(left); self.emit(os); self.emit_air_value(right); self.emit(";\n");
+                // String-aware operations: use arca_strcmp for ==/!=, arca_strcat for string +
+                if matches!(op, BinaryOp::Equal | BinaryOp::NotEqual) {
+                    let is_not = matches!(op, BinaryOp::NotEqual);
+                    self.emit_indent(); self.emit(&tn); self.emit(" = arca_strcmp(");
+                    self.emit_air_value(left); self.emit(", "); self.emit_air_value(right);
+                    self.emit(&format!(") {} 0;\n", if is_not { "!=" } else { "==" }));
+                } else if matches!(op, BinaryOp::Add) {
+                    // String concatenation: if either operand is a string
+                    let l_is_str = is_string_value(left, &self.var_types);
+                    let r_is_str = is_string_value(right, &self.var_types);
+                    if l_is_str || r_is_str {
+                        self.emit_indent(); self.emit(&tn); self.emit(" = (int64_t)arca_strcat((const char*)");
+                        self.emit_air_value(left); self.emit(", (const char*)");
+                        self.emit_air_value(right); self.emit(");\n");
+                        // Update var_types so subsequent uses know this is a string
+                        self.var_types.insert(*target, "const char*".to_string());
+                    } else {
+                        self.emit_indent(); self.emit(&tn); self.emit(" = ");
+                        self.emit_air_value(left); self.emit(" + "); self.emit_air_value(right); self.emit(";\n");
+                    }
+                } else {
+                    self.emit_indent(); self.emit(&tn); self.emit(" = ");
+                    self.emit_air_value(left); self.emit(os); self.emit_air_value(right); self.emit(";\n");
+                }
             }
             AirInstruction::Call { target, fn_name, args } => self.emit_air_call(target, fn_name, args),
             AirInstruction::StructInit { target, struct_name, fields } => {
@@ -358,16 +395,22 @@ impl CodeGenerator {
         match fn_name {
             "println" => {
                 for arg in args {
-                    self.emit_indent(); self.emit("arca_print_");
-                    match arg { AirValue::ConstString(_) => self.emit("string("), _ => self.emit("int("), }
+                    let is_str = matches!(arg, AirValue::ConstString(_)) ||
+                        if let AirValue::Register(r) = arg {
+                            self.var_types.get(r).map(|t| t == "const char*").unwrap_or(false)
+                        } else { false };
+                    self.emit_indent(); self.emit(if is_str { "arca_print_string(" } else { "arca_print_int(" });
                     self.emit_air_value(arg); self.emit(");\n");
                 }
                 self.emit_ln("putchar('\\n');");
             }
             "print" => {
                 for arg in args {
-                    self.emit_indent(); self.emit("arca_print_");
-                    match arg { AirValue::ConstString(_) => self.emit("string("), _ => self.emit("int("), }
+                    let is_str = matches!(arg, AirValue::ConstString(_)) ||
+                        if let AirValue::Register(r) = arg {
+                            self.var_types.get(r).map(|t| t == "const char*").unwrap_or(false)
+                        } else { false };
+                    self.emit_indent(); self.emit(if is_str { "arca_print_string(" } else { "arca_print_int(" });
                     self.emit_air_value(arg); self.emit(");\n");
                 }
             }
@@ -411,6 +454,34 @@ impl CodeGenerator {
                     self.emit_ln(&format!("{} = arca_time_ns() - {};", tn, tv));
                 }
             }
+            "__arca_int_to_str" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let v = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = arca_int_to_str({});", tn, v));
+            }
+            "__arca_starts_with" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let p = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_starts_with({}, {});", tn, s, p));
+            }
+            "__arca_parse_int" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"0\"".to_string() };
+                self.emit_ln(&format!("{} = arca_parse_int({});", tn, s));
+            }
+            "__arca_str_rfind" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let c = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = arca_str_rfind({}, {});", tn, s, c));
+            }
+            "__arca_str_slice" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let start = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = arca_str_slice({}, {});", tn, s, start));
+            }
             "Response.ok" | "Response.text" | "Response.html" | "Response.json"
             | "Response.not_found" | "Response.bad_request" | "Response.internal_error"
             | "Response.redirect" => {
@@ -444,12 +515,27 @@ impl CodeGenerator {
             AirTerminator::Ret(opt) => {
                 match opt {
                     Some(val) if !self.return_type_is_void => {
-                        self.emit_indent(); self.emit("return "); self.emit_air_value(val); self.emit(";\n");
+                        self.emit_indent();
+                        if self.return_type_is_string {
+                            self.emit("return (const char*)");
+                        } else {
+                            self.emit("return ");
+                        }
+                        self.emit_air_value(val); self.emit(";\n");
                     }
                     _ => self.emit_ln("return;"),
                 }
             }
             AirTerminator::Unreachable => self.emit_ln("__builtin_unreachable();"),
         }
+    }
+}
+
+/// Check if an AirValue represents a string at runtime
+fn is_string_value(val: &AirValue, var_types: &HashMap<RegisterId, String>) -> bool {
+    match val {
+        AirValue::ConstString(_) => true,
+        AirValue::Register(r) => var_types.get(r).map(|t| t == "const char*").unwrap_or(false),
+        _ => false,
     }
 }
