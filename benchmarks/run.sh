@@ -16,12 +16,11 @@ ARCA_CLI="$ROOT_DIR/target/debug/arca-cli"
 
 run_arca() {
   local name=$1 src=$2
+  say "Compiling Arca $name..."
+  $ARCA_CLI build "$src" > /dev/null 2>&1
+  cc -O3 -flto -march=native -o "/tmp/arca_$name" "$ROOT_DIR/build/output.c" 2>/dev/null
   say "Running Arca $name..."
-  local start=$(date +%s%N)
-  $ARCA_CLI run "$src" 2>&1 | grep -v "\[arca\]\|warning\|note:\|dead_code\|^$\|^  $" | tail -5
-  local end=$(date +%s%N)
-  local elapsed=$(( (end - start) / 1000000 ))
-  echo "  (Arca runtime: ${elapsed}ms)"
+  "/tmp/arca_$name"
 }
 
 run_rust() {
@@ -66,18 +65,19 @@ run_web_bench() {
   echo "" | tee -a "$RESULT_FILE"
 }
 
-# ===== WEB API BENCHMARKS (FIRST) =====
-header "WEB API BENCHMARKS" | tee -a "$RESULT_FILE"
+# ===== RAW TCP / SOCKET THROUGHPUT BENCHMARKS (FIRST) =====
+# Note: Measures raw TCP accept/write/close throughput. Full HTTP parsing benchmarks will follow stdlib http parser.
+header "SOCKET THROUGHPUT BENCHMARKS (RAW TCP)" | tee -a "$RESULT_FILE"
 
 # Kill leftover port 3000
-lsof -ti:3000 2>/dev/null | xargs kill -9 2>/dev/null || true
+(lsof -ti:3000 2>/dev/null || true) | xargs kill -9 2>/dev/null || true
 sleep 1
 
 # 1. Arca Web Server
 rm -f /tmp/arca_web_server
 cd "$ROOT_DIR"
 $ARCA_CLI build "$BENCH_DIR/web_api/server.arca" > /dev/null 2>&1
-cc -o /tmp/arca_web_server "$ROOT_DIR/build/output.c" 2>/dev/null
+cc -O3 -flto -march=native -o /tmp/arca_web_server "$ROOT_DIR/build/output.c" 2>/dev/null
 if [ -x /tmp/arca_web_server ]; then
   run_web_bench "Arca Web Server" "/tmp/arca_web_server" || true
 else
@@ -101,7 +101,7 @@ run_web_bench "Go (net/http)" "/tmp/web_bench_go/server" || true
 run_web_bench "Bun (Bun.serve)" "bun run $BENCH_DIR/web_api/server.js" || true
 
 # Kill any leftover server
-lsof -ti:3000 2>/dev/null | xargs kill -9 2>/dev/null || true
+(lsof -ti:3000 2>/dev/null || true) | xargs kill -9 2>/dev/null || true
 
 # ===== ALGORITHM BENCHMARKS =====
 header "ALGORITHM BENCHMARKS" | tee -a "$RESULT_FILE"

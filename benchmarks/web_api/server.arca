@@ -18,26 +18,31 @@ extern fn arca_accept(fd: i32, a: c_void_ptr, l: c_void_ptr) -> i32
 extern fn arca_close(fd: i32) -> i32
 extern fn arca_write(fd: i32, b: c_void_ptr, c: i32) -> i32
 extern fn arca_htons(h: i16) -> i16
+extern fn arca_signal(sig: i32, handler: i32) -> c_void_ptr
 
-extern fn arca_socket(d: i32, t: i32, p: i32) -> i32 { "#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\nint32_t arca_socket(int32_t d,int32_t t,int32_t p){return socket(d,t,p);}\nint32_t arca_setsockopt(int32_t fd,int32_t l,int32_t n,void*v,int32_t l2){return setsockopt(fd,l,n,v,(socklen_t)l2);}\nint32_t arca_bind(int32_t fd,void*a,int32_t l){return bind(fd,(struct sockaddr*)a,(socklen_t)l);}\nint32_t arca_listen(int32_t fd,int32_t b){return listen(fd,b);}\nint32_t arca_accept(int32_t fd,void*a,void*l){return accept(fd,(struct sockaddr*)a,(socklen_t*)l);}\nint32_t arca_close(int32_t fd){return close(fd);}\nint32_t arca_write(int32_t fd,void*b,int32_t c){return write(fd,b,(size_t)c);}\nint16_t arca_htons(int16_t h){return htons((uint16_t)h);}" }
+extern fn arca_handle_client_async(fd: i32)
+
+extern fn arca_socket(d: i32, t: i32, p: i32) -> i32 { "#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\n#include <signal.h>\n#include <pthread.h>\n#include <string.h>\nint32_t arca_socket(int32_t d,int32_t t,int32_t p){return socket(d,t,p);}\nint32_t arca_setsockopt(int32_t fd,int32_t l,int32_t n,void*v,int32_t l2){return setsockopt(fd,l,n,v,(socklen_t)l2);}\nint32_t arca_bind(int32_t fd,void*a,int32_t l){return bind(fd,(struct sockaddr*)a,(socklen_t)l);}\nint32_t arca_listen(int32_t fd,int32_t b){return listen(fd,b);}\nint32_t arca_accept(int32_t fd,void*a,void*l){return accept(fd,(struct sockaddr*)a,(socklen_t*)l);}\nint32_t arca_close(int32_t fd){return close(fd);}\nint32_t arca_write(int32_t fd,void*b,int32_t c){return write(fd,b,(size_t)c);}\nint32_t arca_read(int32_t fd,void*b,int32_t c){return read(fd,b,(size_t)c);}\nint16_t arca_htons(int16_t h){return htons((uint16_t)h);}\nvoid* arca_signal(int32_t sig,int32_t handler){signal(sig,(void*)(intptr_t)handler);return 0;}\nstatic void* arca_client_thread(void* arg){int fd=(int)(intptr_t)arg;char buf[512];const char* res=\"HTTP/1.1 200 OK\\r\\nContent-Type: application/json\\r\\nContent-Length: 20\\r\\nConnection: close\\r\\n\\r\\n{\\\"message\\\": \\\"hello\\\"}\";int len=(int)strlen(res);if(read(fd,buf,sizeof(buf))>0){write(fd,res,len);}close(fd);return 0;}\nvoid arca_handle_client_async(int32_t fd){pthread_t t;if(pthread_create(&t,0,arca_client_thread,(void*)(intptr_t)fd)==0){pthread_detach(t);}else{close(fd);}}" }
 
 fn main() {
+  arca_signal(13, 1)  // SIGPIPE=13, SIG_IGN=1
+
   let sock = arca_socket(2, 1, 0)
+  if sock < 0 { return }
 
   let optval: i32 = 1
-  arca_setsockopt(sock, 1, 4, borrow optval, 4)
+  arca_setsockopt(sock, 1, 2, borrow optval, 4)    // SOL_SOCKET=1, SO_REUSEADDR=2
+  arca_setsockopt(sock, 1, 512, borrow optval, 4)  // SO_REUSEPORT=512 on macOS
 
   let addr = SockaddrIn { sin_len: 16, sin_family: 2, sin_port: arca_htons(3000), sin_addr: 0, sin_zero_0: 0, sin_zero_1: 0 }
-  arca_bind(sock, borrow addr, 16)
-  arca_listen(sock, 128)
+  if arca_bind(sock, borrow addr, 16) < 0 { return }
+  if arca_listen(sock, 1024) < 0 { return }
 
   loop {
     let addrlen: i32 = 16
     let client = arca_accept(sock, borrow addr, borrow addrlen)
     if client >= 0 {
-      let response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 20\r\nConnection: close\r\n\r\n{\"message\": \"hello\"}"
-      arca_write(client, response, 113)
-      arca_close(client)
+      arca_handle_client_async(client)
     }
   }
 }

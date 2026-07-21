@@ -5,14 +5,18 @@ const TARGET = process.argv[2] || "http://localhost:3000";
 const REQUESTS = parseInt(process.argv[3]) || 10000;
 const CONCURRENCY = parseInt(process.argv[4]) || 100;
 
+const errorTypes = {};
+
 async function worker() {
   while (counter < REQUESTS) {
     const i = counter++;
     try {
       const res = await fetch(TARGET);
-      await res.json();
+      await res.text();
     } catch (e) {
       errors++;
+      const msg = e.cause ? `${e.message} (${e.cause.code || e.cause.message})` : e.message;
+      errorTypes[msg] = (errorTypes[msg] || 0) + 1;
     }
   }
 }
@@ -33,3 +37,6 @@ console.log(`  Concurrency: ${CONCURRENCY}`);
 console.log(`  Duration:   ${elapsed}ms`);
 console.log(`  RPS:        ${rps}`);
 console.log(`  Errors:     ${errors}`);
+if (errors > 0) {
+  console.log(`  Error Details:`, JSON.stringify(errorTypes));
+}

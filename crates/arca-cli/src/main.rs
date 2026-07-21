@@ -478,7 +478,7 @@ fn main() {
             fs::write("build/output.c", &c_code).ok();
 
             let status = std::process::Command::new("cc")
-                .args(&["-o", "build/output", "build/output.c"])
+                .args(&["-O3", "-o", "build/output", "build/output.c"])
                 .status();
             match status {
                 Ok(s) if s.success() => {

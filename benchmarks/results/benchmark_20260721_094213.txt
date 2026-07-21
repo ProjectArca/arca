@@ -1,0 +1,54 @@
+
+===== SOCKET THROUGHPUT BENCHMARKS (RAW TCP) =====
+--- Arca Web Server ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   1249ms
+  RPS:        40032
+  Errors:     20011
+
+--- Rust (std::net) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   1381ms
+  RPS:        36206
+  Errors:     22919
+
+--- Go (net/http) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   4638ms
+  RPS:        10781
+  Errors:     0
+
+--- Bun (Bun.serve) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   3831ms
+  RPS:        13051
+  Errors:     0
+
+
+===== ALGORITHM BENCHMARKS =====
+
+===== Benchmark: fib =====
+--- Arca fib ---
+[bench] Compiling Arca fib...
+[bench] Running Arca fib...
+Arca fib(45) = 1134903170 (3127ms)
+OK
+
+--- Rust fib ---
+[bench] Compiling Rust fib...

@@ -10,7 +10,7 @@ function countPrimes(limit, cur) {
     return add + countPrimes(limit, cur + 1)
 }
 
-const n = 5000
+const n = 10000
 const start = performance.now()
 const result = countPrimes(n, 2)
 const elapsed = (performance.now() - start).toFixed(0)

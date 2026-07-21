@@ -18,12 +18,21 @@ fn mid3(a: i32, b: i32, c: i32) -> i32 {
   a + b + c - min3(a, b, c) - max3(a, b, c)
 }
 
+extern fn arca_time_ns() -> i64
+
 fn main() {
   let a = 9; let b = 3; let c = 7
+  let start = arca_time_ns()
   let lo = min3(a, b, c)
   let mi = mid3(a, b, c)
   let hi = max3(a, b, c)
-  println(lo)
-  println(mi)
-  println(hi)
+  let elapsed = arca_time_ns() - start
+  print(lo)
+  print(" ")
+  print(mi)
+  print(" ")
+  print(hi)
+  print(" (")
+  print(elapsed)
+  println("ns)")
 }

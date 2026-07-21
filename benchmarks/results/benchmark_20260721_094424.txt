@@ -1,0 +1,23 @@
+
+===== SOCKET THROUGHPUT BENCHMARKS (RAW TCP) =====
+--- Arca Web Server ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   2218ms
+  RPS:        22543
+  Errors:     1988
+
+--- Rust (std::net) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   1767ms
+  RPS:        28297
+  Errors:     16085
+
+--- Go (net/http) ---

@@ -19,7 +19,7 @@ func countPrimes(limit, cur int) int {
 }
 
 func main() {
-    n := 5000
+    n := 10000
     start := time.Now()
     result := countPrimes(n, 2)
     elapsed := time.Since(start).Milliseconds()

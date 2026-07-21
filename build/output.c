@@ -5,30 +5,41 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
 void arca_print_int(int64_t v) { printf("%lld", (long long)v); }
-void arca_print_string(const char* s) { fwrite(s, strlen(s), 1, stdout); }
+void arca_print_string(const char* s) { if(s) fwrite(s, strlen(s), 1, stdout); }
 void arca_println_int(int64_t v) { printf("%lld\n", (long long)v); }
-void arca_println_string(const char* s) { puts(s); }
+void arca_println_string(const char* s) { if(s) puts(s); else putchar('\n'); }
+int64_t arca_time_ns(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000000000LL + (int64_t)ts.tv_nsec; }
+int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }
 
 int64_t arca_main();
 int32_t min3(int32_t, int32_t, int32_t);
 int32_t max3(int32_t, int32_t, int32_t);
 int32_t mid3(int32_t, int32_t, int32_t);
 
+int64_t arca_time_ns();
 
 int64_t arca_main() {
   int64_t a_0 = 9;
   int64_t b_1 = 3;
   int64_t c_2 = 7;
-  int32_t lo_3 = min3(a_0, b_1, c_2);
-  int32_t mi_4 = mid3(a_0, b_1, c_2);
-  int32_t hi_5 = max3(a_0, b_1, c_2);
-  arca_println_int(lo_3);
-  arca_println_int(mi_4);
-  arca_println_int(hi_5);
+  int64_t start_3 = arca_time_ns();
+  int32_t lo_4 = min3(a_0, b_1, c_2);
+  int32_t mi_5 = mid3(a_0, b_1, c_2);
+  int32_t hi_6 = max3(a_0, b_1, c_2);
+  int64_t elapsed_7 = (arca_time_ns() - start_3);
+  arca_print_int(lo_4);
+  arca_print_string(" ");
+  arca_print_int(mi_5);
+  arca_print_string(" ");
+  arca_print_int(hi_6);
+  arca_print_string(" (");
+  arca_print_int(elapsed_7);
+  arca_println_string("ns)");
   return 0;
 }
 

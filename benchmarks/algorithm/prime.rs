@@ -12,7 +12,7 @@ fn count_primes(limit: i32, cur: i32) -> i32 {
 }
 
 fn main() {
-    let n = 5000;
+    let n = 10000;
     let start = Instant::now();
     let result = count_primes(n, 2);
     let elapsed = start.elapsed().as_millis();

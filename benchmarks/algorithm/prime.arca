@@ -11,8 +11,16 @@ fn count_primes(limit: i32, cur: i32) -> i32 {
   }
 }
 
+extern fn arca_time_ms() -> i64
+
 fn main() {
-  let n = 5000
+  let n = 10000
+  let start = arca_time_ms()
   let result = count_primes(n, 2)
-  println(result)
+  let elapsed = arca_time_ms() - start
+  print("primes under 10000 = ")
+  print(result)
+  print(" (")
+  print(elapsed)
+  println("ms)")
 }

@@ -56,14 +56,17 @@ impl CodeGenerator {
         self.emit("#include <stdlib.h>\n");
         // POSIX headers for extern functions
         self.emit("#include <unistd.h>\n");
+        self.emit("#include <time.h>\n");
         self.emit("#include <sys/socket.h>\n");
         self.emit("#include <netinet/in.h>\n\n");
 
         // Runtime helpers
         self.emit("void arca_print_int(int64_t v) { printf(\"%lld\", (long long)v); }\n");
-        self.emit("void arca_print_string(const char* s) { fwrite(s, strlen(s), 1, stdout); }\n");
+        self.emit("void arca_print_string(const char* s) { if(s) fwrite(s, strlen(s), 1, stdout); }\n");
         self.emit("void arca_println_int(int64_t v) { printf(\"%lld\\n\", (long long)v); }\n");
-        self.emit("void arca_println_string(const char* s) { puts(s); }\n\n");
+        self.emit("void arca_println_string(const char* s) { if(s) puts(s); else putchar('\\n'); }\n");
+        self.emit("int64_t arca_time_ns(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000000000LL + (int64_t)ts.tv_nsec; }\n");
+        self.emit("int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }\n\n");
 
         // Struct types
         for (name, hir_struct) in &hir.structs {

@@ -3,8 +3,16 @@ fn fib(n: i32) -> i32 {
   else { fib(n - 1) + fib(n - 2) }
 }
 
+extern fn arca_time_ms() -> i64
+
 fn main() {
   let n = 45
+  let start = arca_time_ms()
   let result = fib(n)
-  println(result)
+  let elapsed = arca_time_ms() - start
+  print("Arca fib(45) = ")
+  print(result)
+  print(" (")
+  print(elapsed)
+  println("ms)")
 }
