@@ -1,0 +1,12 @@
+// Core String Primitives (core/string)
+
+struct String {
+  ptr: c_void_ptr
+  len: i64
+}
+
+extend String {
+  fn len(self) -> i64 {
+    self.len
+  }
+}

@@ -1,0 +1,6 @@
+// Core Result Type (core/result)
+
+enum Result<T, E> {
+  Ok(T),
+  Err(E)
+}

@@ -1,13 +1,21 @@
-// Arca Standard Library: Memory Allocators (HeapAllocator, ArenaAllocator, PoolAllocator)
+// Arca Standard Allocators (std/alloc)
 
-export struct HeapAllocator {}
+struct Arena {
+  capacity: i64
+}
 
-export struct ArenaAllocator {}
+extend Arena {
+  fn new() -> Arena {
+    Arena { capacity: 4096 }
+  }
+}
 
-export struct PoolAllocator {}
+struct Pool {
+  block_size: i64
+}
 
-extend ArenaAllocator {
-  fn new() -> Self {
-    ArenaAllocator {}
+extend Pool {
+  fn new(block_size: i64) -> Pool {
+    Pool { block_size: block_size }
   }
 }

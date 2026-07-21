@@ -1,0 +1,9 @@
+// Core Panic Handler (core/panic)
+
+struct Panic {}
+
+extend Panic {
+  fn catch_unwind(f: fn()) {
+    f()
+  }
+}

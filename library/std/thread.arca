@@ -1,0 +1,16 @@
+// Arca Standard Threading & Atomicity (std/thread)
+
+struct Thread {}
+
+extend Thread {
+  fn spawn(f: fn()) {
+    f()
+  }
+}
+
+struct Mutex {}
+struct RwLock {}
+struct Semaphore {}
+struct Barrier {}
+struct Condvar {}
+struct Atomic {}

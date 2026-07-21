@@ -1,0 +1,9 @@
+// Core Conversions (core/convert)
+
+capability From<T> {
+  fn from(val: T) -> Self
+}
+
+capability Into<T> {
+  fn into(self) -> T
+}

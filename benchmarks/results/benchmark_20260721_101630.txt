@@ -1,0 +1,14 @@
+
+===== SOCKET THROUGHPUT BENCHMARKS (RAW TCP) =====
+--- Arca Web Server ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   1687ms
+  RPS:        29638
+  Errors:     12778
+  Error Details: {"Unable to connect. Is the computer able to access the url?":12778}
+
+--- Rust (std::net) ---

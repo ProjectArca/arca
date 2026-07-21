@@ -1,45 +1,16 @@
-// Arca web API server benchmark
-// JSON echo server on port 3000
+// Arca Web API Server Benchmark
+// Declarative Bun/Express style Arca HTTP Server API (std/http)
 
-struct SockaddrIn {
-  sin_len: i8
-  sin_family: i8
-  sin_port: i16
-  sin_addr: i32
-  sin_zero_0: i32
-  sin_zero_1: i32
-}
-
-extern fn arca_net_socket(d: i32, t: i32, p: i32) -> i32
-extern fn arca_net_setsockopt(fd: i32, l: i32, n: i32, v: c_void_ptr, l2: i32) -> i32
-extern fn arca_net_bind(fd: i32, a: c_void_ptr, l: i32) -> i32
-extern fn arca_net_listen(fd: i32, b: i32) -> i32
-extern fn arca_net_accept(fd: i32, a: c_void_ptr, l: c_void_ptr) -> i32
-extern fn arca_net_close(fd: i32) -> i32
-extern fn arca_net_write(fd: i32, b: c_void_ptr, c: i32) -> i32
-extern fn arca_net_htons(h: i16) -> i16
-extern fn arca_net_signal(sig: i32, handler: i32) -> c_void_ptr
-extern fn arca_net_handle_async(fd: i32)
+import { serve } from "std/http"
 
 fn main() {
-  arca_net_signal(13, 1)  // SIGPIPE=13, SIG_IGN=1
+  serve({
+    port: 3000,
 
-  let sock = arca_net_socket(2, 1, 0)
-  if sock < 0 { return }
-
-  let optval: i32 = 1
-  arca_net_setsockopt(sock, 1, 2, borrow optval, 4)    // SOL_SOCKET=1, SO_REUSEADDR=2
-  arca_net_setsockopt(sock, 1, 512, borrow optval, 4)  // SO_REUSEPORT=512 on macOS
-
-  let addr = SockaddrIn { sin_len: 16, sin_family: 2, sin_port: arca_net_htons(3000), sin_addr: 0, sin_zero_0: 0, sin_zero_1: 0 }
-  if arca_net_bind(sock, borrow addr, 16) < 0 { return }
-  if arca_net_listen(sock, 1024) < 0 { return }
-
-  loop {
-    let addrlen: i32 = 16
-    let client = arca_net_accept(sock, borrow addr, borrow addrlen)
-    if client >= 0 {
-      arca_net_handle_async(client)
+    get("/") {
+      {
+        message: "hello"
+      }
     }
-  }
+  })
 }

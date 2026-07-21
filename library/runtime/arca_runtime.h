@@ -40,6 +40,23 @@ int16_t arca_net_htons(int16_t hostshort);
 void* arca_net_signal(int32_t sig, int32_t handler);
 void arca_net_handle_async(int32_t fd);
 
+// High-level Standard Library HTTP & TCP Abstractions
+typedef struct {
+    const char* method;
+    const char* path;
+} ArcaHttpRequest;
+
+typedef struct {
+    int32_t status;
+    const char* content_type;
+    const char* body;
+} ArcaHttpResponse;
+
+typedef ArcaHttpResponse (*ArcaHttpHandlerFn)(ArcaHttpRequest);
+
+int32_t arca_std_http_serve(int32_t port);
+int32_t arca_std_http_serve_handler(int32_t port, ArcaHttpHandlerFn handler);
+
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);

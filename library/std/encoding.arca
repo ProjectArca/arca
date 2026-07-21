@@ -1,0 +1,13 @@
+// Arca Standard Encoding (std/encoding)
+
+struct Base64 {}
+
+extend Base64 {
+  fn encode(data: string) -> string {
+    data
+  }
+
+  fn decode(data: string) -> string {
+    data
+  }
+}

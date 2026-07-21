@@ -1,0 +1,6 @@
+// Core Option Type (core/option)
+
+enum Option<T> {
+  Some(T),
+  None
+}

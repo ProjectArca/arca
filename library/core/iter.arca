@@ -1,0 +1,5 @@
+// Core Iterator Trait (core/iter)
+
+capability Iterator<T> {
+  fn next(&self) -> T?
+}

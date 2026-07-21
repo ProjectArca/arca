@@ -68,7 +68,24 @@ impl TypeEnv {
         self.functions.insert("panic".into(), void_fn.clone());
         self.functions.insert("assert".into(), void_fn.clone());
 
+        let int_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I32)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        };
+        self.functions.insert("serve".into(), int_fn.clone());
+        self.functions.insert("arca_std_http_serve".into(), int_fn.clone());
+
+        let time_fn = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("Instant.now".into(), time_fn.clone());
+        self.functions.insert("now".into(), time_fn.clone());
+        self.functions.insert("elapsed_ms".into(), time_fn.clone());
+        self.functions.insert("elapsed_ns".into(), time_fn.clone());
+
         // Standard library module bindings
+        self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);
         self.insert_var("crypto".into(), Type::Unknown);
         self.insert_var("gzip".into(), Type::Unknown);
@@ -84,6 +101,8 @@ impl TypeEnv {
         self.insert_var("Instant".into(), Type::Unknown);
         self.insert_var("Duration".into(), Type::Unknown);
         self.insert_var("ArenaAllocator".into(), Type::Unknown);
+        self.insert_var("Response".into(), Type::Unknown);
+        self.insert_var("Request".into(), Type::Unknown);
         self.insert_var("Router".into(), Type::Unknown);
         self.insert_var("File".into(), Type::Unknown);
         self.insert_var("TcpListener".into(), Type::Unknown);

@@ -1,13 +1,37 @@
-// Arca Standard Library: HTTP Server & Client module (std/http)
+// Arca Standard Library - HTTP (std/http)
+// Provides Bun/Go style Request, Response, and Handler primitives.
 
-export struct Router {}
-
-export struct Request {
+struct Request {
   method: string
-  url: string
+  path: string
 }
 
-export struct Response {
+struct Response {
   status: i32
+  content_type: string
   body: string
+}
+
+extend Response {
+  fn json(body: string) -> Response {
+    Response {
+      status: 200,
+      content_type: "application/json",
+      body: body
+    }
+  }
+
+  fn text(body: string) -> Response {
+    Response {
+      status: 200,
+      content_type: "text/plain",
+      body: body
+    }
+  }
+}
+
+extern fn arca_std_http_serve(port: i32) -> i32
+
+fn serve(port: i32) -> i32 {
+  arca_std_http_serve(port)
 }

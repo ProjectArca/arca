@@ -1,9 +1,9 @@
-// Arca Standard Library: JSON Serialization module (std/json)
+// Arca Standard JSON (std/json)
 
-export fn encode<T>(val: T) -> string {
-  "{\"status\": \"ok\"}"
-}
+struct Json {}
 
-export fn decode<T>(json_str: string) -> T {
-  // Synthesized compile-time reflection deserializer
+extend Json {
+  fn stringify(data: string) -> string {
+    data
+  }
 }

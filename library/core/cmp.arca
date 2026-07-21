@@ -1,0 +1,11 @@
+// Core Comparison (core/cmp)
+
+enum Ordering {
+  Less,
+  Equal,
+  Greater
+}
+
+capability Ord {
+  fn cmp(&self, other: &Self) -> Ordering
+}

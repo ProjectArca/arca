@@ -1,13 +1,18 @@
-// Arca Standard Library: Async Networking module (std/net)
+// Arca Standard Library - Networking (std/net)
+// Provides clean, high-level TCP and network abstractions for application developers.
 
-export struct TcpListener {
+extern fn arca_std_http_serve(port: i32) -> i32
+
+struct TcpListener {
   port: i32
 }
 
-export struct TcpStream {
-  fd: i32
-}
+extend TcpListener {
+  fn bind(port: i32) -> TcpListener {
+    TcpListener { port: port }
+  }
 
-export struct UdpSocket {
-  port: i32
+  fn listen(self) -> i32 {
+    arca_std_http_serve(self.port)
+  }
 }

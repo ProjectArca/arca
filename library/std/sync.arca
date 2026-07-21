@@ -1,0 +1,11 @@
+// Arca Standard Concurrency & Sync (std/sync)
+
+struct Channel {
+  capacity: i64
+}
+
+extend Channel {
+  fn new(capacity: i64) -> Channel {
+    Channel { capacity: capacity }
+  }
+}

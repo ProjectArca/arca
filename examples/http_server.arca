@@ -1,0 +1,13 @@
+// Example: Production Web API Server in Arca
+// Demonstrates zero-boilerplate Bun/Go style declarative HTTP API
+
+import { serve, Response } from "std/http"
+
+struct ServerConfig {
+  port: i32
+}
+
+fn main() {
+  println("Starting Arca HTTP server on port 3000...")
+  serve(ServerConfig { port: 3000 })
+}

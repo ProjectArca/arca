@@ -1,0 +1,14 @@
+// Arca Standard I/O (std/io)
+
+capability Reader {
+  fn read(&mut self, buf: &mut string) -> i64
+}
+
+capability Writer {
+  fn write(&mut self, buf: string) -> i64
+}
+
+struct BufReader {}
+struct BufWriter {}
+struct Cursor {}
+struct Pipe {}

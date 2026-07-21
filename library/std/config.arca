@@ -1,0 +1,9 @@
+// Arca Standard Cloud Configuration (std/config)
+
+struct Env {}
+
+extend Env {
+  fn get(key: string) -> string {
+    ""
+  }
+}

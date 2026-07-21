@@ -1,25 +1,20 @@
-// Arca Standard Library: High-Resolution Time module (std/time)
+// Arca Standard Library - Time (std/time)
+// Provides Bun/Go style high-level Instant & Duration primitives.
 
-export struct Instant {
-  nanos: u64
-}
-
-export struct Duration {
-  secs: u64
+struct Instant {
+  start: i64
 }
 
 extend Instant {
-  fn duration_since(borrow self: Instant, earlier: Instant) -> Duration {
-    Duration { secs: 1 }
+  fn now() -> i64 {
+    Instant.now()
   }
-}
 
-extend Duration {
-  fn as_millis(borrow self: Duration) -> u64 {
-    1000
+  fn elapsed_ms(self) -> i64 {
+    self.elapsed_ms()
   }
-}
 
-export fn now() -> Instant {
-  Instant { nanos: 1000000 }
+  fn elapsed_ns(self) -> i64 {
+    self.elapsed_ns()
+  }
 }

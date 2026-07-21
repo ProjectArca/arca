@@ -1,12 +1,15 @@
-// Arca Standard Library: Filesystem module (std/fs)
+// Arca Standard Filesystem (std/fs)
 
-export struct File {
-  path: string
+struct File {
+  handle: c_void_ptr
 }
 
-export fn read_to_string(path: string) -> string {
-  "content"
-}
+extend File {
+  fn open(path: string) -> File {
+    File { handle: 0 }
+  }
 
-export fn write_string(path: string, content: string) {
+  fn close(self) -> i32 {
+    0
+  }
 }

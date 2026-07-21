@@ -1,0 +1,9 @@
+// Core Formatting (core/fmt)
+
+capability Display {
+  fn fmt(&self) -> string
+}
+
+capability Debug {
+  fn debug_fmt(&self) -> string
+}

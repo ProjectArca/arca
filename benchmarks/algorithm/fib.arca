@@ -1,15 +1,17 @@
+// Arca Fibonacci Benchmark
+// Clean high-level application code using std/time
+
+import { Instant } from "std/time"
+
 fn fib(n: i32) -> i32 {
   if n <= 1 { n }
   else { fib(n - 1) + fib(n - 2) }
 }
 
-extern fn arca_time_ms() -> i64
-
 fn main() {
-  let n = 45
-  let start = arca_time_ms()
-  let result = fib(n)
-  let elapsed = arca_time_ms() - start
+  let start = Instant.now()
+  let result = fib(45)
+  let elapsed = start.elapsed_ms()
   print("Arca fib(45) = ")
   print(result)
   print(" (")

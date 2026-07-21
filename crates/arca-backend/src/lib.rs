@@ -66,7 +66,10 @@ impl CodeGenerator {
         self.emit("void arca_println_int(int64_t v) { printf(\"%lld\\n\", (long long)v); }\n");
         self.emit("void arca_println_string(const char* s) { if(s) puts(s); else putchar('\\n'); }\n");
         self.emit("int64_t arca_time_ns(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000000000LL + (int64_t)ts.tv_nsec; }\n");
-        self.emit("int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }\n\n");
+        self.emit("int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }\n");
+        self.emit("typedef struct { const char* method; const char* path; } ArcaHttpRequest;\n");
+        self.emit("typedef struct { int32_t status; const char* content_type; const char* body; } ArcaHttpResponse;\n");
+        self.emit("int32_t arca_std_http_serve(int32_t port);\n\n");
 
         // Struct types
         for (name, hir_struct) in &hir.structs {
@@ -198,7 +201,7 @@ impl CodeGenerator {
             self.emit(";\n");
         } else {
             let is_struct_ret = hir_fn.return_type.as_ref()
-                .map(|t| matches!(t, TypeAnnotation::Named(n) if structs.contains_key(n)))
+                .map(|t| matches!(t, TypeAnnotation::Named(n) if structs.contains_key(n) || n == "Response" || n == "Request"))
                 .unwrap_or(false);
             if !is_struct_ret {
                 self.emit_ln("return 0;");
@@ -372,8 +375,15 @@ impl CodeGenerator {
                 let callee_name = match &**callee {
                     HirExpr::VarRef(n) => n.clone(),
                     HirExpr::Member { object, property, .. } => {
-                        let obj_str = format!("{:?}", object);
-                        property.clone()
+                        let obj_str = match &**object {
+                            HirExpr::VarRef(n) => n.clone(),
+                            _ => "".to_string(),
+                        };
+                        if !obj_str.is_empty() {
+                            format!("{}_{}", obj_str, property)
+                        } else {
+                            property.clone()
+                        }
                     }
                     _ => "unknown".to_string(),
                 };
@@ -405,6 +415,36 @@ impl CodeGenerator {
                                 self.emit(")");
                             }
                         }
+                    }
+                    "Instant_now" | "Instant.now" | "now" => {
+                        self.emit("arca_time_ns()");
+                    }
+                    s if s.ends_with("elapsed_ms") => {
+                        self.emit("((arca_time_ns() - ");
+                        if let HirExpr::Member { object, .. } = &**callee {
+                            self.emit_expr(object);
+                        } else {
+                            self.emit("0");
+                        }
+                        self.emit(") / 1000000LL)");
+                    }
+                    s if s.ends_with("elapsed_ns") => {
+                        self.emit("(arca_time_ns() - ");
+                        if let HirExpr::Member { object, .. } = &**callee {
+                            self.emit_expr(object);
+                        } else {
+                            self.emit("0");
+                        }
+                        self.emit(")");
+                    }
+                    "Response_json" | "Response.json" | "json" => {
+                        self.emit("((ArcaHttpResponse){.status=200, .content_type=\"application/json\", .body=");
+                        if !args.is_empty() { self.emit_expr(&args[0]); }
+                        else { self.emit("\"{}\""); }
+                        self.emit("})");
+                    }
+                    "serve" => {
+                        self.emit("arca_std_http_serve(3000)");
                     }
                     _ => {
                         let fn_name = if callee_name == "main" { "arca_main" } else { &callee_name };
@@ -554,6 +594,8 @@ impl CodeGenerator {
                 "string" => "const char*".to_string(),
                 "void" => "void".to_string(),
                 "c_void_ptr" => "void*".to_string(),
+                "Response" => "ArcaHttpResponse".to_string(),
+                "Request" => "ArcaHttpRequest".to_string(),
                 _ => {
                     if structs.contains_key(name) {
                         name.clone()

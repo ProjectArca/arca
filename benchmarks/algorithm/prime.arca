@@ -1,3 +1,8 @@
+// Arca Prime Benchmark
+// Clean high-level application code using std/time
+
+import { Instant } from "std/time"
+
 fn is_prime(n: i32, d: i32) -> bool {
   if d * d > n { true }
   else if n % d == 0 { false }
@@ -11,13 +16,10 @@ fn count_primes(limit: i32, cur: i32) -> i32 {
   }
 }
 
-extern fn arca_time_ms() -> i64
-
 fn main() {
-  let n = 10000
-  let start = arca_time_ms()
-  let result = count_primes(n, 2)
-  let elapsed = arca_time_ms() - start
+  let start = Instant.now()
+  let result = count_primes(10000, 2)
+  let elapsed = start.elapsed_ms()
   print("primes under 10000 = ")
   print(result)
   print(" (")

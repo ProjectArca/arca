@@ -1,0 +1,6 @@
+// Arca Compile-Time Reflection (std/reflect)
+
+struct TypeInfo {
+  name: string
+  field_count: i64
+}

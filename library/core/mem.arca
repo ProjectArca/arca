@@ -1,17 +1,12 @@
-// Arca Core Standard Library: Low-level memory intrinsics (zero OS / zero allocation)
+// Core Memory Intrinsics (core/mem)
 
-export fn copy(dest: &mut u8, src: &u8, count: usize) {
-  // Low-level memory copy intrinsic lowered directly into compiler IR
-}
+struct Mem {}
 
-export fn zero(dest: &mut u8, count: usize) {
-  // Memory zeroing intrinsic
-}
+extend Mem {
+  fn alloc(size: i64) -> c_void_ptr {
+    0
+  }
 
-export fn swap<T>(a: &mut T, b: &mut T) {
-  // Value swap intrinsic
-}
-
-export fn compare(a: &u8, b: &u8, count: usize) -> i32 {
-  0
+  fn free(ptr: c_void_ptr) {
+  }
 }

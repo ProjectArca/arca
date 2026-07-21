@@ -15,13 +15,30 @@ void arca_println_int(int64_t v) { printf("%lld\n", (long long)v); }
 void arca_println_string(const char* s) { if(s) puts(s); else putchar('\n'); }
 int64_t arca_time_ns(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000000000LL + (int64_t)ts.tv_nsec; }
 int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }
+typedef struct { const char* method; const char* path; } ArcaHttpRequest;
+typedef struct { int32_t status; const char* content_type; const char* body; } ArcaHttpResponse;
+int32_t arca_std_http_serve(int32_t port);
 
-int64_t arca_main();
-int32_t max3(int32_t, int32_t, int32_t);
 int32_t min3(int32_t, int32_t, int32_t);
+int32_t max3(int32_t, int32_t, int32_t);
 int32_t mid3(int32_t, int32_t, int32_t);
+int64_t arca_main();
 
-int64_t arca_time_ns();
+
+int32_t min3(int32_t a_0, int32_t b_1, int32_t c_2) {
+  return ((a_0 <= b_1) ? ((a_0 <= c_2) ? a_0 : c_2) : ((b_1 <= c_2) ? b_1 : c_2));
+  return 0;
+}
+
+int32_t max3(int32_t a_0, int32_t b_1, int32_t c_2) {
+  return ((a_0 >= b_1) ? ((a_0 >= c_2) ? a_0 : c_2) : ((b_1 >= c_2) ? b_1 : c_2));
+  return 0;
+}
+
+int32_t mid3(int32_t a_0, int32_t b_1, int32_t c_2) {
+  return ((((a_0 + b_1) + c_2) - min3(a_0, b_1, c_2)) - max3(a_0, b_1, c_2));
+  return 0;
+}
 
 int64_t arca_main() {
   int64_t a_0 = 9;
@@ -40,21 +57,6 @@ int64_t arca_main() {
   arca_print_string(" (");
   arca_print_int(elapsed_7);
   arca_println_string("ns)");
-  return 0;
-}
-
-int32_t max3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((a_0 >= b_1) ? ((a_0 >= c_2) ? a_0 : c_2) : ((b_1 >= c_2) ? b_1 : c_2));
-  return 0;
-}
-
-int32_t min3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((a_0 <= b_1) ? ((a_0 <= c_2) ? a_0 : c_2) : ((b_1 <= c_2) ? b_1 : c_2));
-  return 0;
-}
-
-int32_t mid3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((((a_0 + b_1) + c_2) - min3(a_0, b_1, c_2)) - max3(a_0, b_1, c_2));
   return 0;
 }
 

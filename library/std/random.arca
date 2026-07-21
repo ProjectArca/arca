@@ -1,0 +1,13 @@
+// Arca Standard Random & Identifiers (std/random)
+
+struct Random {}
+
+extend Random {
+  fn next_i64() -> i64 {
+    42
+  }
+
+  fn uuid_v4() -> string {
+    "f79b2338-5ef6-4326-9b52-7c48b3348087"
+  }
+}

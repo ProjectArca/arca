@@ -1,0 +1,9 @@
+// Core Pointer Intrinsics (core/ptr)
+
+struct Ptr {}
+
+extend Ptr {
+  fn null() -> c_void_ptr {
+    0
+  }
+}

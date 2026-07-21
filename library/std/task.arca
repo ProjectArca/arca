@@ -1,0 +1,8 @@
+// Arca Standard Tasks (std/task)
+
+struct Task {}
+
+extend Task {
+  fn yield_now() {
+  }
+}

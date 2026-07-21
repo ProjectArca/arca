@@ -1,0 +1,11 @@
+// Arca Built-in Testing (std/testing)
+
+struct TestRunner {}
+
+extend TestRunner {
+  fn assert_eq(a: i64, b: i64) {
+    if a != b {
+      println("Assertion failed!")
+    }
+  }
+}

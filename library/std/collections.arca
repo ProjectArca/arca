@@ -1,0 +1,32 @@
+// Arca Standard Collections (std/collections)
+
+struct Array {
+  len: i64
+  capacity: i64
+}
+
+extend Array {
+  fn new() -> Array {
+    Array { len: 0, capacity: 16 }
+  }
+}
+
+struct Map {
+  size: i64
+}
+
+extend Map {
+  fn new() -> Map {
+    Map { size: 0 }
+  }
+}
+
+struct Set {
+  size: i64
+}
+
+extend Set {
+  fn new() -> Set {
+    Set { size: 0 }
+  }
+}

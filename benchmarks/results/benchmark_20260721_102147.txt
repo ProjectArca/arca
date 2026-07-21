@@ -1,0 +1,114 @@
+
+===== SOCKET THROUGHPUT BENCHMARKS (RAW TCP) =====
+--- Arca Web Server ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   1658ms
+  RPS:        30157
+  Errors:     22896
+  Error Details: {"Unable to connect. Is the computer able to access the url?":22896}
+
+--- Rust (std::net) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   1434ms
+  RPS:        34868
+  Errors:     22242
+  Error Details: {"Unable to connect. Is the computer able to access the url?":22242}
+
+--- Go (net/http) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   4080ms
+  RPS:        12255
+  Errors:     0
+
+--- Bun (Bun.serve) ---
+
+Results:
+  Target:     http://localhost:3000
+  Requests:   50000
+  Concurrency: 200
+  Duration:   4146ms
+  RPS:        12060
+  Errors:     0
+
+
+===== ALGORITHM BENCHMARKS =====
+
+===== Benchmark: fib =====
+--- Arca fib ---
+[bench] Compiling Arca fib...
+[bench] Running Arca fib...
+Arca fib(45) = 1134903170 (3101ms)
+OK
+
+--- Rust fib ---
+[bench] Compiling Rust fib...
+[bench] Running Rust fib...
+Rust fib(45) = 1134903170 (3144ms)
+OK
+--- Go fib ---
+[bench] Running Go fib...
+Go fib(45) = 1134903170 (3274ms)
+OK
+--- Bun fib ---
+[bench] Running Bun fib...
+Bun fib(45) = 1134903170 (4411ms)
+OK
+
+
+===== Benchmark: prime =====
+--- Arca prime ---
+[bench] Compiling Arca prime...
+[bench] Running Arca prime...
+primes under 10000 = 1229 (2ms)
+OK
+
+--- Rust prime ---
+[bench] Compiling Rust prime...
+[bench] Running Rust prime...
+primes under 10000 = 1229 (0ms)
+OK
+--- Go prime ---
+[bench] Running Go prime...
+primes under 10000 = 1229 (0ms)
+OK
+--- Bun prime ---
+[bench] Running Bun prime...
+primes under 10000 = 1229 (3ms)
+OK
+
+
+===== Benchmark: sort =====
+--- Arca sort ---
+[bench] Compiling Arca sort...
+[bench] Running Arca sort...
+3 7 9 (0ns)
+OK
+
+--- Rust sort ---
+[bench] Compiling Rust sort...
+[bench] Running Rust sort...
+3 7 9 (42ns)
+OK
+--- Go sort ---
+[bench] Running Go sort...
+3 7 9 (11000ns)
+OK
+--- Bun sort ---
+[bench] Running Bun sort...
+3 7 9 (55250ns)
+OK
+
+
+===== SUMMARY =====
