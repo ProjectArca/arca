@@ -66,16 +66,20 @@ run_web_bench() {
   fi
 
   for i in $(seq 1 100); do curl -sf http://localhost:3000 > /dev/null 2>&1; done
-  bun run "$BENCH_DIR/web_api/bench_client.js" "http://localhost:3000" 50000 200 2>&1 | tee -a "$RESULT_FILE"
+  # Small request count: Connection:close + 200 concurrency exhausts macOS ephemeral ports (~16384)
+  # Real HTTP benchmarking requires keep-alive (postponed per roadmap)
+  bun run "$BENCH_DIR/web_api/bench_client.js" "http://localhost:3000" 10000 200 2>&1 | tee -a "$RESULT_FILE"
 
   kill $SERVER_PID 2>/dev/null || true
   wait $SERVER_PID 2>/dev/null || true
   echo "" | tee -a "$RESULT_FILE"
 }
 
-# ===== RAW TCP / SOCKET THROUGHPUT BENCHMARKS (FIRST) =====
-# Note: Measures raw TCP accept/write/close throughput. Full HTTP parsing benchmarks will follow stdlib http parser.
-header "SOCKET THROUGHPUT BENCHMARKS (RAW TCP)" | tee -a "$RESULT_FILE"
+# ===== RAW SOCKET PROTOTYPE (Connection:close, thread-per-connection) =====
+# Note: Not a real HTTP benchmark. No keep-alive, no event loop, no HTTP parser.
+# This measures raw TCP accept/write/close throughput only.
+# Real std/http benchmarks will follow once keep-alive + event loop land.
+header "RAW SOCKET PROTOTYPE (pre-HTTP, TCP throughput only)" | tee -a "$RESULT_FILE"
 
 # Kill leftover port 3000
 (lsof -ti:3000 2>/dev/null || true) | xargs kill -9 2>/dev/null || true
@@ -87,7 +91,7 @@ cd "$ROOT_DIR"
 $ARCA_CLI build "$BENCH_DIR/web_api/server.arca" > /dev/null 2>&1
 cc -O3 -flto -march=native -o /tmp/arca_web_server "$ROOT_DIR/build/output.c" "$ROOT_DIR/build/libarca_runtime.a" -lpthread 2>/dev/null
 if [ -x /tmp/arca_web_server ]; then
-  run_web_bench "Arca Web Server" "/tmp/arca_web_server" || true
+  run_web_bench "Arca (Raw Socket Prototype)" "/tmp/arca_web_server" || true
 else
   echo "--- Arca Web Server ---" | tee -a "$RESULT_FILE"
   echo "  Build failed" | tee -a "$RESULT_FILE"
@@ -95,7 +99,7 @@ fi
 
 # 2. Rust Web Server
 rustc -C opt-level=3 -C target-cpu=native -o /tmp/rs_web_server "$BENCH_DIR/web_api/server.rs" 2>/dev/null
-run_web_bench "Rust (std::net)" "/tmp/rs_web_server" || true
+  run_web_bench "Rust (std::net, thread-per-conn)" "/tmp/rs_web_server" || true
 
 # 3. Go Web Server
 rm -rf /tmp/web_bench_go

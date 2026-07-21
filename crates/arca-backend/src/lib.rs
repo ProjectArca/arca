@@ -392,31 +392,34 @@ impl CodeGenerator {
 
                 match callee_name.as_str() {
                     "println" => {
-                        if args.len() == 1 {
-                            // Check if it's a string or int literal
-                            if let HirExpr::Literal(LiteralKind::String(_)) = &args[0] {
-                                self.emit("arca_println_string(");
-                                self.emit_expr(&args[0]);
-                                self.emit(")");
-                            } else {
-                                self.emit("arca_println_int(");
-                                self.emit_expr(&args[0]);
-                                self.emit(")");
-                            }
-                        }
-                    }
-                    "print" => {
-                        if args.len() == 1 {
-                            if let HirExpr::Literal(LiteralKind::String(_)) = &args[0] {
+                        self.emit("do { ");
+                        for arg in args {
+                            if is_string_expr(arg) {
                                 self.emit("arca_print_string(");
-                                self.emit_expr(&args[0]);
-                                self.emit(")");
+                                self.emit_expr(arg);
+                                self.emit("); ");
                             } else {
                                 self.emit("arca_print_int(");
-                                self.emit_expr(&args[0]);
-                                self.emit(")");
+                                self.emit_expr(arg);
+                                self.emit("); ");
                             }
                         }
+                        self.emit("putchar('\\n'); } while(0)");
+                    }
+                    "print" => {
+                        self.emit("do { ");
+                        for arg in args {
+                            if is_string_expr(arg) {
+                                self.emit("arca_print_string(");
+                                self.emit_expr(arg);
+                                self.emit("); ");
+                            } else {
+                                self.emit("arca_print_int(");
+                                self.emit_expr(arg);
+                                self.emit("); ");
+                            }
+                        }
+                        self.emit("} while(0)");
                     }
                     "Instant_now" | "Instant.now" | "now" => {
                         self.emit("arca_time_ns()");
@@ -689,5 +692,19 @@ impl CodeGenerator {
 
     pub fn generate_native_object(&self, _module: &AirModule) -> Vec<u8> {
         vec![0xCF, 0xFA, 0xED, 0xFE, 0x0C, 0x00, 0x00, 0x01]
+    }
+}
+
+fn is_string_expr(expr: &HirExpr) -> bool {
+    match expr {
+        HirExpr::Literal(LiteralKind::String(_)) => true,
+        HirExpr::Call { callee, .. } => {
+            if let HirExpr::VarRef(name) = &**callee {
+                matches!(name.as_str(), "to_string" | "string" | "format")
+            } else {
+                false
+            }
+        }
+        _ => false,
     }
 }

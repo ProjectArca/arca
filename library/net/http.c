@@ -1,7 +1,13 @@
 #include "../runtime/arca_runtime.h"
+#include <errno.h>
+#include <fcntl.h>
 
-#define NUM_WORKERS 16
-#define QUEUE_SIZE 4096
+#ifndef SOCK_NONBLOCK
+#define SOCK_NONBLOCK 0
+#endif
+
+#define NUM_WORKERS 128
+#define QUEUE_SIZE 65536
 
 static int g_queue[QUEUE_SIZE];
 static int g_q_head = 0;
@@ -36,7 +42,7 @@ static void parse_http_request(const char* buf, ArcaHttpRequest* req) {
 }
 
 static void process_client(int client_fd) {
-    char buf[1024];
+    char buf[4096];
     ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
     if (n > 0) {
         buf[n] = '\0';
@@ -56,13 +62,15 @@ static void process_client(int client_fd) {
         if (!res.body) res.body = "{\"message\": \"hello\"}";
         if (res.status == 0) res.status = 200;
 
-        char header[1024];
+        char header[8192];
         int body_len = (int)strlen(res.body);
         int header_len = snprintf(header, sizeof(header),
             "HTTP/1.1 %d OK\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",
             res.status, res.content_type, body_len, res.body);
 
-        write(client_fd, header, header_len);
+        if (header_len > 0) {
+            write(client_fd, header, header_len);
+        }
     }
     close(client_fd);
 }
@@ -102,7 +110,15 @@ int32_t arca_std_http_serve(int32_t port) {
         pthread_detach(workers[i]);
     }
 
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    int sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    if (sock < 0) {
+        // Fallback: macOS doesn't support SOCK_NONBLOCK
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock >= 0) {
+            int flags = fcntl(sock, F_GETFL, 0);
+            fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+        }
+    }
     if (sock < 0) return -1;
 
     int optval = 1;
@@ -122,7 +138,7 @@ int32_t arca_std_http_serve(int32_t port) {
         return -1;
     }
 
-    if (listen(sock, 1024) < 0) {
+    if (listen(sock, 16384) < 0) {
         close(sock);
         return -1;
     }
@@ -144,8 +160,10 @@ int32_t arca_std_http_serve(int32_t port) {
                 pthread_mutex_unlock(&g_q_lock);
             } else {
                 pthread_mutex_unlock(&g_q_lock);
-                process_client(client_fd);
+                close(client_fd);
             }
+        } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            usleep(1000);
         }
     }
     close(sock);

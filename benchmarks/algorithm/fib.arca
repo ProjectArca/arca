@@ -9,12 +9,7 @@ fn fib(n: i32) -> i32 {
 }
 
 fn main() {
-  let start = Instant.now()
+  let timer = Instant.now()
   let result = fib(45)
-  let elapsed = start.elapsed_ms()
-  print("Arca fib(45) = ")
-  print(result)
-  print(" (")
-  print(elapsed)
-  println("ms)")
+  println("Arca fib(45) = ", result, " (", timer.elapsed_ms(), "ms)")
 }
