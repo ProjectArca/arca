@@ -103,6 +103,8 @@ impl TypeEnv {
         self.insert_var("ArenaAllocator".into(), Type::Unknown);
         self.insert_var("Response".into(), Type::Unknown);
         self.insert_var("Request".into(), Type::Unknown);
+        self.insert_var("Pool".into(), Type::Unknown);
+        self.insert_var("Arena".into(), Type::Unknown);
         self.insert_var("Router".into(), Type::Unknown);
         self.insert_var("File".into(), Type::Unknown);
         self.insert_var("TcpListener".into(), Type::Unknown);

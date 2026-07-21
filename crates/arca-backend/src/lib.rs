@@ -69,7 +69,9 @@ impl CodeGenerator {
         self.emit("int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }\n");
         self.emit("typedef struct { const char* method; const char* path; } ArcaHttpRequest;\n");
         self.emit("typedef struct { int32_t status; const char* content_type; const char* body; } ArcaHttpResponse;\n");
-        self.emit("int32_t arca_std_http_serve(int32_t port);\n\n");
+        self.emit("int32_t arca_std_http_serve(int32_t port);\n");
+        self.emit("void* arca_arena_create(size_t capacity);\n");
+        self.emit("void* arca_pool_create(size_t block_size);\n\n");
 
         // Struct types
         for (name, hir_struct) in &hir.structs {
@@ -436,6 +438,18 @@ impl CodeGenerator {
                             self.emit("0");
                         }
                         self.emit(")");
+                    }
+                    "Array_new" | "Array.new" | "Map_new" | "Map.new" | "Set_new" | "Set.new" => {
+                        self.emit("0");
+                    }
+                    "Arena_new" | "Arena.new" => {
+                        self.emit("((int64_t)arca_arena_create(4096))");
+                    }
+                    "Pool_new" | "Pool.new" => {
+                        self.emit("((int64_t)arca_pool_create(");
+                        if !args.is_empty() { self.emit_expr(&args[0]); }
+                        else { self.emit("64"); }
+                        self.emit("))");
                     }
                     "Response_json" | "Response.json" | "json" => {
                         self.emit("((ArcaHttpResponse){.status=200, .content_type=\"application/json\", .body=");

@@ -18,45 +18,17 @@ int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, 
 typedef struct { const char* method; const char* path; } ArcaHttpRequest;
 typedef struct { int32_t status; const char* content_type; const char* body; } ArcaHttpResponse;
 int32_t arca_std_http_serve(int32_t port);
+void* arca_arena_create(size_t capacity);
+void* arca_pool_create(size_t block_size);
 
-int32_t min3(int32_t, int32_t, int32_t);
-int32_t max3(int32_t, int32_t, int32_t);
-int32_t mid3(int32_t, int32_t, int32_t);
 int64_t arca_main();
 
 
-int32_t min3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((a_0 <= b_1) ? ((a_0 <= c_2) ? a_0 : c_2) : ((b_1 <= c_2) ? b_1 : c_2));
-  return 0;
-}
-
-int32_t max3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((a_0 >= b_1) ? ((a_0 >= c_2) ? a_0 : c_2) : ((b_1 >= c_2) ? b_1 : c_2));
-  return 0;
-}
-
-int32_t mid3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((((a_0 + b_1) + c_2) - min3(a_0, b_1, c_2)) - max3(a_0, b_1, c_2));
-  return 0;
-}
-
 int64_t arca_main() {
-  int64_t a_0 = 9;
-  int64_t b_1 = 3;
-  int64_t c_2 = 7;
-  int64_t start_3 = arca_time_ns();
-  int32_t lo_4 = min3(a_0, b_1, c_2);
-  int32_t mi_5 = mid3(a_0, b_1, c_2);
-  int32_t hi_6 = max3(a_0, b_1, c_2);
-  int64_t elapsed_7 = (arca_time_ns() - start_3);
-  arca_print_int(lo_4);
-  arca_print_string(" ");
-  arca_print_int(mi_5);
-  arca_print_string(" ");
-  arca_print_int(hi_6);
-  arca_print_string(" (");
-  arca_print_int(elapsed_7);
-  arca_println_string("ns)");
+  int64_t users_0 = 0;
+  int64_t cache_1 = 0;
+  int64_t tags_2 = 0;
+  arca_println_string("Array, Map, and Set initialized cleanly.");
   return 0;
 }
 
