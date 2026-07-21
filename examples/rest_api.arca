@@ -1,0 +1,21 @@
+// Arca REST API Example
+// CRUD HTTP server using std/http
+//
+// VISION: Full CRUD API once closures, strings, and arrays land.
+// For now, serves {"message": "hello"} as a working demo.
+//
+// Future CRUD:
+//   serve({
+//     port: 3000,
+//     get("/users")    { Response.json(users) }
+//     get("/users/:id"){ Response.json(find_user(req.param("id"))) }
+//     post("/users")   { create_user(req.json()); Response.ok() }
+//     put("/users/:id"){ update_user(req.param("id"), req.json()); Response.ok() }
+//     delete("/users/:id"){ delete_user(req.param("id")); Response.ok() }
+//   })
+
+import { serve } from "std/http"
+
+fn main() {
+  serve(3000)
+}

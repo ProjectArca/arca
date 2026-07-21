@@ -1,10 +1,21 @@
 // Arca Standard Library - HTTP (std/http)
-// Provides Bun/Go style Request, Response, and Handler primitives.
+// RFC: Bun-style declarative HTTP server with compile-time route dispatch
+
+// ===== Request =====
 
 struct Request {
   method: string
   path: string
+  url: string
 }
+
+extend Request {
+  fn param(self, name: string) -> string
+  fn query(self, name: string) -> string
+  fn header(self, name: string) -> string
+}
+
+// ===== Response =====
 
 struct Response {
   status: i32
@@ -13,11 +24,11 @@ struct Response {
 }
 
 extend Response {
-  fn json(body: string) -> Response {
+  fn ok() -> Response {
     Response {
       status: 200,
-      content_type: "application/json",
-      body: body
+      content_type: "text/plain",
+      body: "OK"
     }
   }
 
@@ -28,15 +39,67 @@ extend Response {
       body: body
     }
   }
+
+  fn html(body: string) -> Response {
+    Response {
+      status: 200,
+      content_type: "text/html",
+      body: body
+    }
+  }
+
+  fn json(body: string) -> Response {
+    Response {
+      status: 200,
+      content_type: "application/json",
+      body: body
+    }
+  }
+
+  fn not_found() -> Response {
+    Response {
+      status: 404,
+      content_type: "text/plain",
+      body: "Not Found"
+    }
+  }
+
+  fn bad_request() -> Response {
+    Response {
+      status: 400,
+      content_type: "text/plain",
+      body: "Bad Request"
+    }
+  }
+
+  fn internal_error() -> Response {
+    Response {
+      status: 500,
+      content_type: "text/plain",
+      body: "Internal Server Error"
+    }
+  }
+
+  fn redirect(location: string) -> Response {
+    Response {
+      status: 302,
+      content_type: "text/plain",
+      body: "",
+      .header("Location", location)
+    }
+  }
 }
 
-// Bun-style ServerConfig — used with serve({port: 3000, fetch(req) { ... }})
-// Future: will support handler closure once closures are fully implemented
+// ===== Server Config =====
+
 struct ServerConfig {
   port: i32
 }
 
+// ===== Public API =====
+
 extern fn arca_std_http_serve(port: i32) -> i32
+extern fn arca_std_http_serve_with_handler(port: i32) -> i32
 
 fn serve(port: i32) -> i32 {
   arca_std_http_serve(port)

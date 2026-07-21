@@ -411,14 +411,10 @@ impl CodeGenerator {
                     self.emit_ln(&format!("{} = arca_time_ns() - {};", tn, tv));
                 }
             }
-            "Response.json" => {
-                // Response.json(body_struct) -> skip for now, runtime handles default response
-                if let Some(t) = target {
-                    let tn = self.var_names.get(t).cloned().unwrap_or_default();
-                    self.emit_ln(&format!("{} = 0;", tn));
-                }
-            }
-            "Response.text" => {
+            "Response.ok" | "Response.text" | "Response.html" | "Response.json"
+            | "Response.not_found" | "Response.bad_request" | "Response.internal_error"
+            | "Response.redirect" => {
+                // Response factory methods — return 0 (runtime handles default)
                 if let Some(t) = target {
                     let tn = self.var_names.get(t).cloned().unwrap_or_default();
                     self.emit_ln(&format!("{} = 0;", tn));

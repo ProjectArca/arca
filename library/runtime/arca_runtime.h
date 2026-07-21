@@ -56,6 +56,8 @@ typedef ArcaHttpResponse (*ArcaHttpHandlerFn)(ArcaHttpRequest);
 
 int32_t arca_std_http_serve(int32_t port);
 int32_t arca_std_http_serve_handler(int32_t port, ArcaHttpHandlerFn handler);
+int32_t arca_http_add_route(const char* method, const char* pattern, ArcaHttpHandlerFn handler);
+int32_t arca_http_set_default_handler(ArcaHttpHandlerFn handler);
 
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
