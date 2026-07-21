@@ -971,6 +971,16 @@ impl<'a> Parser<'a> {
                     body: block,
                 })
             }
+            TokenKind::ThrowKw => {
+                let start = self.current_token.span;
+                self.advance();
+                let value = self.parse_expression(Precedence::Lowest)?;
+                let end = value.span();
+                Some(Expr::Throw {
+                    value: Box::new(value),
+                    span: Span::new(start.start, end.end, start.start_loc, end.end_loc),
+                })
+            }
             TokenKind::Borrow | TokenKind::Move => {
                 let name = if token.kind == TokenKind::Borrow { "borrow" } else { "move" };
                 self.advance();
@@ -1419,15 +1429,40 @@ impl<'a> Parser<'a> {
         }
 
         let mut statements = Vec::new();
-        let final_expr = None;
+        let mut final_expr: Option<Box<Expr>> = None;
 
         while self.current_token.kind != TokenKind::CloseBrace
             && self.current_token.kind != TokenKind::Eof
         {
             if let Some(stmt) = self.parse_statement() {
-                statements.push(stmt);
+                // If this is a bare expression (no semicolon), it may be the final expression.
+                // Don't add it as a statement yet — wait to see if more statements follow.
+                if let Stmt::Expr { expr, has_semicolon: false, span: _ } = &stmt {
+                    // Peek ahead: if next token is close brace or another non-semicoloned expr,
+                    // this is the final expression
+                    if self.current_token.kind == TokenKind::CloseBrace
+                        || self.current_token.kind == TokenKind::Eof
+                    {
+                        final_expr = Some(Box::new(expr.clone()));
+                        break;
+                    }
+                    // Don't hold onto it — push as statement, we'll pop later if needed
+                    statements.push(stmt);
+                } else {
+                    statements.push(stmt);
+                }
             } else {
                 self.advance();
+            }
+        }
+
+        // If final_expr wasn't set by the peek-ahead, check if last statement
+        // is a semicolonless expression that should be promoted
+        if final_expr.is_none() {
+            if let Some(Stmt::Expr { expr, has_semicolon: false, .. }) = statements.last() {
+                let expr = expr.clone();
+                statements.pop();
+                final_expr = Some(Box::new(expr));
             }
         }
 
@@ -1575,6 +1610,22 @@ impl<'a> Parser<'a> {
                         end_span.end_loc,
                     ),
                 })
+            }
+            TokenKind::Break => {
+                let span = self.current_token.span;
+                self.advance();
+                if self.current_token.kind == TokenKind::Semicolon {
+                    self.advance();
+                }
+                Some(Stmt::Break { span })
+            }
+            TokenKind::Continue => {
+                let span = self.current_token.span;
+                self.advance();
+                if self.current_token.kind == TokenKind::Semicolon {
+                    self.advance();
+                }
+                Some(Stmt::Continue { span })
             }
             _ => {
                 let expr = self.parse_expression(Precedence::Lowest)?;

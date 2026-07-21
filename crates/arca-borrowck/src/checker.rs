@@ -77,6 +77,7 @@ impl BorrowChecker {
             HirStmt::Expr(expr) => {
                 self.check_expr(expr);
             }
+            HirStmt::Break | HirStmt::Continue => {}
             HirStmt::Destructure { fields, init, .. } => {
                 self.check_expr(init);
                 for f in fields {

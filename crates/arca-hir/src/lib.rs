@@ -51,6 +51,7 @@ pub enum HirExpr {
         body: Box<HirExpr>,
     },
     Loop(HirBlock),
+    Throw(Box<HirExpr>),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -81,6 +82,8 @@ pub enum HirStmt {
     },
     Return(Option<HirExpr>),
     Defer(HirExpr),
+    Break,
+    Continue,
     Expr(HirExpr),
 }
 
@@ -243,6 +246,8 @@ impl Lowerer {
             }
             Stmt::Return { value, .. } => HirStmt::Return(value.as_ref().map(|e| self.lower_expr(e))),
             Stmt::Defer { body, .. } => HirStmt::Defer(self.lower_expr(body)),
+            Stmt::Break { .. } => HirStmt::Break,
+            Stmt::Continue { .. } => HirStmt::Continue,
             Stmt::Expr { expr, .. } => HirStmt::Expr(self.lower_expr(expr)),
         }
     }
@@ -348,6 +353,7 @@ impl Lowerer {
                 params: params.clone(),
                 body: Box::new(self.lower_expr(body)),
             },
+            Expr::Throw { value, .. } => HirExpr::Throw(Box::new(self.lower_expr(value))),
             Expr::NullCoalesce { left, right, .. } => HirExpr::Binary {
                 left: Box::new(self.lower_expr(left)),
                 op: BinaryOp::Equal, // Desugars into null check in lowering

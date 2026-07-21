@@ -215,6 +215,10 @@ pub enum Expr {
         args: Vec<Expr>,
         span: Span,
     },
+    Throw {
+        value: Box<Expr>,
+        span: Span,
+    },
 }
 
 impl Expr {
@@ -236,7 +240,8 @@ impl Expr {
             | Expr::GroupBlock { span, .. }
             | Expr::Closure { span, .. }
             | Expr::Loop { span, .. }
-            | Expr::IntrinsicCall { span, .. } => *span,
+            | Expr::IntrinsicCall { span, .. }
+            | Expr::Throw { span, .. } => *span,
             Expr::Block(b) => b.span,
         }
     }
@@ -263,6 +268,12 @@ pub enum Stmt {
     },
     Defer {
         body: Box<Expr>,
+        span: Span,
+    },
+    Break {
+        span: Span,
+    },
+    Continue {
         span: Span,
     },
     Expr {

@@ -51,6 +51,19 @@ pub enum AirInstruction {
         struct_name: String,
         fields: Vec<(String, AirValue)>,
     },
+    FieldLoad {
+        target: RegisterId,
+        object: RegisterId,
+        field: String,
+    },
+    Ref {
+        target: RegisterId,
+        source: RegisterId,
+    },
+    Deref {
+        target: RegisterId,
+        ptr: RegisterId,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

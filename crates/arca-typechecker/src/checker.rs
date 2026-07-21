@@ -275,6 +275,7 @@ impl TypeChecker {
             HirStmt::Defer(expr) => {
                 self.infer_expr(expr);
             }
+            HirStmt::Break | HirStmt::Continue => {}
             HirStmt::Expr(expr) => {
                 self.infer_expr(expr);
             }
@@ -560,6 +561,10 @@ impl TypeChecker {
                 .as_ref()
                 .map(|e| self.infer_expr(e))
                 .unwrap_or(Type::Primitive(PrimitiveType::Void)),
+            HirExpr::Throw(value) => {
+                let _inner = self.infer_expr(value);
+                Type::Primitive(PrimitiveType::Void)
+            }
         }
     }
 }

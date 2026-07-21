@@ -102,6 +102,7 @@ impl Type {
         }
 
         match (self, target) {
+            (Type::UntypedInt(_), Type::UntypedInt(_)) => true,
             (Type::UntypedInt(_), Type::Primitive(p)) => matches!(
                 p,
                 PrimitiveType::I8
@@ -113,6 +114,7 @@ impl Type {
                     | PrimitiveType::U32
                     | PrimitiveType::U64
             ),
+            (Type::UntypedFloat(_), Type::UntypedFloat(_)) => true,
             (Type::UntypedFloat(_), Type::Primitive(p)) => {
                 matches!(p, PrimitiveType::F32 | PrimitiveType::F64)
             }

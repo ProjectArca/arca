@@ -197,10 +197,19 @@ impl CodeGenerator {
         }
 
         if let Some(ref fe) = hir_fn.body.final_expr {
-            self.emit_indent();
-            self.emit("return ");
-            self.emit_expr(fe);
-            self.emit(";\n");
+            let is_void_stmt = matches!(fe.as_ref(), HirExpr::Call { callee, .. }
+                if matches!(&**callee, HirExpr::VarRef(n) if n == "println" || n == "print"))
+                || matches!(fe.as_ref(), HirExpr::Loop(_));
+            if is_void_stmt {
+                self.emit_expr(fe);
+                self.emit(";\n");
+                self.emit_ln("return 0;");
+            } else {
+                self.emit_indent();
+                self.emit("return ");
+                self.emit_expr(fe);
+                self.emit(";\n");
+            }
         } else {
             let is_struct_ret = hir_fn.return_type.as_ref()
                 .map(|t| matches!(t, TypeAnnotation::Named(n) if structs.contains_key(n) || n == "Response" || n == "Request"))
@@ -300,6 +309,12 @@ impl CodeGenerator {
                 self.emit_indent();
                 self.emit_expr(expr);
                 self.emit(";\n");
+            }
+            HirStmt::Break => {
+                self.emit_ln("break;");
+            }
+            HirStmt::Continue => {
+                self.emit_ln("continue;");
             }
             HirStmt::Destructure { fields, init, .. } => {
                 let init_var = self.fresh_var("_destructure");
@@ -591,6 +606,7 @@ impl CodeGenerator {
             HirExpr::Closure { body, .. } => self.emit_expr(body),
             HirExpr::Borrow(inner) => { self.emit("(&"); self.emit_expr(inner); self.emit(")"); }
             HirExpr::Move(inner) => self.emit_expr(inner),
+            HirExpr::Throw(value) => { self.emit("arca_throw("); self.emit_expr(value); self.emit(")"); }
         }
     }
 
