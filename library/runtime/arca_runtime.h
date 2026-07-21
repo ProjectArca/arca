@@ -17,30 +17,36 @@
 extern "C" {
 #endif
 
-// Print helpers
+// Core Print & String Helpers
 void arca_print_int(int64_t v);
 void arca_print_string(const char* s);
 void arca_println_int(int64_t v);
 void arca_println_string(const char* s);
 
-// Monotonic Time helpers (64-bit nanosecond and millisecond resolution)
+// Monotonic Time Helpers (64-bit nanosecond and millisecond resolution)
 int64_t arca_time_ns(void);
 int64_t arca_time_ms(void);
 
-// OS Socket & Network helpers
-int32_t arca_socket(int32_t domain, int32_t type, int32_t protocol);
-int32_t arca_setsockopt(int32_t fd, int32_t level, int32_t optname, void* optval, int32_t optlen);
-int32_t arca_bind(int32_t fd, void* addr, int32_t addrlen);
-int32_t arca_listen(int32_t fd, int32_t backlog);
-int32_t arca_accept(int32_t fd, void* addr, void* addrlen);
-int32_t arca_close(int32_t fd);
-int32_t arca_write(int32_t fd, const void* buf, int32_t count);
-int32_t arca_read(int32_t fd, void* buf, int32_t count);
-int16_t arca_htons(int16_t hostshort);
-void* arca_signal(int32_t sig, int32_t handler);
+// Net & Socket Helpers
+int32_t arca_net_socket(int32_t domain, int32_t type, int32_t protocol);
+int32_t arca_net_setsockopt(int32_t fd, int32_t level, int32_t optname, void* optval, int32_t optlen);
+int32_t arca_net_bind(int32_t fd, void* addr, int32_t addrlen);
+int32_t arca_net_listen(int32_t fd, int32_t backlog);
+int32_t arca_net_accept(int32_t fd, void* addr, void* addrlen);
+int32_t arca_net_close(int32_t fd);
+int32_t arca_net_write(int32_t fd, const void* buf, int32_t count);
+int32_t arca_net_read(int32_t fd, void* buf, int32_t count);
+int16_t arca_net_htons(int16_t hostshort);
+void* arca_net_signal(int32_t sig, int32_t handler);
+void arca_net_handle_async(int32_t fd);
 
-// Concurrency helper (temporary bootstrap worker thread wrapper)
-void arca_handle_client_async(int32_t fd);
+// Concurrency Scheduler Helpers
+void arca_scheduler_init(int threads);
+void arca_scheduler_spawn(void (*func)(void*), void* arg);
+
+// Memory & Allocator Helpers
+void* arca_mem_alloc(size_t size);
+void arca_mem_free(void* ptr);
 
 #ifdef __cplusplus
 }

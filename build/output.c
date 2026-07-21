@@ -17,8 +17,8 @@ int64_t arca_time_ns(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, 
 int64_t arca_time_ms(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (int64_t)ts.tv_sec * 1000LL + ((int64_t)ts.tv_nsec / 1000000LL); }
 
 int64_t arca_main();
-int32_t min3(int32_t, int32_t, int32_t);
 int32_t max3(int32_t, int32_t, int32_t);
+int32_t min3(int32_t, int32_t, int32_t);
 int32_t mid3(int32_t, int32_t, int32_t);
 
 int64_t arca_time_ns();
@@ -43,13 +43,13 @@ int64_t arca_main() {
   return 0;
 }
 
-int32_t min3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((a_0 <= b_1) ? ((a_0 <= c_2) ? a_0 : c_2) : ((b_1 <= c_2) ? b_1 : c_2));
+int32_t max3(int32_t a_0, int32_t b_1, int32_t c_2) {
+  return ((a_0 >= b_1) ? ((a_0 >= c_2) ? a_0 : c_2) : ((b_1 >= c_2) ? b_1 : c_2));
   return 0;
 }
 
-int32_t max3(int32_t a_0, int32_t b_1, int32_t c_2) {
-  return ((a_0 >= b_1) ? ((a_0 >= c_2) ? a_0 : c_2) : ((b_1 >= c_2) ? b_1 : c_2));
+int32_t min3(int32_t a_0, int32_t b_1, int32_t c_2) {
+  return ((a_0 <= b_1) ? ((a_0 <= c_2) ? a_0 : c_2) : ((b_1 <= c_2) ? b_1 : c_2));
   return 0;
 }
 

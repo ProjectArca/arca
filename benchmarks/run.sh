@@ -14,11 +14,19 @@ header() { echo; echo "===== $* ====="; }
 
 ARCA_CLI="$ROOT_DIR/target/debug/arca-cli"
 
+build_runtime() {
+  say "Building Arca Runtime (libarca_runtime.a)..."
+  mkdir -p "$ROOT_DIR/build"
+  (cd "$ROOT_DIR" && cc -O3 -c library/runtime/arca_runtime.c library/core/*.c library/net/*.c library/concurrency/*.c library/fs/*.c library/alloc/*.c -I library/runtime && ar rcs build/libarca_runtime.a *.o && rm -f *.o) > /dev/null 2>&1
+}
+
+build_runtime
+
 run_arca() {
   local name=$1 src=$2
   say "Compiling Arca $name..."
   $ARCA_CLI build "$src" > /dev/null 2>&1
-  cc -O3 -flto -march=native -o "/tmp/arca_$name" "$ROOT_DIR/build/output.c" 2>/dev/null
+  cc -O3 -flto -march=native -o "/tmp/arca_$name" "$ROOT_DIR/build/output.c" "$ROOT_DIR/build/libarca_runtime.a" -lpthread 2>/dev/null
   say "Running Arca $name..."
   "/tmp/arca_$name"
 }
@@ -77,7 +85,7 @@ sleep 1
 rm -f /tmp/arca_web_server
 cd "$ROOT_DIR"
 $ARCA_CLI build "$BENCH_DIR/web_api/server.arca" > /dev/null 2>&1
-cc -O3 -flto -march=native -o /tmp/arca_web_server "$ROOT_DIR/build/output.c" 2>/dev/null
+cc -O3 -flto -march=native -o /tmp/arca_web_server "$ROOT_DIR/build/output.c" "$ROOT_DIR/build/libarca_runtime.a" -lpthread 2>/dev/null
 if [ -x /tmp/arca_web_server ]; then
   run_web_bench "Arca Web Server" "/tmp/arca_web_server" || true
 else
