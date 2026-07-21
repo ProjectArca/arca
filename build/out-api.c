@@ -4,8 +4,8 @@
 void arca_main(void);
 
 void arca_main(void) {
-  int64_t v0;
-  v0 = arca_std_http_serve(3000);
+  int64_t t;
+  t = arca_std_http_serve(3000);
   return;
 }
 
