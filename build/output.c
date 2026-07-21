@@ -21,14 +21,25 @@ int32_t arca_std_http_serve(int32_t port);
 void* arca_arena_create(size_t capacity);
 void* arca_pool_create(size_t block_size);
 
+int32_t count_primes(int32_t, int32_t);
 int64_t arca_main();
+bool is_prime(int32_t, int32_t);
 
+
+int32_t count_primes(int32_t limit_0, int32_t cur_1) {
+  return ((cur_1 > limit_0) ? 0 : ((is_prime(cur_1, 2) ? 1 : 0) + count_primes(limit_0, (cur_1 + 1))));
+  return 0;
+}
 
 int64_t arca_main() {
-  int64_t users_0 = 0;
-  int64_t cache_1 = 0;
-  int64_t tags_2 = 0;
-  arca_println_string("Array, Map, and Set initialized cleanly.");
+  int64_t timer_0 = arca_time_ns();
+  int32_t total_1 = count_primes(10000, 2);
+  do { arca_print_string("primes under 10000 = "); arca_print_int(total_1); arca_print_string(" ("); arca_print_int(((arca_time_ns() - timer_0) / 1000000LL)); arca_print_string("ms)"); putchar('\n'); } while(0);
+  return 0;
+}
+
+bool is_prime(int32_t n_0, int32_t d_1) {
+  return (((d_1 * d_1) > n_0) ? 1 : (((n_0 % d_1) == 0) ? 0 : is_prime(n_0, (d_1 + 1))));
   return 0;
 }
 
