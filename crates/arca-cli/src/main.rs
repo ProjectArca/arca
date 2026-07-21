@@ -422,18 +422,22 @@ fn main() {
             }
 
             if backend_flag == "c" {
+                let mut air_builder = AirBuilder::new();
+                let air_module = air_builder.build_module(&hir);
                 let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-                let c_code = cg.generate_c_from_hir(&hir);
+                let c_code = cg.generate_c_from_air(&air_module);
                 let out_path = "build/output.c";
                 fs::create_dir_all("build").ok();
                 fs::write(out_path, &c_code).unwrap_or_else(|e| {
                     eprintln!("Error: failed to write '{}': {}", out_path, e);
                     process::exit(1);
                 });
-                println!("[arca-backend] Portable C Code Generator: Emitted build/output.c");
+                println!("[arca-backend] AIR C Backend: Emitted build/output.c");
             } else {
+                let mut air_builder = AirBuilder::new();
+                let air_module = air_builder.build_module(&hir);
                 let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-                let c_code = cg.generate_c_from_hir(&hir);
+                let c_code = cg.generate_c_from_air(&air_module);
                 fs::create_dir_all("build").ok();
                 fs::write("build/output.c", &c_code).ok();
                 println!("[arca-backend] Emitted build/output.c");
@@ -472,13 +476,18 @@ fn main() {
                 process::exit(1);
             }
 
+            let mut air_builder = AirBuilder::new();
+            let air_module = air_builder.build_module(&hir);
             let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-            let c_code = cg.generate_c_from_hir(&hir);
+            let c_code = cg.generate_c_from_air(&air_module);
             fs::create_dir_all("build").ok();
             fs::write("build/output.c", &c_code).ok();
 
             let status = std::process::Command::new("cc")
-                .args(&["-O3", "-o", "build/output", "build/output.c"])
+                .args(&["-O3", "-o", "build/output", "build/output.c",
+                        "-I", "library/runtime",
+                        "library/runtime/arca_runtime.c",
+                        "library/net/http.c"])
                 .status();
             match status {
                 Ok(s) if s.success() => {

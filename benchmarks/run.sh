@@ -26,7 +26,7 @@ run_arca() {
   local name=$1 src=$2
   say "Compiling Arca $name..."
   $ARCA_CLI build "$src" > /dev/null 2>&1
-  cc -O3 -flto -march=native -o "/tmp/arca_$name" "$ROOT_DIR/build/output.c" "$ROOT_DIR/build/libarca_runtime.a" -lpthread 2>/dev/null
+  cc -O3 -flto -march=native -o "/tmp/arca_$name" "$ROOT_DIR/build/output.c" -I "$ROOT_DIR/library/runtime" "$ROOT_DIR/library/runtime/arca_runtime.c" 2>/dev/null
   say "Running Arca $name..."
   "/tmp/arca_$name"
 }

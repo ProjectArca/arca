@@ -31,11 +31,15 @@ struct LoweringCtx {
     blocks: Vec<BasicBlock>,
     current: BlockBuilder,
     loop_stack: Vec<LoopFrame>,
+    param_regs: Vec<RegisterId>,
 }
 
 impl LoweringCtx {
     fn new(entry_id: BlockId) -> Self {
-        Self { blocks: Vec::new(), current: BlockBuilder::new(entry_id), loop_stack: Vec::new() }
+        Self {
+            blocks: Vec::new(), current: BlockBuilder::new(entry_id),
+            loop_stack: Vec::new(), param_regs: Vec::new(),
+        }
     }
 
     fn push_loop(&mut self, header: BlockId, exit: BlockId) {
@@ -108,9 +112,7 @@ impl AirBuilder {
 
         for param in &hir_fn.params {
             let reg = self.fresh_reg();
-            ctx.current.push(AirInstruction::Alloca {
-                target: reg, ty: hir_type_to_air_type(&param.type_ann),
-            });
+            ctx.param_regs.push(reg);
             var_map.insert(param.name.clone(), reg);
         }
 
@@ -121,12 +123,25 @@ impl AirBuilder {
         let ret_val = hir_fn.body.final_expr.as_ref()
             .map(|e| self.lower_expr(e, &mut ctx, &mut var_map));
 
+        let return_type = hir_fn
+            .return_type
+            .as_ref()
+            .map(|t| hir_type_to_air_type(t))
+            .unwrap_or(Type::Primitive(PrimitiveType::Void));
+
+        let air_params: Vec<(String, Type)> = hir_fn
+            .params
+            .iter()
+            .map(|p| (p.name.clone(), hir_type_to_air_type(&p.type_ann)))
+            .collect();
+
+        let param_registers: Vec<RegisterId> = ctx.param_regs.clone();
+
         AirFunction {
             name: hir_fn.name.clone(),
-            params: Vec::new(),
-            return_type: hir_fn.return_type.as_ref()
-                .map(|t| hir_type_to_air_type(t))
-                .unwrap_or(Type::Primitive(PrimitiveType::Void)),
+            params: air_params,
+            param_registers,
+            return_type,
             blocks: ctx.finish_all(AirTerminator::Ret(ret_val)),
             entry_block: entry_id,
         }
@@ -186,9 +201,13 @@ impl AirBuilder {
             },
             HirExpr::VarRef(name) => {
                 if let Some(reg) = var_map.get(name) {
-                    let loaded_reg = self.fresh_reg();
-                    ctx.current.push(AirInstruction::Load { target: loaded_reg, ptr: *reg, ty: Type::Primitive(PrimitiveType::I32) });
-                    AirValue::Register(loaded_reg)
+                    if ctx.param_regs.contains(reg) {
+                        AirValue::Register(*reg)
+                    } else {
+                        let loaded_reg = self.fresh_reg();
+                        ctx.current.push(AirInstruction::Load { target: loaded_reg, ptr: *reg, ty: Type::Primitive(PrimitiveType::I32) });
+                        AirValue::Register(loaded_reg)
+                    }
                 } else {
                     AirValue::ConstString(name.clone())
                 }
@@ -213,16 +232,27 @@ impl AirBuilder {
             HirExpr::Call { callee, args } => {
                 let mut arg_vals = Vec::new();
                 for a in args { arg_vals.push(self.lower_expr(a, ctx, var_map)); }
-                let callee_name = match &**callee {
-                    HirExpr::VarRef(n) => n.clone(),
-                    HirExpr::Member { object, property, .. } => match &**object {
-                        HirExpr::VarRef(n) => format!("{}.{}", n, property),
-                        _ => property.clone(),
-                    },
-                    _ => "unknown_callee".to_string(),
+                let (callee_name, method_obj) = match &**callee {
+                    HirExpr::VarRef(n) => (n.clone(), None),
+                    HirExpr::Member { object, property, .. } => {
+                        let obj_val = Some(self.lower_expr(object, ctx, var_map));
+                        match &**object {
+                            HirExpr::VarRef(n) => (format!("{}.{}", n, property), obj_val),
+                            _ => (property.clone(), obj_val),
+                        }
+                    }
+                    _ => ("unknown_callee".to_string(), None),
                 };
+                // Pass timer object as first arg for elapsed methods
+                let final_args = if callee_name.ends_with("elapsed_ms") || callee_name.ends_with("elapsed_ns") {
+                    if let Some(obj) = method_obj {
+                        let mut with_obj = vec![obj];
+                        with_obj.extend(arg_vals);
+                        with_obj
+                    } else { arg_vals }
+                } else { arg_vals };
                 let target = self.fresh_reg();
-                ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: callee_name, args: arg_vals });
+                ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: callee_name, args: final_args });
                 AirValue::Register(target)
             }
             HirExpr::StructInit { struct_name, fields } => {

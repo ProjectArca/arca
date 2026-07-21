@@ -89,6 +89,7 @@ pub struct BasicBlock {
 pub struct AirFunction {
     pub name: String,
     pub params: Vec<(String, Type)>,
+    pub param_registers: Vec<RegisterId>,
     pub return_type: Type,
     pub blocks: Vec<BasicBlock>,
     pub entry_block: BlockId,
