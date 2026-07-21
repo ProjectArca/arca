@@ -1,0 +1,49 @@
+// Arca Strings & Collections Demo
+// Working example: string operations, function composition
+// Uses: string concat, int-to-str, starts_with, parse_int, slice, functions
+
+fn json_escape(s: string) -> string {
+  let r = ""
+  // Simple replace for double quotes
+  r + s  // placeholder — full string replace not yet supported
+}
+
+fn greet(name: string) -> string {
+  "Hello, " + name + "!"
+}
+
+fn parse_id(path: string) -> i32 {
+  let i = path.rfind("/")
+  if i < 0 { 0 }
+  else { path.slice(i + 1).parse_int() }
+}
+
+fn main() {
+  // Greeting
+  println(greet("Arca"))
+  println(greet("World"))
+
+  // JSON-like string building
+  let users = "["
+    + "{\"id\":" + 1.to_string() + ",\"name\":\"Alice\"}"
+    + ","
+    + "{\"id\":" + 2.to_string() + ",\"name\":\"Bob\"}"
+    + "]"
+  println("users:", users)
+
+  // Path parsing
+  println("/users/42 -> id:", parse_id("/users/42"))
+  println("/users/7 -> id:", parse_id("/users/7"))
+  println("/users -> id:", parse_id("/users"))
+
+  // String prefix check
+  let p1 = "/users"
+  let p2 = "/users/42"
+  let p3 = "/posts/1"
+  println(p1, " starts with /users:", p1.starts_with("/users"))
+  println(p2, " starts with /users:", p2.starts_with("/users"))
+  println(p3, " starts with /users:", p3.starts_with("/users"))
+
+  // Integer to string
+  println("the answer is:", 42.to_string())
+}

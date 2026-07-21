@@ -1,0 +1,26 @@
+// Arca HTTP JSON API Example
+// Working HTTP server with JSON response building
+// Uses: serve(), Response, string concat, int-to-str, functions
+
+import { serve, Response } from "std/http"
+
+fn build_user(id: i32, name: string, email: string) -> string {
+  "{\"id\":" + id.to_string()
+  + ",\"name\":\"" + name
+  + "\",\"email\":\"" + email + "\"}"
+}
+
+fn build_users() -> string {
+  "["
+  + build_user(1, "Alice", "alice@example.com")
+  + ","
+  + build_user(2, "Bob", "bob@example.com")
+  + "]"
+}
+
+fn main() {
+  println("Arca JSON API running on http://localhost:3000")
+  println("Users:", build_users())
+
+  serve(3000)
+}

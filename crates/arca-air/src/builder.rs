@@ -152,7 +152,7 @@ impl AirBuilder {
         match stmt {
             HirStmt::VarDecl { name, init, .. } => {
                 let ptr_reg = self.fresh_reg();
-                ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I32) });
+                ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
                 var_map.insert(name.clone(), ptr_reg);
                 if let Some(init_expr) = init {
                     let val = self.lower_expr(init_expr, ctx, var_map);
@@ -185,7 +185,7 @@ impl AirBuilder {
                 let init_val = self.lower_expr(init, ctx, var_map);
                 for fname in fields {
                     let ptr_reg = self.fresh_reg();
-                    ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I32) });
+                    ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
                     var_map.insert(fname.clone(), ptr_reg);
                     ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: init_val.clone() });
                 }
@@ -209,7 +209,7 @@ impl AirBuilder {
                         AirValue::Register(*reg)
                     } else {
                         let loaded_reg = self.fresh_reg();
-                        ctx.current.push(AirInstruction::Load { target: loaded_reg, ptr: *reg, ty: Type::Primitive(PrimitiveType::I32) });
+                        ctx.current.push(AirInstruction::Load { target: loaded_reg, ptr: *reg, ty: Type::Primitive(PrimitiveType::I64) });
                         AirValue::Register(loaded_reg)
                     }
                 } else {
@@ -266,7 +266,7 @@ impl AirBuilder {
                     AirValue::Register(r) => r,
                     _ => {
                         let r = self.fresh_reg();
-                        ctx.current.push(AirInstruction::Alloca { target: r, ty: Type::Primitive(PrimitiveType::I32) });
+                        ctx.current.push(AirInstruction::Alloca { target: r, ty: Type::Primitive(PrimitiveType::I64) });
                         ctx.current.push(AirInstruction::Store { ptr: r, val: obj_val });
                         r
                     }
@@ -291,7 +291,7 @@ impl AirBuilder {
                     AirValue::Register(r) => r,
                     _ => {
                         let r = self.fresh_reg();
-                        ctx.current.push(AirInstruction::Alloca { target: r, ty: Type::Primitive(PrimitiveType::I32) });
+                        ctx.current.push(AirInstruction::Alloca { target: r, ty: Type::Primitive(PrimitiveType::I64) });
                         ctx.current.push(AirInstruction::Store { ptr: r, val: inner_val });
                         r
                     }
@@ -315,7 +315,7 @@ impl AirBuilder {
             HirExpr::Throw(value) => {
                 let val = self.lower_expr(value, ctx, var_map);
                 let err_slot = self.fresh_reg();
-                ctx.current.push(AirInstruction::Alloca { target: err_slot, ty: Type::Primitive(PrimitiveType::I32) });
+                ctx.current.push(AirInstruction::Alloca { target: err_slot, ty: Type::Primitive(PrimitiveType::I64) });
                 ctx.current.push(AirInstruction::Store { ptr: err_slot, val });
                 let target = self.fresh_reg();
                 ctx.current.push(AirInstruction::Call {
@@ -333,7 +333,7 @@ impl AirBuilder {
         let catch_block = self.fresh_block();
         let merge_block = self.fresh_block();
         let result_slot = self.fresh_reg();
-        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
+        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);
 
         let body_var_map = var_map.clone();
@@ -349,7 +349,7 @@ impl AirBuilder {
         ctx.set_terminator_and_switch(AirTerminator::Br(merge_block), merge_block);
 
         let loaded = self.fresh_reg();
-        ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
+        ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         AirValue::Register(loaded)
     }
 
@@ -375,7 +375,7 @@ impl AirBuilder {
                  ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
         let cond_val = self.lower_expr(cond, ctx, var_map);
         let result_slot = self.fresh_reg();
-        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
+        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         let then_block = self.fresh_block();
         let else_block = self.fresh_block();
         let merge_block = self.fresh_block();
@@ -409,7 +409,7 @@ impl AirBuilder {
         }
         ctx.set_terminator_and_switch(AirTerminator::Br(merge_block), merge_block);
         let loaded = self.fresh_reg();
-        ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
+        ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         AirValue::Register(loaded)
     }
 
@@ -417,7 +417,7 @@ impl AirBuilder {
                     ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
         let match_val = self.lower_expr(value, ctx, var_map);
         let result_slot = self.fresh_reg();
-        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
+        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         let merge_block = self.fresh_block();
         if arms.is_empty() {
             ctx.current.push(AirInstruction::Store { ptr: result_slot, val: AirValue::ConstInt(0) });
@@ -430,7 +430,7 @@ impl AirBuilder {
                 if let Pattern::Identifier(name) = &arm.pattern {
                     if name != "_" {
                         let ptr_reg = self.fresh_reg();
-                        ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I32) });
+                        ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
                         ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: match_val.clone() });
                         var_map.insert(name.clone(), ptr_reg);
                     }
@@ -441,39 +441,43 @@ impl AirBuilder {
             }
         }
         let loaded = self.fresh_reg();
-        ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I32) });
+        ctx.current.push(AirInstruction::Load { target: loaded, ptr: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         AirValue::Register(loaded)
     }
 
     /// Normalize method calls to well-known runtime function names.
     /// Maps x.to_string() → __arca_int_to_str(x), req.path.starts_with(p) → __arca_starts_with(req.path, p), etc.
     fn normalize_call(&mut self, callee_name: &str, method_obj: Option<AirValue>, args: &[AirValue]) -> (String, Vec<AirValue>) {
-        // Check for known method patterns
-        if callee_name.ends_with(".to_string") {
+        // Helper to check if callee matches a method name (with or without object prefix)
+        let is_method = |name: &str| -> bool {
+            callee_name == name || callee_name.ends_with(&format!(".{}", name))
+        };
+
+        if is_method("to_string") {
             let mut new_args = Vec::new();
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
             return ("__arca_int_to_str".to_string(), new_args);
         }
-        if callee_name.ends_with(".starts_with") {
+        if is_method("starts_with") {
             let mut new_args = Vec::new();
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
             return ("__arca_starts_with".to_string(), new_args);
         }
-        if callee_name.ends_with(".parse_int") {
+        if is_method("parse_int") {
             let mut new_args = Vec::new();
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
             return ("__arca_parse_int".to_string(), new_args);
         }
-        if callee_name.ends_with(".rfind") {
+        if is_method("rfind") {
             let mut new_args = Vec::new();
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
             return ("__arca_str_rfind".to_string(), new_args);
         }
-        if callee_name.ends_with(".slice") {
+        if is_method("slice") {
             let mut new_args = Vec::new();
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
@@ -526,8 +530,8 @@ fn hir_type_to_air_type(ann: &arca_ast::TypeAnnotation) -> Type {
             "bool" => Type::Primitive(PrimitiveType::Bool),
             "string" => Type::Primitive(PrimitiveType::String),
             "void" => Type::Primitive(PrimitiveType::Void),
-            _ => Type::Primitive(PrimitiveType::I32),
+            _ => Type::Primitive(PrimitiveType::I64),
         },
-        _ => Type::Primitive(PrimitiveType::I32),
+        _ => Type::Primitive(PrimitiveType::I64),
     }
 }

@@ -1,0 +1,69 @@
+// Arca Compute Benchmark Demo
+// Working example: fibonacci, prime counting, sorting, timing
+// Uses: recursion, if/else, loop, Instant, println, string ops
+
+import { Instant } from "std/time"
+
+fn fib(n: i32) -> i32 {
+  if n <= 1 { n }
+  else { fib(n - 1) + fib(n - 2) }
+}
+
+fn is_prime(n: i32, d: i32) -> bool {
+  if d * d > n { true }
+  else if n % d == 0 { false }
+  else { is_prime(n, d + 1) }
+}
+
+fn count_primes(limit: i32, cur: i32) -> i32 {
+  if cur > limit { 0 }
+  else {
+    (if is_prime(cur, 2) { 1 } else { 0 }) + count_primes(limit, cur + 1)
+  }
+}
+
+fn min3(a: i32, b: i32, c: i32) -> i32 {
+  if a <= b {
+    if a <= c { a } else { c }
+  } else {
+    if b <= c { b } else { c }
+  }
+}
+
+fn max3(a: i32, b: i32, c: i32) -> i32 {
+  if a >= b {
+    if a >= c { a } else { c }
+  } else {
+    if b >= c { b } else { c }
+  }
+}
+
+fn mid3(a: i32, b: i32, c: i32) -> i32 {
+  a + b + c - min3(a, b, c) - max3(a, b, c)
+}
+
+fn main() {
+  // Fibonacci
+  let t1 = Instant.now()
+  let f = fib(45)
+  let e1 = t1.elapsed_ms()
+  println("fib(45) =", f, " (", e1, "ms)")
+
+  // Primes
+  let t2 = Instant.now()
+  let p = count_primes(10000, 2)
+  let e2 = t2.elapsed_ms()
+  println("primes under 10000 =", p, " (", e2, "ms)")
+
+  // Sort
+  let t3 = Instant.now()
+  let lo = min3(9, 3, 7)
+  let mi = mid3(9, 3, 7)
+  let hi = max3(9, 3, 7)
+  let e3 = t3.elapsed_ns()
+  println(lo, " ", mi, " ", hi, " (", e3, "ns)")
+
+  // String concat demo
+  let msg = "result: " + f.to_string()
+  println(msg)
+}

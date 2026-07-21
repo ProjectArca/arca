@@ -1,0 +1,47 @@
+// Arca Standard Library Demo
+// Showcases all working std library features
+
+import { Instant } from "std/time"
+import { serve, Response } from "std/http"
+
+fn build_user(id: i32, name: string, email: string) -> string {
+  "{\"id\":" + id.to_string()
+  + ",\"name\":\"" + name
+  + "\",\"email\":\"" + email + "\"}"
+}
+
+fn json_response(id: i32, name: string) -> string {
+  "{\"user\":" + build_user(id, name, name + "@example.com") + "}"
+}
+
+fn main() {
+  println("=== Arca Standard Library Demo ===")
+  println("")
+
+  // std/time
+  println("--- std/time ---")
+  let t = Instant.now()
+  println("time_ns:", t.elapsed_ns())
+  println("")
+
+  // String operations
+  println("--- strings ---")
+  println(greet("Arca"))
+  println("id:", 42.to_string())
+  println("")
+
+  // JSON building
+  println("--- json ---")
+  println(build_user(1, "Alice", "alice@example.com"))
+  println(json_response(2, "Bob"))
+  println("")
+
+  // HTTP server
+  println("--- std/http ---")
+  println("Starting server on http://localhost:3000")
+  serve(3000)
+}
+
+fn greet(name: string) -> string {
+  "Hello, " + name + "!"
+}
