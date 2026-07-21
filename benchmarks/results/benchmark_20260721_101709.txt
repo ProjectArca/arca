@@ -1,3 +1,0 @@
-
-===== SOCKET THROUGHPUT BENCHMARKS (RAW TCP) =====
---- Arca Web Server ---
