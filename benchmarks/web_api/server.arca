@@ -1,16 +1,15 @@
 // Arca Web API Server Benchmark
-// Declarative Bun/Express style Arca HTTP Server API (std/http)
+// Bun-style HTTP server (std/http)
+// Parses as: serve({ port: 3000, fetch(req) { Response.json(...) } })
 
-import { serve } from "std/http"
+import { serve, Response } from "std/http"
 
 fn main() {
   serve({
     port: 3000,
 
-    get("/") {
-      {
-        message: "hello"
-      }
+    fetch(req) {
+      Response.json({ message: "hello" })
     }
   })
 }

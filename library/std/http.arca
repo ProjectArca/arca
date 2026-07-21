@@ -30,6 +30,12 @@ extend Response {
   }
 }
 
+// Bun-style ServerConfig — used with serve({port: 3000, fetch(req) { ... }})
+// Future: will support handler closure once closures are fully implemented
+struct ServerConfig {
+  port: i32
+}
+
 extern fn arca_std_http_serve(port: i32) -> i32
 
 fn serve(port: i32) -> i32 {

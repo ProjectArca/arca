@@ -1034,8 +1034,7 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenKind::OpenBrace => {
-                let block = self.parse_block_expr()?;
-                Some(Expr::Block(block))
+                self.parse_block_expr().map(Expr::Block)
             }
             _ => None,
         }
@@ -1053,22 +1052,65 @@ impl<'a> Parser<'a> {
                 let fspan = self.current_token.span;
                 self.advance();
 
-                let value = if self.current_token.kind == TokenKind::Colon {
-                    self.advance();
-                    self.parse_expression(Precedence::Lowest)
+                // Method shorthand: `fetch(req) { body }` → field with closure value
+                if self.current_token.kind == TokenKind::OpenParen {
+                    self.advance(); // (
+                    let mut params = Vec::new();
+                    while self.current_token.kind != TokenKind::CloseParen
+                        && self.current_token.kind != TokenKind::Eof
+                    {
+                        if let TokenKind::Identifier(pname) = &self.current_token.kind {
+                            let pname = pname.clone();
+                            let pspan = self.current_token.span;
+                            self.advance();
+                            let type_ann = if self.current_token.kind == TokenKind::Colon {
+                                self.advance();
+                                self.parse_type_annotation()
+                            } else {
+                                None
+                            };
+                            params.push(ParamDef {
+                                name: pname.clone(),
+                                type_ann: type_ann.unwrap_or(TypeAnnotation::Named("string".into())),
+                                span: pspan,
+                            });
+                            if self.current_token.kind == TokenKind::Comma {
+                                self.advance();
+                            }
+                        } else {
+                            self.advance();
+                        }
+                    }
+                    self.expect(TokenKind::CloseParen);
+                    let body = self.parse_block_expr()?;
+                    let body_block = Expr::Block(body);
+                    fields.push(StructFieldInit {
+                        name,
+                        value: Some(Expr::Closure {
+                            params,
+                            body: Box::new(body_block),
+                            span: Span::new(fspan.start, fspan.end, fspan.start_loc, fspan.end_loc),
+                        }),
+                        span: fspan,
+                    });
                 } else {
-                    // Property shorthand: `User { name }` -> `name: name`
-                    None
-                };
+                    let value = if self.current_token.kind == TokenKind::Colon {
+                        self.advance();
+                        self.parse_expression(Precedence::Lowest)
+                    } else {
+                        // Property shorthand: `User { name }` -> `name: name`
+                        None
+                    };
 
-                fields.push(StructFieldInit {
-                    name,
-                    value,
-                    span: fspan,
-                });
+                    fields.push(StructFieldInit {
+                        name,
+                        value,
+                        span: fspan,
+                    });
 
-                if self.current_token.kind == TokenKind::Comma {
-                    self.advance();
+                    if self.current_token.kind == TokenKind::Comma {
+                        self.advance();
+                    }
                 }
             } else {
                 self.advance();
@@ -1087,6 +1129,96 @@ impl<'a> Parser<'a> {
                 start_span.start_loc,
                 end_span.end_loc,
             ),
+        })
+    }
+
+    /// Parse `{ ident: expr, ident(args) { body }, ... }` as anonymous struct literal
+    fn parse_anonymous_struct(&mut self, start_span: Span, already_consumed: bool) -> Option<Expr> {
+        if !already_consumed {
+            self.advance(); // {
+        }
+        let mut fields = Vec::new();
+        let mut end_span = start_span;
+
+        while self.current_token.kind != TokenKind::CloseBrace
+            && self.current_token.kind != TokenKind::Eof
+        {
+            if let TokenKind::Identifier(fname) = &self.current_token.kind {
+                let name = fname.clone();
+                let fspan = self.current_token.span;
+                self.advance();
+
+                if self.current_token.kind == TokenKind::OpenParen {
+                    // Method shorthand: fetch(req) { ... }
+                    self.advance();
+                    let mut params = Vec::new();
+                    while self.current_token.kind != TokenKind::CloseParen
+                        && self.current_token.kind != TokenKind::Eof
+                    {
+                        if let TokenKind::Identifier(pname) = &self.current_token.kind {
+                            let pname = pname.clone();
+                            let pspan = self.current_token.span;
+                            self.advance();
+                            params.push(ParamDef {
+                                name: pname,
+                                type_ann: TypeAnnotation::Named("string".into()),
+                                span: pspan,
+                            });
+                            if self.current_token.kind == TokenKind::Comma {
+                                self.advance();
+                            }
+                        } else { self.advance(); }
+                    }
+                    self.expect(TokenKind::CloseParen);
+                    let body = self.parse_block_expr()?;
+                    fields.push(StructFieldInit {
+                        name,
+                        value: Some(Expr::Closure {
+                            params,
+                            body: Box::new(Expr::Block(body)),
+                            span: Span::new(fspan.start, fspan.end, fspan.start_loc, fspan.end_loc),
+                        }),
+                        span: fspan,
+                    });
+                } else if self.current_token.kind == TokenKind::Colon {
+                    self.advance();
+                    if let Some(val) = self.parse_expression(Precedence::Lowest) {
+                        fields.push(StructFieldInit { name, value: Some(val), span: fspan });
+                    }
+                } else {
+                    // Shorthand
+                    fields.push(StructFieldInit { name, value: None, span: fspan });
+                }
+
+                if self.current_token.kind == TokenKind::Comma {
+                    self.advance();
+                }
+            } else {
+                self.advance();
+            }
+        }
+        end_span = self.current_token.span;
+        self.expect(TokenKind::CloseBrace);
+
+        Some(Expr::StructLiteral {
+            name: String::new(), // anonymous
+            fields,
+            span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+        })
+    }
+
+    /// Parse `{ ... }` as anonymous struct (called from parse_block_expr fast path)
+    /// Already past `{`, current_token is the first content token.
+    fn parse_anonymous_struct_here(&mut self, start_span: Span) -> Option<BlockExpr> {
+        let anon_span = Span::new(start_span.start, start_span.end, start_span.start_loc, start_span.end_loc);
+        self.parse_anonymous_struct(anon_span, true).map(|struct_expr| BlockExpr {
+            statements: vec![Stmt::Expr {
+                expr: struct_expr,
+                has_semicolon: false,
+                span: anon_span,
+            }],
+            final_expr: None,
+            span: anon_span,
         })
     }
 
@@ -1426,6 +1558,15 @@ impl<'a> Parser<'a> {
         let start_span = self.current_token.span;
         if !self.expect(TokenKind::OpenBrace) {
             return None;
+        }
+
+        // Fast path: if the first content is `ident : ...`, this is an anonymous struct
+        if matches!(&self.current_token.kind, TokenKind::Identifier(_))
+            && matches!(&self.peek_token.kind, TokenKind::Colon)
+        {
+            if let Some(s) = self.parse_anonymous_struct_here(start_span) {
+                return Some(s);
+            }
         }
 
         let mut statements = Vec::new();

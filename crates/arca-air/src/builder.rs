@@ -32,13 +32,14 @@ struct LoweringCtx {
     current: BlockBuilder,
     loop_stack: Vec<LoopFrame>,
     param_regs: Vec<RegisterId>,
+    last_expr_value: Option<AirValue>,
 }
 
 impl LoweringCtx {
     fn new(entry_id: BlockId) -> Self {
         Self {
             blocks: Vec::new(), current: BlockBuilder::new(entry_id),
-            loop_stack: Vec::new(), param_regs: Vec::new(),
+            loop_stack: Vec::new(), param_regs: Vec::new(), last_expr_value: None,
         }
     }
 
@@ -163,7 +164,10 @@ impl AirBuilder {
                 let next = self.fresh_block();
                 ctx.set_terminator_and_switch(AirTerminator::Ret(ret_val), next);
             }
-            HirStmt::Expr(expr) => { self.lower_expr(expr, ctx, var_map); }
+            HirStmt::Expr(expr) => {
+                let val = self.lower_expr(expr, ctx, var_map);
+                ctx.last_expr_value = Some(val);
+            }
             HirStmt::Defer(expr) => { self.lower_expr(expr, ctx, var_map); }
             HirStmt::Break => {
                 if let Some(exit) = ctx.loop_exit() {
@@ -283,7 +287,9 @@ impl AirBuilder {
             HirExpr::Loop(body) => self.lower_loop(body, ctx, var_map),
             HirExpr::Block(b) => {
                 for stmt in &b.statements { self.lower_stmt(stmt, ctx, var_map); }
-                b.final_expr.as_ref().map(|fe| self.lower_expr(fe, ctx, var_map)).unwrap_or(AirValue::ConstInt(0))
+                b.final_expr.as_ref().map(|fe| self.lower_expr(fe, ctx, var_map))
+                    .or_else(|| ctx.last_expr_value.take())
+                    .unwrap_or(AirValue::ConstInt(0))
             }
             HirExpr::Borrow(inner) => {
                 let inner_val = self.lower_expr(inner, ctx, var_map);
