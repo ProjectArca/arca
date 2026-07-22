@@ -110,3 +110,36 @@ Runtime Stdout:
 1
 2
 Result: PASS
+-----------------------------------------
+Test Name: fs_full.test.arca
+File: tests/features/fs_full.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/fs_full.test.arca
+10
+20
+Result: PASS
+-----------------------------------------
+Test Name: functions.test.arca
+File: tests/features/functions.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/functions.test.arca
+/Users/hy4-mac-002
+Result: PASS
+-----------------------------------------
+Test Name: if_else.test.arca
+File: tests/features/if_else.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/if_else.test.arca
+20
+Result: PASS
+-----------------------------------------
+Test Name: impl.test.arca
+File: tests/features/impl.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/impl.test.arca
+99
+Result: PASS

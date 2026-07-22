@@ -45,3 +45,36 @@ Runtime Stdout:
 1
 2
 Result: PASS
+-----------------------------------------
+Test Name: enum.test.arca
+File: tests/features/enum.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/enum.test.arca
+10
+20
+Result: PASS
+-----------------------------------------
+Test Name: env.test.arca
+File: tests/features/env.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/env.test.arca
+/Users/hy4-mac-002
+Result: PASS
+-----------------------------------------
+Test Name: env_full.test.arca
+File: tests/features/env_full.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/env_full.test.arca
+20
+Result: PASS
+-----------------------------------------
+Test Name: extend.test.arca
+File: tests/features/extend.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/extend.test.arca
+99
+Result: PASS

@@ -4,9 +4,29 @@
 void arca_main(void);
 
 void arca_main(void) {
-  arca_print_int(1);
+  bool v0;
+  bool v1;
+  bool v2;
+  bool v3;
+  bool v4;
+  bool v5;
+  v0 = 5 == 5;
+  arca_print_int(v0);
   putchar('\n');
-  arca_print_int(2);
+  v1 = 5 != 4;
+  arca_print_int(v1);
+  putchar('\n');
+  v2 = 10 > 3;
+  arca_print_int(v2);
+  putchar('\n');
+  v3 = 10 >= 10;
+  arca_print_int(v3);
+  putchar('\n');
+  v4 = 2 < 7;
+  arca_print_int(v4);
+  putchar('\n');
+  v5 = 2 <= 2;
+  arca_print_int(v5);
   putchar('\n');
   return;
 }
