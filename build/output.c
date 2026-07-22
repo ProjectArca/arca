@@ -2,13 +2,28 @@
 #include "arca_runtime.h"
 
 void arca_main(void);
-int64_t serve();
 
 void arca_main(void) {
   int64_t v0;
-  arca_print_string("Starting Arca Native Live HTTP Server on port 8085...");
+  int64_t v1;
+  int64_t v2;
+  int64_t v3;
+  int64_t v4;
+  int64_t v5;
+  int64_t v6;
+  int64_t v7;
+  v1 = (int64_t)arca_channel_create(2);
+  v0 = v1;
+  arca_channel_send((void*)v1, (int64_t)42);
+  arca_channel_send((void*)v1, (int64_t)99);
+  v5 = arca_channel_recv((void*)v1);
+  v4 = v5;
+  v7 = arca_channel_recv((void*)v1);
+  v6 = v7;
+  arca_print_int(v5);
   putchar('\n');
-  v0 = arca_std_http_serve(8085);
+  arca_print_int(v7);
+  putchar('\n');
   return;
 }
 
