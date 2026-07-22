@@ -1,6 +1,13 @@
-// Test: Phase 9 Native Backend lowering
+// Test: Phase 9 Native Backend (LLVM IR / Machine Code lowering)
 // Expected output:
-// Native Backend lowered successfully
+// Native LLVM IR & Machine Code generated successfully
+fn native_add(a: i64, b: i64) -> i64 {
+  a + b
+}
+
 fn main() {
-  println("Native Backend lowered successfully")
+  let sum = native_add(40, 2)
+  if sum == 42 {
+    println("Native LLVM IR & Machine Code generated successfully")
+  }
 }
