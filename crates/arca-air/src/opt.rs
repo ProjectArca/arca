@@ -20,11 +20,11 @@ impl AirOptimizer {
             for block in &mut func.blocks {
                 for instr in &mut block.instructions {
                     if let AirInstruction::Binary { target: _, op, left, right } = instr {
-                        if let (AirValue::ConstInt(a), AirValue::ConstInt(b)) = (left, right) {
+                        if let (AirValue::ConstInt(a), AirValue::ConstInt(b)) = (&*left, &*right) {
                             let res = match op {
-                                arca_ast::BinaryOp::Add => *a + *b,
-                                arca_ast::BinaryOp::Sub => *a - *b,
-                                arca_ast::BinaryOp::Mul => *a * *b,
+                                arca_ast::BinaryOp::Add => a.wrapping_add(*b),
+                                arca_ast::BinaryOp::Sub => a.wrapping_sub(*b),
+                                arca_ast::BinaryOp::Mul => a.wrapping_mul(*b),
                                 _ => continue,
                             };
                             *left = AirValue::ConstInt(res);
