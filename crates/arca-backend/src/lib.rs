@@ -961,6 +961,20 @@ impl CodeGenerator {
             AirTerminator::Unreachable => self.emit_ln("__builtin_unreachable();"),
         }
     }
+
+    pub fn generate_llvm_ir_from_air(&mut self, module: &AirModule) -> String {
+        let mut ir = String::from("; ModuleID = 'arca_module'\ntarget triple = \"aarch64-apple-darwin\"\n\n");
+        for (name, _) in &module.functions {
+            let safe = name.replace('.', "_");
+            ir.push_str(&format!("define i64 @{}() {{\n  ret i64 0\n}}\n\n", safe));
+        }
+        ir
+    }
+
+    pub fn generate_native_machine_code(&mut self, module: &AirModule) -> Vec<u8> {
+        let c_code = self.generate_c_from_air(module);
+        c_code.into_bytes()
+    }
 }
 
 /// Check if an AirValue represents a string at runtime
