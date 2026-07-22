@@ -965,17 +965,94 @@ impl CodeGenerator {
     }
 
     pub fn generate_llvm_ir_from_air(&mut self, module: &AirModule) -> String {
-        let mut ir = String::from("; ModuleID = 'arca_module'\ntarget triple = \"aarch64-apple-darwin\"\n\n");
-        for (name, _) in &module.functions {
-            let safe = name.replace('.', "_");
-            ir.push_str(&format!("define i64 @{}() {{\n  ret i64 0\n}}\n\n", safe));
+        let triple = match self.target {
+            TargetArch::X86_64 => "x86_64-unknown-linux-gnu",
+            TargetArch::Arm64 => "aarch64-apple-darwin",
+            TargetArch::Riscv64 => "riscv64-unknown-elf",
+            TargetArch::Wasm => "wasm32-unknown-unknown",
+            TargetArch::C => "c",
+        };
+        let mut ir = format!("; ModuleID = '{}'\ntarget triple = \"{}\"\n\n", module.name, triple);
+        ir.push_str("declare i32 @puts(i8*)\n");
+        ir.push_str("declare i8* @malloc(i64)\n");
+        ir.push_str("declare void @free(i8*)\n\n");
+
+        for (fn_name, func) in &module.functions {
+            let safe_name = fn_name.replace('.', "_");
+            let ret_type = match &func.return_type {
+                Type::Primitive(PrimitiveType::Void) | Type::Unknown => "void",
+                Type::Primitive(PrimitiveType::String) => "i8*",
+                _ => "i64",
+            };
+            ir.push_str(&format!("define {} @{}() {{\n", ret_type, safe_name));
+            for block in &func.blocks {
+                ir.push_str(&format!("bb_{}:\n", block.id.0));
+                for instr in &block.instructions {
+                    match instr {
+                        AirInstruction::Alloca { target, .. } => {
+                            ir.push_str(&format!("  %r{} = alloca i64\n", target.0));
+                        }
+                        AirInstruction::Store { ptr, val } => {
+                            let val_str = match val {
+                                AirValue::ConstInt(n) => format!("{}", n),
+                                AirValue::Register(r) => format!("%r{}", r.0),
+                                _ => "0".to_string(),
+                            };
+                            ir.push_str(&format!("  store i64 {}, i64* %r{}\n", val_str, ptr.0));
+                        }
+                        AirInstruction::Load { target, ptr, .. } => {
+                            ir.push_str(&format!("  %r{} = load i64, i64* %r{}\n", target.0, ptr.0));
+                        }
+                        AirInstruction::Binary { target, op, left, right } => {
+                            let op_str = match op {
+                                arca_ast::BinaryOp::Add => "add",
+                                arca_ast::BinaryOp::Sub => "sub",
+                                arca_ast::BinaryOp::Mul => "mul",
+                                _ => "add",
+                            };
+                            let l_str = match left { AirValue::ConstInt(n) => format!("{}", n), AirValue::Register(r) => format!("%r{}", r.0), _ => "0".into() };
+                            let r_str = match right { AirValue::ConstInt(n) => format!("{}", n), AirValue::Register(r) => format!("%r{}", r.0), _ => "0".into() };
+                            ir.push_str(&format!("  %r{} = {} i64 {}, {}\n", target.0, op_str, l_str, r_str));
+                        }
+                        AirInstruction::Call { target, fn_name, args } => {
+                            let safe_callee = fn_name.replace('.', "_");
+                            let arg_strs: Vec<String> = args.iter().map(|a| match a {
+                                AirValue::ConstInt(n) => format!("i64 {}", n),
+                                AirValue::Register(r) => format!("i64 %r{}", r.0),
+                                _ => "i64 0".into(),
+                            }).collect();
+                            if let Some(t) = target {
+                                ir.push_str(&format!("  %r{} = call i64 @{}({})\n", t.0, safe_callee, arg_strs.join(", ")));
+                            } else {
+                                ir.push_str(&format!("  call void @{}({})\n", safe_callee, arg_strs.join(", ")));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                match &block.terminator {
+                    AirTerminator::Br(target) => ir.push_str(&format!("  br label %bb_{}\n", target.0)),
+                    AirTerminator::CondBr { cond, then_block, else_block } => {
+                        let c_str = match cond { AirValue::Register(r) => format!("%r{}", r.0), _ => "%cond".into() };
+                        ir.push_str(&format!("  br i1 {}, label %bb_{}, label %bb_{}\n", c_str, then_block.0, else_block.0));
+                    }
+                    AirTerminator::Ret(Some(val)) => {
+                        let v_str = match val { AirValue::ConstInt(n) => format!("{}", n), AirValue::Register(r) => format!("%r{}", r.0), _ => "0".into() };
+                        if ret_type == "void" { ir.push_str("  ret void\n"); }
+                        else { ir.push_str(&format!("  ret {} {}\n", ret_type, v_str)); }
+                    }
+                    AirTerminator::Ret(None) => ir.push_str("  ret void\n"),
+                    AirTerminator::Unreachable => ir.push_str("  unreachable\n"),
+                }
+            }
+            ir.push_str("}\n\n");
         }
         ir
     }
 
     pub fn generate_native_machine_code(&mut self, module: &AirModule) -> Vec<u8> {
-        let c_code = self.generate_c_from_air(module);
-        c_code.into_bytes()
+        let llvm_ir = self.generate_llvm_ir_from_air(module);
+        llvm_ir.into_bytes()
     }
 }
 

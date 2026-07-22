@@ -421,28 +421,25 @@ fn main() {
                 process::exit(1);
             }
 
-            if backend_flag == "c" {
+            if backend_flag == "llvm" || backend_flag == "native" {
                 let mut air_builder = AirBuilder::new();
                 let mut air_module = air_builder.build_module(&hir);
                 arca_air::AirOptimizer::optimize_module(&mut air_module);
-                let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-                let c_code = cg.generate_c_from_air(&air_module);
-                let out_path = "build/output.c";
-                fs::create_dir_all("build").ok();
-                fs::write(out_path, &c_code).unwrap_or_else(|e| {
-                    eprintln!("Error: failed to write '{}': {}", out_path, e);
-                    process::exit(1);
-                });
-                println!("[arca-backend] AIR C Backend: Emitted build/output.c");
-            } else {
-                let mut air_builder = AirBuilder::new();
-                let air_module = air_builder.build_module(&hir);
-                let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-                let c_code = cg.generate_c_from_air(&air_module);
-                fs::create_dir_all("build").ok();
-                fs::write("build/output.c", &c_code).ok();
-                println!("[arca-backend] Emitted build/output.c");
+                let mut cg = CodeGenerator::new(BackendKind::Llvm, TargetArch::Arm64);
+                let llvm_ir = cg.generate_llvm_ir_from_air(&air_module);
+                fs::create_dir_all("build").unwrap();
+                fs::write("build/output.ll", &llvm_ir).expect("Failed to write build/output.ll");
+                println!("[arca-backend] LLVM IR Native Backend: Emitted build/output.ll");
             }
+
+            let mut air_builder = AirBuilder::new();
+            let mut air_module = air_builder.build_module(&hir);
+            arca_air::AirOptimizer::optimize_module(&mut air_module);
+            let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+            let c_code = cg.generate_c_from_air(&air_module);
+            fs::create_dir_all("build").ok();
+            fs::write("build/output.c", &c_code).ok();
+            println!("[arca-backend] Emitted build/output.c");
             println!("[arca] Build status: SUCCESS");
         }
         "run" => {
