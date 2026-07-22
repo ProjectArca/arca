@@ -124,10 +124,12 @@ impl CodeGenerator {
                     || fn_name == "arca_strcmp" || fn_name == "arca_starts_with"
                     || fn_name == "arca_str_rfind" || fn_name == "__arca_parse_int"
                     || fn_name == "__arca_starts_with" || fn_name == "__arca_str_rfind"
+                    || fn_name == "__arca_str_contains" || fn_name == "__arca_ends_with"
                 {
                     "int64_t".to_string()
                 } else if fn_name.ends_with("_to_str") || fn_name.ends_with("user_json") || fn_name.ends_with("users_json")
-                    || fn_name.starts_with("build_") || fn_name == "hash" || fn_name == "list_users" {
+                    || fn_name.starts_with("build_") || fn_name == "hash" || fn_name == "list_users"
+                    || fn_name == "__arca_str_trim" {
                     "const char*".to_string()
                 } else {
                     "int64_t".to_string()
@@ -658,6 +660,23 @@ impl CodeGenerator {
                 let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 let start = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = (int64_t)arca_str_slice((const char*){}, (int){});", tn, s, start));
+            }
+            "__arca_str_trim" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_str_trim((const char*){});", tn, s));
+            }
+            "__arca_str_contains" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let sub = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_str_contains((const char*){}, (const char*){});", tn, s, sub));
+            }
+            "__arca_ends_with" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let suffix = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_ends_with((const char*){}, (const char*){});", tn, s, suffix));
             }
             "__enum_tag" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();

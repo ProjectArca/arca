@@ -1,4 +1,8 @@
 #include "arca_runtime.h"
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 
 void arca_print_int(int64_t v) {
     printf("%lld", (long long)v);
@@ -132,4 +136,24 @@ int64_t arca_option_some(int64_t val) {
 
 int32_t arca_option_is_some(int64_t opt) {
     return arca_result_is_ok(opt);
+}
+
+// std/string: trim leading whitespace
+const char* arca_str_trim(const char* s) {
+    if (!s) return "";
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') s++;
+    return s;
+}
+
+int32_t arca_str_contains(const char* s, const char* sub) {
+    if (!s || !sub) return 0;
+    return strstr(s, sub) != NULL ? 1 : 0;
+}
+
+int32_t arca_ends_with(const char* s, const char* suffix) {
+    if (!s || !suffix) return 0;
+    size_t slen = strlen(s);
+    size_t suflen = strlen(suffix);
+    if (suflen > slen) return 0;
+    return strcmp(s + slen - suflen, suffix) == 0 ? 1 : 0;
 }

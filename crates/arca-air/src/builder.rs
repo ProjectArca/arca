@@ -750,6 +750,24 @@ impl AirBuilder {
             new_args.extend_from_slice(args);
             return ("__arca_str_slice".to_string(), new_args);
         }
+        if is_method("trim") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_trim".to_string(), new_args);
+        }
+        if is_method("contains") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_contains".to_string(), new_args);
+        }
+        if is_method("ends_with") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_ends_with".to_string(), new_args);
+        }
         if callee_name == "Channel.new" {
             return ("arca_channel_create".to_string(), args.to_vec());
         }

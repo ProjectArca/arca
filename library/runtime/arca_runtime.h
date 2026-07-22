@@ -68,6 +68,11 @@ const char* arca_int_to_str(int32_t n);
 int32_t arca_str_rfind(const char* s, char c);
 const char* arca_str_slice(const char* s, int32_t start);
 
+// Extended string helpers (std/string)
+const char* arca_str_trim(const char* s);
+int32_t arca_str_contains(const char* s, const char* sub);
+int32_t arca_ends_with(const char* s, const char* suffix);
+
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
