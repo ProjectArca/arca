@@ -1,0 +1,7 @@
+// Test: std/path — normalize
+// Expected output:
+// /usr/local/bin
+fn main() {
+  let n = path_normalize("/usr/local/../bin/./")
+  println(n)
+}

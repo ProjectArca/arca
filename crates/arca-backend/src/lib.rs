@@ -133,6 +133,8 @@ impl CodeGenerator {
                     || fn_name == "env_get" || fn_name == "stdin_read_line"
                     || fn_name.starts_with("arca_path_")
                     || fn_name == "json_stringify"
+                    || fn_name == "current_dir" || fn_name == "fs_metadata"
+                    || fn_name == "path_normalize"
                 {
                     "const char*".to_string()
                 } else {
@@ -286,6 +288,10 @@ impl CodeGenerator {
                             && fn_name != "path_parent" && fn_name != "path_join"
                             && fn_name != "exit" && fn_name != "arca_exit"
                             && fn_name != "json_stringify"
+                            && fn_name != "env_set" && fn_name != "current_dir"
+                            && fn_name != "stdout_write" && fn_name != "stderr_write"
+                            && fn_name != "fs_rename" && fn_name != "fs_copy"
+                            && fn_name != "fs_metadata" && fn_name != "path_normalize"
                         {
                             extern_fns.insert(safe);
                         }
@@ -726,6 +732,15 @@ impl CodeGenerator {
                 let name = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = arca_env_get((const char*){});", tn, name));
             }
+            "env_set" => {
+                let name = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let val = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("arca_env_set((const char*){}, (const char*){});", name, val));
+            }
+            "current_dir" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                self.emit_ln(&format!("{} = (int64_t)arca_current_dir();", tn));
+            }
             "stdin_read_line" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 self.emit_ln(&format!("{} = (int64_t)arca_stdin_read_line();", tn));
@@ -746,6 +761,23 @@ impl CodeGenerator {
                 let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = arca_fs_remove((const char*){});", tn, path));
             }
+            "fs_rename" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let old = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let new_ = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_fs_rename((const char*){}, (const char*){});", tn, old, new_));
+            }
+            "fs_copy" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let src = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let dst = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_fs_copy((const char*){}, (const char*){});", tn, src, dst));
+            }
+            "fs_metadata" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)arca_fs_metadata((const char*){});", tn, path));
+            }
             "path_extension" | "path_filename" | "path_parent" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
@@ -756,6 +788,19 @@ impl CodeGenerator {
                 let a = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 let b = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = arca_path_join((const char*){}, (const char*){});", tn, a, b));
+            }
+            "path_normalize" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_path_normalize((const char*){});", tn, path));
+            }
+            "stdout_write" => {
+                let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("arca_stdout_write((const char*){});", s));
+            }
+            "stderr_write" => {
+                let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("arca_stderr_write((const char*){});", s));
             }
             "exit" => {
                 let code = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };

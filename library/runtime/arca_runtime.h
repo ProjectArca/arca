@@ -84,18 +84,26 @@ int64_t arca_current_dir(void);
 
 // std/io: stdin read line
 const char* arca_stdin_read_line(void);
+void arca_stdout_write(const char* s);
+void arca_stderr_write(const char* s);
 
 // std/fs
 int64_t arca_fs_open(const char* path, const char* mode);
 int32_t arca_fs_close(int64_t handle);
 int32_t arca_fs_exists(const char* path);
 int32_t arca_fs_remove(const char* path);
+int64_t arca_fs_read(int64_t handle, void* buf, int64_t count);
+int64_t arca_fs_write(int64_t handle, const char* data, int64_t count);
+int32_t arca_fs_rename(const char* old, const char* new_);
+int32_t arca_fs_copy(const char* src, const char* dst);
+int64_t arca_fs_metadata(const char* path);
 
 // std/path
 const char* arca_path_extension(const char* path);
 const char* arca_path_filename(const char* path);
 const char* arca_path_parent(const char* path);
 const char* arca_path_join(const char* a, const char* b);
+const char* arca_path_normalize(const char* path);
 
 // std/process
 void arca_exit(int64_t code);

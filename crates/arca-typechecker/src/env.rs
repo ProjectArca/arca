@@ -155,7 +155,7 @@ impl TypeEnv {
         // log module extras
         self.functions.insert("warn".into(), info_fn.clone());
         self.functions.insert("error".into(), info_fn.clone());
-        self.functions.insert("debug".into(), info_fn);
+        self.functions.insert("debug".into(), info_fn.clone());
 
         // crypto extras
         self.functions.insert("random_bytes".into(), string_fn.clone());
@@ -238,9 +238,16 @@ impl TypeEnv {
 
         // std/env
         self.functions.insert("env_get".into(), string_fn.clone());
+        self.functions.insert("env_set".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("current_dir".into(), uuid_fn.clone());
 
         // std/io
         self.functions.insert("stdin_read_line".into(), uuid_fn.clone());
+        self.functions.insert("stdout_write".into(), info_fn.clone());
+        self.functions.insert("stderr_write".into(), info_fn.clone());
 
         // std/fs
         let fs_open_fn = FnType {
@@ -250,6 +257,15 @@ impl TypeEnv {
         self.functions.insert("File.open".into(), fs_open_fn);
         self.functions.insert("fs_exists".into(), string_fn.clone());
         self.functions.insert("fs_remove".into(), string_fn.clone());
+        self.functions.insert("fs_rename".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        });
+        self.functions.insert("fs_copy".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        });
+        self.functions.insert("fs_metadata".into(), string_fn.clone());
 
         // std/path
         self.functions.insert("path_extension".into(), string_fn.clone());
@@ -260,6 +276,7 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),
         };
         self.functions.insert("path_join".into(), path_join_fn);
+        self.functions.insert("path_normalize".into(), string_fn.clone());
 
         // std/process
         let exit_fn = FnType {

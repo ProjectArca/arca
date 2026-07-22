@@ -1,0 +1,13 @@
+// Test: std/fs — rename, copy, metadata
+// Expected output:
+// 0
+// 0
+// [non-zero size integer]
+fn main() {
+  let r = fs_rename("/tmp/nonexistent1", "/tmp/nonexistent2")
+  println(r)
+  let c = fs_copy("/tmp/nonexistent1", "/tmp/nonexistent2")
+  println(c)
+  let m = fs_metadata("/tmp")
+  println(m)
+}

@@ -1,0 +1,10 @@
+// Test: std/env — env_set, current_dir
+// Expected output:
+// 0
+// [/some/path string]
+fn main() {
+  let r = env_set("ARCA_TEST", "1")
+  println(r)
+  let dir = current_dir()
+  println(dir)
+}

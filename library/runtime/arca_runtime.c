@@ -268,3 +268,75 @@ const char* arca_json_stringify(const char* s) {
     *w++ = '"'; *w = 0;
     return buf;
 }
+
+// std/io: stdout/stderr
+void arca_stdout_write(const char* s) {
+    if (s) fputs(s, stdout);
+}
+
+void arca_stderr_write(const char* s) {
+    if (s) fputs(s, stderr);
+}
+
+// std/fs: extended operations
+int64_t arca_fs_read(int64_t handle, void* buf, int64_t count) {
+    if (!handle) return -1;
+    return (int64_t)fread(buf, 1, (size_t)count, (FILE*)handle);
+}
+
+int64_t arca_fs_write(int64_t handle, const char* data, int64_t count) {
+    if (!handle) return -1;
+    return (int64_t)fwrite(data, 1, (size_t)count, (FILE*)handle);
+}
+
+int32_t arca_fs_rename(const char* old, const char* new_) {
+    if (!old || !new_) return -1;
+    return rename(old, new_) == 0 ? 0 : -1;
+}
+
+int32_t arca_fs_copy(const char* src, const char* dst) {
+    if (!src || !dst) return -1;
+    FILE* in = fopen(src, "rb");
+    if (!in) return -1;
+    FILE* out = fopen(dst, "wb");
+    if (!out) { fclose(in); return -1; }
+    char buf[8192];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), in)) > 0) {
+        fwrite(buf, 1, n, out);
+    }
+    fclose(in); fclose(out);
+    return 0;
+}
+
+int64_t arca_fs_metadata(const char* path) {
+    if (!path) return 0;
+    struct stat st;
+    if (stat(path, &st) != 0) return 0;
+    // Encode size(48 bits) + mode(16 bits) into int64_t
+    return (st.st_size & 0xFFFFFFFFFFFFLL) | ((int64_t)(st.st_mode & 0xFFFF) << 48);
+}
+
+// std/path: normalize (resolve . and ..)
+const char* arca_path_normalize(const char* path) {
+    if (!path || !*path) return "/";
+    static char buf[4096];
+    char temp[4096];
+    strncpy(temp, path, sizeof(temp) - 1);
+    temp[sizeof(temp) - 1] = 0;
+    char* parts[256];
+    int nparts = 0;
+    char* tok = strtok(temp, "/");
+    while (tok && nparts < 256) {
+        if (strcmp(tok, ".") == 0) { tok = strtok(NULL, "/"); continue; }
+        if (strcmp(tok, "..") == 0) { if (nparts > 0) nparts--; }
+        else { parts[nparts++] = tok; }
+        tok = strtok(NULL, "/");
+    }
+    buf[0] = '/'; buf[1] = 0;
+    for (int i = 0; i < nparts; i++) {
+        strcat(buf, parts[i]);
+        if (i < nparts - 1) strcat(buf, "/");
+    }
+    return buf;
+}
