@@ -542,6 +542,60 @@ int64_t arca_future_await(int64_t fut) {
     return res;
 }
 
+// Thread-safe MPMC Async Channel Queue
+typedef struct {
+    int64_t buf[256];
+    int head;
+    int tail;
+    int count;
+    pthread_mutex_t lock;
+    pthread_cond_t cond_send;
+    pthread_cond_t cond_recv;
+} ArcaChannelInternal;
+
+void* arca_channel_create(size_t capacity) {
+    (void)capacity;
+    ArcaChannelInternal* ch = (ArcaChannelInternal*)calloc(1, sizeof(ArcaChannelInternal));
+    pthread_mutex_init(&ch->lock, NULL);
+    pthread_cond_init(&ch->cond_send, NULL);
+    pthread_cond_init(&ch->cond_recv, NULL);
+    return (void*)ch;
+}
+
+void arca_channel_send(void* channel, int64_t val) {
+    if (!channel) return;
+    ArcaChannelInternal* ch = (ArcaChannelInternal*)channel;
+    pthread_mutex_lock(&ch->lock);
+    while (ch->count >= 256) {
+        pthread_cond_wait(&ch->cond_send, &ch->lock);
+    }
+    ch->buf[ch->tail] = val;
+    ch->tail = (ch->tail + 1) % 256;
+    ch->count++;
+    pthread_cond_signal(&ch->cond_recv);
+    pthread_mutex_unlock(&ch->lock);
+}
+
+int64_t arca_channel_recv(void* channel) {
+    if (!channel) return 0;
+    ArcaChannelInternal* ch = (ArcaChannelInternal*)channel;
+    pthread_mutex_lock(&ch->lock);
+    while (ch->count == 0) {
+        pthread_cond_wait(&ch->cond_recv, &ch->lock);
+    }
+    int64_t val = ch->buf[ch->head];
+    ch->head = (ch->head + 1) % 256;
+    ch->count--;
+    pthread_cond_signal(&ch->cond_send);
+    pthread_mutex_unlock(&ch->lock);
+    return val;
+}
+
+int32_t arca_select(int64_t futures, int32_t count) {
+    (void)futures; (void)count;
+    return 0;
+}
+
 // Phase 6: AI Standard Library Implementation & Real Vector/SIMD Math Engine
 typedef struct {
     float* data;

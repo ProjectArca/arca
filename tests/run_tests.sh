@@ -1,5 +1,5 @@
 #!/bin/bash
-# Arca Test Suite Runner with Timestamped Logging under tests/logs/
+# Arca Test Suite Runner with Detailed Program Execution Output Logging
 set -e
 
 mkdir -p tests/logs
@@ -7,7 +7,7 @@ mkdir -p tests/logs
 TIMESTAMP=$(date +%s)
 LOG_FILE="tests/logs/test_log_${TIMESTAMP}.txt"
 
-echo "Arca Test Execution Log" > "$LOG_FILE"
+echo "Arca Test Execution & Runtime Stdout Log" > "$LOG_FILE"
 echo "Timestamp: $(date -u)" >> "$LOG_FILE"
 echo "Unix Timestamp: $TIMESTAMP" >> "$LOG_FILE"
 echo "=========================================" >> "$LOG_FILE"
@@ -22,7 +22,7 @@ for dir in tests/features tests/std-libs; do
     echo -n "[test] $name ... "
 
     START_TIME=$(date +%s)
-    output=$(cargo run -q -- build "$f" 2>&1)
+    output=$(cargo run -q -- run "$f" 2>&1)
     END_TIME=$(date +%s)
     DURATION=$((END_TIME - START_TIME))
 
@@ -30,10 +30,10 @@ for dir in tests/features tests/std-libs; do
     echo "Test Name: $name" >> "$LOG_FILE"
     echo "File: $f" >> "$LOG_FILE"
     echo "Duration: ${DURATION}s" >> "$LOG_FILE"
-    echo "Output:" >> "$LOG_FILE"
+    echo "Runtime Stdout:" >> "$LOG_FILE"
     echo "$output" >> "$LOG_FILE"
 
-    if echo "$output" | grep -q "Build status: SUCCESS"; then
+    if [ $? -eq 0 ] && ! echo "$output" | grep -qi "error:"; then
       echo "PASS"
       echo "Result: PASS" >> "$LOG_FILE"
       PASS=$((PASS + 1))
