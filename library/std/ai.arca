@@ -1,0 +1,54 @@
+// Arca AI Standard Library (std/ai)
+
+// ===== Tensor =====
+struct Tensor {
+  shape: string
+  data_ptr: i64
+}
+
+extern fn arca_tensor_new(shape: string) -> i64
+extern fn arca_tensor_reshape(h: i64, new_shape: string) -> i64
+extern fn arca_tensor_transpose(h: i64) -> i64
+extern fn arca_tensor_slice(h: i64, start: i64, end: i64) -> i64
+extern fn arca_tensor_broadcast(h: i64, shape: string) -> i64
+
+// ===== Dataset =====
+struct Dataset {
+  format: string
+  path: string
+}
+
+extern fn arca_dataset_load(path: string, format: string) -> i64
+extern fn arca_dataset_shuffle(h: i64) -> i64
+extern fn arca_dataset_batch(h: i64, batch_size: i64) -> i64
+extern fn arca_dataset_split(h: i64, ratio: i64) -> i64
+
+// ===== Tokenizer =====
+struct Tokenizer {
+  kind: string
+}
+
+extern fn arca_tokenizer_load(kind: string) -> i64
+extern fn arca_tokenizer_encode(h: i64, text: string) -> string
+extern fn arca_tokenizer_decode(h: i64, tokens: string) -> string
+
+// ===== Embedding =====
+extern fn arca_embedding_cosine_similarity(a: i64, b: i64) -> i64
+extern fn arca_embedding_normalize(h: i64) -> i64
+extern fn arca_embedding_topk(h: i64, k: i32) -> string
+
+// ===== Inference =====
+struct InferenceModel {
+  format: string
+  model_path: string
+}
+
+extern fn arca_inference_load(model_path: string, format: string) -> i64
+extern fn arca_inference_predict(h: i64, input: i64) -> i64
+
+// ===== SIMD =====
+struct Vector { len: i64 }
+struct Matrix { rows: i64, cols: i64 }
+
+extern fn arca_simd_dot_product(a: i64, b: i64) -> i64
+extern fn arca_simd_matmul(a: i64, b: i64) -> i64

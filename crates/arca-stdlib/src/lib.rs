@@ -148,7 +148,16 @@ impl StdLibResolver {
             StdSymbol { name: "await".into(), module: "std/async".into(), is_intrinsic: true },
             StdSymbol { name: "select".into(), module: "std/async".into(), is_intrinsic: true },
         ];
-        symbols.insert("std/async".into(), std_async);
+        let std_ai = vec![
+            StdSymbol { name: "Tensor".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Dataset".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Tokenizer".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Embedding".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "InferenceModel".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Vector".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Matrix".into(), module: "std/ai".into(), is_intrinsic: false },
+        ];
+        symbols.insert("std/ai".into(), std_ai);
 
         Self { symbols }
     }

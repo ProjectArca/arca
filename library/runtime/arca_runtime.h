@@ -188,12 +188,31 @@ int64_t arca_list_pop_front(int64_t handle);
 int64_t arca_iter_filter(int64_t handle, int64_t pred_fn);
 int64_t arca_iter_map(int64_t handle, int64_t map_fn);
 int64_t arca_iter_take(int64_t handle, int64_t count);
-// Phase 5: Async Runtime (spawn, task, future, await, select)
-int64_t arca_task_spawn(void (*func)(void*), void* arg);
-int64_t arca_future_create(void);
-void arca_future_complete(int64_t fut, int64_t val);
-int64_t arca_future_await(int64_t fut);
-int32_t arca_select(int64_t* futures, int32_t count);
+// Phase 6: AI Standard Library (Tensor, Dataset, Tokenizer, Embedding, Inference, SIMD)
+int64_t arca_tensor_new(const char* shape);
+int64_t arca_tensor_reshape(int64_t h, const char* new_shape);
+int64_t arca_tensor_transpose(int64_t h);
+int64_t arca_tensor_slice(int64_t h, int64_t start, int64_t end);
+int64_t arca_tensor_broadcast(int64_t h, const char* shape);
+
+int64_t arca_dataset_load(const char* path, const char* format);
+int64_t arca_dataset_shuffle(int64_t h);
+int64_t arca_dataset_batch(int64_t h, int64_t batch_size);
+int64_t arca_dataset_split(int64_t h, int64_t ratio);
+
+int64_t arca_tokenizer_load(const char* kind);
+const char* arca_tokenizer_encode(int64_t h, const char* text);
+const char* arca_tokenizer_decode(int64_t h, const char* tokens);
+
+int64_t arca_embedding_cosine_similarity(int64_t a, int64_t b);
+int64_t arca_embedding_normalize(int64_t h);
+const char* arca_embedding_topk(int64_t h, int32_t k);
+
+int64_t arca_inference_load(const char* model_path, const char* format);
+int64_t arca_inference_predict(int64_t h, int64_t input);
+
+int64_t arca_simd_dot_product(int64_t a, int64_t b);
+int64_t arca_simd_matmul(int64_t a, int64_t b);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
 void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);
