@@ -1,0 +1,11 @@
+// Test: spawn concurrency
+// Expected output:
+// 100
+fn main() {
+  let ch = Channel.new(1)
+  spawn {
+    ch.send(100)
+  }
+  let msg = ch.recv()
+  println(msg)
+}

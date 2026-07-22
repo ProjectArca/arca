@@ -76,6 +76,15 @@ fn build_c_binary(out_dir: &PathBuf) -> Result<(), String> {
     cmd.arg(root.join("build/output.c"));
     cmd.arg("-I").arg(&runtime_dir);
     cmd.arg(runtime_dir.join("arca_runtime.c"));
+    let conc_dir = root.join("library/concurrency");
+    if conc_dir.exists() {
+        for entry in fs::read_dir(&conc_dir).unwrap() {
+            let p = entry.unwrap().path();
+            if p.extension().map_or(false, |e| e == "c") {
+                cmd.arg(&p);
+            }
+        }
+    }
     let net_dir = root.join("library/net");
     if net_dir.exists() {
         for entry in fs::read_dir(&net_dir).unwrap() {

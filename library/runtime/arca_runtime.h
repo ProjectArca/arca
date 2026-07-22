@@ -71,6 +71,9 @@ const char* arca_str_slice(const char* s, int32_t start);
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
+void* arca_channel_create(size_t capacity);
+void arca_channel_send(void* channel, int64_t val);
+int64_t arca_channel_recv(void* channel);
 
 // Memory & Allocator Helpers
 void* arca_mem_alloc(size_t size);

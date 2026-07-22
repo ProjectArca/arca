@@ -1,0 +1,13 @@
+// Test: Channel send and recv
+// Expected output:
+// 42
+// 99
+fn main() {
+  let ch = Channel.new(2)
+  ch.send(42)
+  ch.send(99)
+  let a = ch.recv()
+  let b = ch.recv()
+  println(a)
+  println(b)
+}

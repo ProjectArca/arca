@@ -267,6 +267,7 @@ impl CodeGenerator {
                     if let AirInstruction::Call { fn_name, .. } = instr {
                         let safe = fn_name.replace('.', "_");
                         if !defined_fns.contains(fn_name) && !fn_name.starts_with("__arca_")
+                            && !fn_name.starts_with("arca_")
                             && fn_name != "println" && fn_name != "print"
                         {
                             extern_fns.insert(safe);
@@ -308,6 +309,7 @@ impl CodeGenerator {
         for (i, (pname, _)) in func.params.iter().enumerate() {
             if i < func.param_registers.len() {
                 param_reg_names.insert(func.param_registers[i], pname.replace('.', "_"));
+                self.var_names.insert(func.param_registers[i], pname.replace('.', "_"));
             }
         }
 
@@ -657,6 +659,39 @@ impl CodeGenerator {
                 let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 let start = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = (int64_t)arca_str_slice((const char*){}, (int){});", tn, s, start));
+            }
+            "arca_scheduler_spawn" | "__arca_spawn" => {
+                let fn_arg = if !args.is_empty() {
+                    match &args[0] {
+                        AirValue::ConstString(s) => s.clone(),
+                        other => self.emit_air_value_str(other),
+                    }
+                } else { "NULL".to_string() };
+                let data_arg = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("arca_scheduler_spawn((void(*)(void*)){}, (void*)(intptr_t){});", fn_arg, data_arg));
+            }
+            "arca_channel_create" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let cap = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "16".to_string() };
+                if !tn.is_empty() {
+                    self.emit_ln(&format!("{} = (int64_t)arca_channel_create({});", tn, cap));
+                } else {
+                    self.emit_ln(&format!("arca_channel_create({});", cap));
+                }
+            }
+            "arca_channel_send" => {
+                let chan = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let val = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("arca_channel_send((void*){}, (int64_t){});", chan, val));
+            }
+            "arca_channel_recv" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let chan = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                if !tn.is_empty() {
+                    self.emit_ln(&format!("{} = arca_channel_recv((void*){});", tn, chan));
+                } else {
+                    self.emit_ln(&format!("arca_channel_recv((void*){});", chan));
+                }
             }
             "Response.ok" | "Response.text" | "Response.html" | "Response.json"
             | "Response.not_found" | "Response.bad_request" | "Response.internal_error"

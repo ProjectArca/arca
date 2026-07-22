@@ -82,6 +82,8 @@ pub struct AirBuilder {
     next_block: u32,
     known_struct_vars: HashMap<String, String>,
     enum_map: HashMap<String, HashMap<String, i64>>,
+    extra_functions: HashMap<String, AirFunction>,
+    spawn_counter: u32,
 }
 
 impl AirBuilder {
@@ -91,6 +93,8 @@ impl AirBuilder {
             next_block: 0,
             known_struct_vars: HashMap::new(),
             enum_map: HashMap::new(),
+            extra_functions: HashMap::new(),
+            spawn_counter: 0,
         }
     }
 
@@ -118,6 +122,9 @@ impl AirBuilder {
                 }
                 functions.insert(format!("{}.{}", hir_struct.name, mname), self.build_function(&method_fn));
             }
+        }
+        for (k, v) in self.extra_functions.drain() {
+            functions.insert(k, v);
         }
         AirModule { name: "main_module".to_string(), functions }
     }
@@ -402,19 +409,71 @@ impl AirBuilder {
     }
 
     fn lower_spawn(&mut self, body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
-        let spawn_block = self.fresh_block();
-        ctx.set_terminator_and_switch(AirTerminator::Br(spawn_block), spawn_block);
+        let wrapper_name = format!("__arca_spawn_wrapper_{}", self.spawn_counter);
+        self.spawn_counter += 1;
 
-        for stmt in &body.statements { self.lower_stmt(stmt, ctx, var_map); }
-        let body_val = body.final_expr.as_ref()
-            .map(|fe| self.lower_expr(fe, ctx, var_map))
+        // Find captured variables used in spawn body
+        let mut captured_var: Option<(String, AirValue)> = None;
+        let mut exprs_to_check: Vec<&HirExpr> = Vec::new();
+        for stmt in &body.statements {
+            if let HirStmt::Expr(expr) = stmt {
+                exprs_to_check.push(expr);
+            }
+        }
+        if let Some(fe) = &body.final_expr {
+            exprs_to_check.push(fe);
+        }
+
+        for expr in exprs_to_check {
+            if let HirExpr::Call { callee, .. } = expr {
+                if let HirExpr::Member { object, .. } = &**callee {
+                    if let HirExpr::VarRef(vname) = &**object {
+                        if var_map.contains_key(vname) && captured_var.is_none() {
+                            let val = self.lower_expr(object, ctx, var_map);
+                            captured_var = Some((vname.clone(), val));
+                        }
+                    }
+                }
+            }
+        }
+
+        let entry_id = self.fresh_block();
+        let mut wrapper_ctx = LoweringCtx::new(entry_id);
+        let mut wrapper_var_map = HashMap::new();
+
+        let arg_val = if let Some((vname, val)) = captured_var {
+            let p0 = self.fresh_reg();
+            wrapper_ctx.param_regs.push(p0);
+            wrapper_var_map.insert(vname, p0);
+            val
+        } else {
+            AirValue::ConstInt(0)
+        };
+
+        for stmt in &body.statements {
+            self.lower_stmt(stmt, &mut wrapper_ctx, &mut wrapper_var_map);
+        }
+        let ret_val = body.final_expr.as_ref()
+            .map(|fe| self.lower_expr(fe, &mut wrapper_ctx, &mut wrapper_var_map))
             .unwrap_or(AirValue::ConstInt(0));
+
+        let param_regs = wrapper_ctx.param_regs.clone();
+        let blocks = wrapper_ctx.finish_all(AirTerminator::Ret(Some(ret_val)));
+        let wrapper_fn = AirFunction {
+            name: wrapper_name.clone(),
+            params: vec![("arg".to_string(), Type::Primitive(PrimitiveType::I64))],
+            param_registers: param_regs,
+            return_type: Type::Primitive(PrimitiveType::Void),
+            blocks,
+            entry_block: entry_id,
+        };
+        self.extra_functions.insert(wrapper_name.clone(), wrapper_fn);
 
         let target = self.fresh_reg();
         ctx.current.push(AirInstruction::Call {
             target: Some(target),
-            fn_name: "__arca_spawn".to_string(),
-            args: vec![body_val],
+            fn_name: "arca_scheduler_spawn".to_string(),
+            args: vec![AirValue::ConstString(wrapper_name), arg_val],
         });
         AirValue::Register(target)
     }
@@ -600,6 +659,21 @@ impl AirBuilder {
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
             return ("__arca_str_slice".to_string(), new_args);
+        }
+        if callee_name == "Channel.new" {
+            return ("arca_channel_create".to_string(), args.to_vec());
+        }
+        if is_method("send") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("arca_channel_send".to_string(), new_args);
+        }
+        if is_method("recv") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("arca_channel_recv".to_string(), new_args);
         }
         if callee_name.ends_with("elapsed_ms") || callee_name.ends_with("elapsed_ns") {
             let mut new_args = Vec::new();
