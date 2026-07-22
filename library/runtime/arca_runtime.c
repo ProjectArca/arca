@@ -340,3 +340,41 @@ const char* arca_path_normalize(const char* path) {
     }
     return buf;
 }
+
+// Phase 3: Collections — Vec (dynamic array)
+typedef struct { int64_t* data; int64_t len; int64_t cap; } ArcaVec;
+
+int64_t arca_vec_new(void) {
+    ArcaVec* v = (ArcaVec*)malloc(sizeof(ArcaVec));
+    v->data = NULL; v->len = 0; v->cap = 0;
+    return (int64_t)v;
+}
+
+int64_t arca_vec_len(int64_t handle) {
+    if (!handle) return 0;
+    return ((ArcaVec*)handle)->len;
+}
+
+void arca_vec_push(int64_t handle, int64_t val) {
+    if (!handle) return;
+    ArcaVec* v = (ArcaVec*)handle;
+    if (v->len >= v->cap) {
+        v->cap = v->cap ? v->cap * 2 : 8;
+        v->data = (int64_t*)realloc(v->data, v->cap * sizeof(int64_t));
+    }
+    v->data[v->len++] = val;
+}
+
+int64_t arca_vec_get(int64_t handle, int64_t index) {
+    if (!handle) return 0;
+    ArcaVec* v = (ArcaVec*)handle;
+    if (index < 0 || index >= v->len) return 0;
+    return v->data[index];
+}
+
+void arca_vec_free(int64_t handle) {
+    if (!handle) return;
+    ArcaVec* v = (ArcaVec*)handle;
+    free(v->data);
+    free(v);
+}
