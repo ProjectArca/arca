@@ -86,6 +86,39 @@ impl TypeEnv {
         self.functions.insert("elapsed_ms".into(), time_fn.clone());
         self.functions.insert("elapsed_ns".into(), time_fn.clone());
 
+        // Result/Option constructors
+        let i64_to_i64 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("Ok".into(), i64_to_i64.clone());
+        self.functions.insert("Err".into(), i64_to_i64.clone());
+        self.functions.insert("Some".into(), i64_to_i64.clone());
+        self.functions.insert("arca_result_ok".into(), i64_to_i64.clone());
+        self.functions.insert("arca_result_err".into(), i64_to_i64.clone());
+        self.functions.insert("arca_option_some".into(), i64_to_i64.clone());
+        self.functions.insert("__arca_throw".into(), i64_to_i64.clone());
+
+        let i64_to_i32 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        };
+        self.functions.insert("arca_result_is_ok".into(), i64_to_i32.clone());
+        self.functions.insert("arca_option_is_some".into(), i64_to_i32.clone());
+        self.functions.insert("arca_result_unwrap".into(), i64_to_i64.clone());
+
+        let void_to_i64 = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("__arca_get_last_error".into(), void_to_i64.clone());
+
+        let void_to_void = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("__arca_clear_last_error".into(), void_to_void.clone());
+
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);

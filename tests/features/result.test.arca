@@ -1,0 +1,11 @@
+// Test: Result type with Ok/Err
+// Expected output:
+// 1
+// 42
+fn main() {
+  let r = Ok(42)
+  let ok = arca_result_is_ok(r)
+  println(ok)
+  let v = arca_result_unwrap(r)
+  println(v)
+}

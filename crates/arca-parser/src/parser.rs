@@ -739,7 +739,8 @@ impl<'a> Parser<'a> {
             TokenKind::Identifier(name) => {
                 let n = name.clone();
                 self.advance();
-                if self.current_token.kind == TokenKind::Less {
+
+                let base = if self.current_token.kind == TokenKind::Less {
                     self.advance();
                     let mut args = Vec::new();
                     while self.current_token.kind != TokenKind::Greater
@@ -763,6 +764,18 @@ impl<'a> Parser<'a> {
                     }
                 } else {
                     Some(TypeAnnotation::Named(n))
+                };
+
+                // Handle T? → Option<T>
+                if self.current_token.kind == TokenKind::Question {
+                    self.advance();
+                    let inner = base?;
+                    Some(TypeAnnotation::Generic {
+                        name: "Option".into(),
+                        args: vec![inner],
+                    })
+                } else {
+                    base
                 }
             }
             _ => None,

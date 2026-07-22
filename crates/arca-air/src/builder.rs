@@ -384,28 +384,6 @@ impl AirBuilder {
     }
 
     fn lower_try(&mut self, body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
-        let clear_block = self.fresh_block();
-        let body_block = self.fresh_block();
-        let check_block = self.fresh_block();
-        let then_block = self.fresh_block();
-        let mut else_block = self.fresh_block();
-        let merge_block = self.fresh_block();
-        let result_slot = self.fresh_reg();
-        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
-
-        // Clear error state
-        let clear_reg = self.fresh_reg();
-        ctx.current.push(AirInstruction::Call {
-            target: Some(clear_reg),
-            fn_name: "__arca_clear_last_error".to_string(),
-            args: vec![],
-        });
-        ctx.set_terminator_and_switch(AirTerminator::Br(clear_block), body_block);
-        // the ctx.current after set_terminator is now body_block - we actually want
-        // to branch to body_block from clear_block
-        // This needs a different approach - let me redo
-
-        // Simpler approach: inline the clear in the current block, then branch to body
         self.lower_try_inline(body, ctx, var_map)
     }
 
@@ -727,6 +705,15 @@ impl AirBuilder {
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
             return ("arca_channel_recv".to_string(), new_args);
+        }
+        if callee_name == "Ok" {
+            return ("arca_result_ok".to_string(), args.to_vec());
+        }
+        if callee_name == "Err" {
+            return ("arca_result_err".to_string(), args.to_vec());
+        }
+        if callee_name == "Some" {
+            return ("arca_option_some".to_string(), args.to_vec());
         }
         if callee_name.ends_with("elapsed_ms") || callee_name.ends_with("elapsed_ns") {
             let mut new_args = Vec::new();

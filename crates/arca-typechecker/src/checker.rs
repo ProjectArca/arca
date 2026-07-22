@@ -144,7 +144,15 @@ impl TypeChecker {
     fn resolve_ast_type(&self, ann: &TypeAnnotation) -> Type {
         match ann {
             TypeAnnotation::Named(name) => self.env.lookup_type_annotation(name),
-            TypeAnnotation::Generic { name, .. } => self.env.lookup_type_annotation(name),
+            TypeAnnotation::Generic { name, args } => {
+                if name == "Option" && args.len() == 1 {
+                    Type::Option(Box::new(self.resolve_ast_type(&args[0])))
+                } else if name == "Result" && args.len() == 2 {
+                    Type::Result(Box::new(self.resolve_ast_type(&args[0])), Box::new(self.resolve_ast_type(&args[1])))
+                } else {
+                    self.env.lookup_type_annotation(name)
+                }
+            }
             TypeAnnotation::Ref { inner } => Type::Reference {
                 is_mut: false,
                 inner: Box::new(self.resolve_ast_type(inner)),
