@@ -133,7 +133,22 @@ impl StdLibResolver {
         symbols.insert("std/io".into(), std_io);
         symbols.insert("std/crypto".into(), std_crypto);
         symbols.insert("std/compress".into(), std_compress);
-        symbols.insert("std/log".into(), std_log);
+        let std_iterator = vec![
+            StdSymbol { name: "Iterator".into(), module: "std/iterator".into(), is_intrinsic: false },
+            StdSymbol { name: "filter".into(), module: "std/iterator".into(), is_intrinsic: true },
+            StdSymbol { name: "map".into(), module: "std/iterator".into(), is_intrinsic: true },
+            StdSymbol { name: "take".into(), module: "std/iterator".into(), is_intrinsic: true },
+            StdSymbol { name: "skip".into(), module: "std/iterator".into(), is_intrinsic: true },
+            StdSymbol { name: "collect".into(), module: "std/iterator".into(), is_intrinsic: true },
+        ];
+        let std_async = vec![
+            StdSymbol { name: "Future".into(), module: "std/async".into(), is_intrinsic: false },
+            StdSymbol { name: "Task".into(), module: "std/async".into(), is_intrinsic: false },
+            StdSymbol { name: "spawn".into(), module: "std/async".into(), is_intrinsic: true },
+            StdSymbol { name: "await".into(), module: "std/async".into(), is_intrinsic: true },
+            StdSymbol { name: "select".into(), module: "std/async".into(), is_intrinsic: true },
+        ];
+        symbols.insert("std/async".into(), std_async);
 
         Self { symbols }
     }

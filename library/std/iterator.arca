@@ -1,0 +1,33 @@
+// Arca Standard Iterator (std/iterator)
+
+struct Iterator {
+  handle: i64
+}
+
+extern fn arca_iter_filter(h: i64, pred_fn: i64) -> i64
+extern fn arca_iter_map(h: i64, map_fn: i64) -> i64
+extern fn arca_iter_take(h: i64, count: i64) -> i64
+extern fn arca_iter_skip(h: i64, count: i64) -> i64
+extern fn arca_iter_collect(h: i64) -> i64
+
+extend Iterator {
+  fn filter(self, pred: i64) -> Iterator {
+    Iterator { handle: arca_iter_filter(self.handle, pred) }
+  }
+
+  fn map(self, mapper: i64) -> Iterator {
+    Iterator { handle: arca_iter_map(self.handle, mapper) }
+  }
+
+  fn take(self, n: i64) -> Iterator {
+    Iterator { handle: arca_iter_take(self.handle, n) }
+  }
+
+  fn skip(self, n: i64) -> Iterator {
+    Iterator { handle: arca_iter_skip(self.handle, n) }
+  }
+
+  fn collect(self) -> i64 {
+    arca_iter_collect(self.handle)
+  }
+}

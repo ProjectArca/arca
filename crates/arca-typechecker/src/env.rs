@@ -359,6 +359,9 @@ impl TypeEnv {
         self.insert_var("Middleware".into(), Type::Unknown);
         self.insert_var("WebSocket".into(), Type::Unknown);
         self.insert_var("SSE".into(), Type::Unknown);
+        self.insert_var("Future".into(), Type::Unknown);
+        self.insert_var("Task".into(), Type::Unknown);
+        self.insert_var("Iterator".into(), Type::Unknown);
         self.insert_var("Vec".into(), Type::Unknown);
         self.insert_var("HashMap".into(), Type::Unknown);
         self.insert_var("HashSet".into(), Type::Unknown);

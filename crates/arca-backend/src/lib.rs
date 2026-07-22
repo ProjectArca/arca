@@ -869,7 +869,9 @@ impl CodeGenerator {
             }
             n if n.starts_with("arca_vec_") || n.starts_with("arca_map_") || n.starts_with("arca_set_")
                 || n.starts_with("arca_queue_") || n.starts_with("arca_deque_")
-                || n.starts_with("arca_heap_") || n.starts_with("arca_list_") => {
+                || n.starts_with("arca_heap_") || n.starts_with("arca_list_")
+                || n.starts_with("arca_iter_") || n.starts_with("arca_future_")
+                || n.starts_with("arca_task_") || n == "arca_select" => {
                 let pre = target.and_then(|t| self.var_names.get(&t).cloned()).map(|n| format!("{} = ", n)).unwrap_or_default();
                 self.emit_indent(); self.emit(&pre); self.emit(fn_name); self.emit("(");
                 for (i, arg) in args.iter().enumerate() { if i > 0 { self.emit(", "); } self.emit_air_value(arg); }

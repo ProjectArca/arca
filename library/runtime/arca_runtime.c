@@ -499,6 +499,54 @@ int64_t arca_list_pop_front(int64_t handle) { return arca_queue_pop(handle); }
 int64_t arca_list_len(int64_t handle) { return arca_vec_len(handle); }
 void arca_list_free(int64_t handle) { arca_vec_free(handle); }
 
+// Phase 5: Async Runtime Implementation
+typedef struct { int32_t ready; int64_t val; pthread_mutex_t lock; pthread_cond_t cond; } ArcaFuture;
+
+int64_t arca_task_spawn(void (*func)(void*), void* arg) {
+    arca_scheduler_spawn(func, arg);
+    return 1;
+}
+
+int64_t arca_future_create(void) {
+    ArcaFuture* f = (ArcaFuture*)malloc(sizeof(ArcaFuture));
+    f->ready = 0; f->val = 0;
+    pthread_mutex_init(&f->lock, NULL);
+    pthread_cond_init(&f->cond, NULL);
+    return (int64_t)f;
+}
+
+void arca_future_complete(int64_t fut, int64_t val) {
+    if (!fut) return;
+    ArcaFuture* f = (ArcaFuture*)fut;
+    pthread_mutex_lock(&f->lock);
+    f->val = val; f->ready = 1;
+    pthread_cond_broadcast(&f->cond);
+    pthread_mutex_unlock(&f->lock);
+}
+
+int64_t arca_future_await(int64_t fut) {
+    if (!fut) return 0;
+    ArcaFuture* f = (ArcaFuture*)fut;
+    pthread_mutex_lock(&f->lock);
+    while (!f->ready) {
+        pthread_cond_wait(&f->cond, &f->lock);
+    }
+    int64_t res = f->val;
+    pthread_mutex_unlock(&f->lock);
+    return res;
+}
+
+int32_t arca_select(int64_t* futures, int32_t count) {
+    if (!futures || count <= 0) return -1;
+    for (int32_t i = 0; i < count; i++) {
+        if (futures[i]) {
+            ArcaFuture* f = (ArcaFuture*)futures[i];
+            if (f->ready) return i;
+        }
+    }
+    return 0;
+}
+
 // Phase 2 implementations
 const char* arca_str_split(const char* s, const char* delim, int index) {
     if (!s || !delim) return "";

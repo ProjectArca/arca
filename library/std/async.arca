@@ -1,0 +1,25 @@
+// Arca Standard Async Runtime (std/async)
+
+struct Future {
+  handle: i64
+}
+
+struct Task {
+  id: i64
+}
+
+extern fn arca_task_spawn(func: i64, arg: i64) -> i64
+extern fn arca_future_create() -> i64
+extern fn arca_future_complete(fut: i64, val: i64)
+extern fn arca_future_await(fut: i64) -> i64
+extern fn arca_select(futures: i64, count: i32) -> i32
+
+extend Future {
+  fn await(self) -> i64 {
+    arca_future_await(self.handle)
+  }
+}
+
+fn spawn(func: i64, arg: i64) -> Task {
+  Task { id: arca_task_spawn(func, arg) }
+}

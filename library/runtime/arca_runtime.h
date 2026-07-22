@@ -184,8 +184,16 @@ void arca_list_push_back(int64_t handle, int64_t val);
 void arca_list_push_front(int64_t handle, int64_t val);
 int64_t arca_list_pop_back(int64_t handle);
 int64_t arca_list_pop_front(int64_t handle);
-int64_t arca_list_len(int64_t handle);
-void arca_list_free(int64_t handle);
+// Phase 4: Iterator
+int64_t arca_iter_filter(int64_t handle, int64_t pred_fn);
+int64_t arca_iter_map(int64_t handle, int64_t map_fn);
+int64_t arca_iter_take(int64_t handle, int64_t count);
+// Phase 5: Async Runtime (spawn, task, future, await, select)
+int64_t arca_task_spawn(void (*func)(void*), void* arg);
+int64_t arca_future_create(void);
+void arca_future_complete(int64_t fut, int64_t val);
+int64_t arca_future_await(int64_t fut);
+int32_t arca_select(int64_t* futures, int32_t count);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
 void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);
