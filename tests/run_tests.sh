@@ -6,18 +6,21 @@ set -e
 PASS=0
 FAIL=0
 
-for f in tests/features/*.test.arca; do
-  name=$(basename "$f")
-  echo -n "[test] $name ... "
-  output=$(cargo run -q -- build "$f" 2>&1)
-  if echo "$output" | grep -q "Build status: SUCCESS"; then
-    echo "PASS"
-    PASS=$((PASS + 1))
-  else
-    echo "FAIL"
-    echo "$output" | tail -5
-    FAIL=$((FAIL + 1))
-  fi
+for dir in tests/features tests/std-libs; do
+  for f in "$dir"/*.test.arca; do
+    [ -f "$f" ] || continue
+    name=$(basename "$f")
+    echo -n "[test] $name ... "
+    output=$(cargo run -q -- build "$f" 2>&1)
+    if echo "$output" | grep -q "Build status: SUCCESS"; then
+      echo "PASS"
+      PASS=$((PASS + 1))
+    else
+      echo "FAIL"
+      echo "$output" | tail -5
+      FAIL=$((FAIL + 1))
+    fi
+  done
 done
 
 echo "---"
