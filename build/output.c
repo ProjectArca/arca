@@ -2,26 +2,13 @@
 #include "arca_runtime.h"
 
 void arca_main(void);
+int64_t serve();
 
 void arca_main(void) {
   int64_t v0;
-  int64_t v1;
-  int64_t v2;
-  int64_t v3;
-  int64_t v4;
-  const char* v5;
-  v1 = arca_fs_rename((const char*)"/tmp/nonexistent1", (const char*)"/tmp/nonexistent2");
-  v0 = v1;
-  arca_print_int(v1);
+  arca_print_string("Starting Arca Native Live HTTP Server on port 8085...");
   putchar('\n');
-  v3 = arca_fs_copy((const char*)"/tmp/nonexistent1", (const char*)"/tmp/nonexistent2");
-  v2 = v3;
-  arca_print_int(v3);
-  putchar('\n');
-  v5 = (int64_t)arca_fs_metadata((const char*)"/tmp");
-  v4 = (int64_t)v5;
-  arca_print_string(v5);
-  putchar('\n');
+  v0 = arca_std_http_serve(8085);
   return;
 }
 
