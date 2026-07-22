@@ -3,15 +3,6 @@ Timestamp: Wed Jul 22 18:44:30 UTC 2026
 Unix Timestamp: 1784745869
 =========================================
 -----------------------------------------
-Test #3: channel.test.arca
-File: tests/features/channel.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/channel.test.arca
-42
-99
-Result: PASS
------------------------------------------
 Test #1: arithmetic.test.arca
 File: tests/features/arithmetic.test.arca
 Duration: 2s
@@ -19,19 +10,6 @@ Runtime Stdout:
 [arca] Running: tests/features/arithmetic.test.arca
 15
 30
-Result: PASS
------------------------------------------
-Test #4: comparison.test.arca
-File: tests/features/comparison.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/comparison.test.arca
-1
-1
-1
-1
-1
-1
 Result: PASS
 -----------------------------------------
 Test #2: borrow.test.arca
@@ -42,15 +20,6 @@ Runtime Stdout:
 42
 Result: PASS
 -----------------------------------------
-Test #5: defer.test.arca
-File: tests/features/defer.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/defer.test.arca
-1
-2
-Result: PASS
------------------------------------------
 Test #3: channel.test.arca
 File: tests/features/channel.test.arca
 Duration: 2s
@@ -58,15 +27,6 @@ Runtime Stdout:
 [arca] Running: tests/features/channel.test.arca
 42
 99
-Result: PASS
------------------------------------------
-Test #6: enum.test.arca
-File: tests/features/enum.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/enum.test.arca
-10
-20
 Result: PASS
 -----------------------------------------
 Test #4: comparison.test.arca
@@ -82,14 +42,6 @@ Runtime Stdout:
 1
 Result: PASS
 -----------------------------------------
-Test #7: env.test.arca
-File: tests/features/env.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/env.test.arca
-/Users/hy4-mac-002
-Result: PASS
------------------------------------------
 Test #5: defer.test.arca
 File: tests/features/defer.test.arca
 Duration: 3s
@@ -99,15 +51,6 @@ Runtime Stdout:
 2
 Result: PASS
 -----------------------------------------
-Test #8: env_full.test.arca
-File: tests/features/env_full.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/env_full.test.arca
-0
-/Users/hy4-mac-002/hasdev/research/project-arca
-Result: PASS
------------------------------------------
 Test #6: enum.test.arca
 File: tests/features/enum.test.arca
 Duration: 2s
@@ -115,14 +58,6 @@ Runtime Stdout:
 [arca] Running: tests/features/enum.test.arca
 10
 20
-Result: PASS
------------------------------------------
-Test #9: extend.test.arca
-File: tests/features/extend.test.arca
-Duration: 2s
-Runtime Stdout:
-[arca] Running: tests/features/extend.test.arca
-99
 Result: PASS
 -----------------------------------------
 Test #7: env.test.arca
