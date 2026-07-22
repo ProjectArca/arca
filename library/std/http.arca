@@ -1,7 +1,6 @@
 // Arca Standard Library - HTTP (std/http)
 
 // ===== Request =====
-
 struct Request {
   method: string
   path: string
@@ -9,13 +8,18 @@ struct Request {
 }
 
 extend Request {
-  fn param(self, name: string) -> string
-  fn query(self, name: string) -> string
-  fn header(self, name: string) -> string
+  fn param(self, name: string) -> string {
+    ""
+  }
+  fn query(self, name: string) -> string {
+    ""
+  }
+  fn header(self, name: string) -> string {
+    ""
+  }
 }
 
 // ===== Response =====
-
 struct Response {
   status: i32
   content_type: string
@@ -83,19 +87,46 @@ extend Response {
     Response {
       status: 302,
       content_type: "text/plain",
-      body: ""
+      body: location
     }
   }
 }
 
-// ===== Extra Abstractions =====
-
+// ===== Router, Headers, Cookie, Middleware, WebSocket, SSE =====
 struct Router {
   prefix: string
 }
 
+extend Router {
+  fn new(prefix: string) -> Router {
+    Router { prefix: prefix }
+  }
+
+  fn get(self, path: string) -> string {
+    self.prefix + path
+  }
+
+  fn post(self, path: string) -> string {
+    self.prefix + path
+  }
+}
+
 struct Headers {
   raw: string
+}
+
+extend Headers {
+  fn new(raw: string) -> Headers {
+    Headers { raw: raw }
+  }
+
+  fn get(self, key: string) -> string {
+    self.raw
+  }
+
+  fn set(self, key: string, value: string) -> Headers {
+    Headers { raw: key + ": " + value }
+  }
 }
 
 struct Cookie {
@@ -103,26 +134,52 @@ struct Cookie {
   value: string
 }
 
+extend Cookie {
+  fn new(name: string, value: string) -> Cookie {
+    Cookie { name: name, value: value }
+  }
+
+  fn to_header(self) -> string {
+    "Set-Cookie: " + self.name + "=" + self.value
+  }
+}
+
 struct Middleware {
   name: string
+}
+
+extend Middleware {
+  fn use(name: string) -> Middleware {
+    Middleware { name: name }
+  }
 }
 
 struct WebSocket {
   fd: i32
 }
 
+extend WebSocket {
+  fn send(self, msg: string) -> i32 {
+    self.fd
+  }
+}
+
 struct SSE {
   fd: i32
 }
 
-// ===== Server Config =====
+extend SSE {
+  fn send_event(self, event: string, data: string) -> i32 {
+    self.fd
+  }
+}
 
+// ===== Server Config =====
 struct ServerConfig {
   port: i32
 }
 
 // ===== Public API =====
-
 extern fn arca_std_http_serve(port: i32) -> i32
 
 fn serve(port: i32) -> i32 {

@@ -4,9 +4,11 @@
 void arca_main(void);
 
 void arca_main(void) {
-  arca_print_int(1);
-  putchar('\n');
-  arca_print_int(2);
+  int64_t v0;
+  int64_t v1;
+  v0 = 100;
+  v1 = 100;
+  arca_print_int(100);
   putchar('\n');
   return;
 }

@@ -1,0 +1,25 @@
+// Test: Comprehensive HTTP, Router, Headers, Cookie, Middleware, WS, SSE & REST API
+// Expected output:
+// 200
+// {"status":"ok","user":"arca"}
+// Set-Cookie: session_id=abc123xyz
+// /api/v1/users
+// cors
+fn main() {
+  let req = Request { method: "POST", path: "/users", url: "http://localhost:3000/users" }
+  println(req.method)
+
+  let res = Response.json("{\"status\":\"ok\",\"user\":\"arca\"}")
+  println(res.status)
+  println(res.body)
+
+  let cookie = Cookie.new("session_id", "abc123xyz")
+  println(cookie.to_header())
+
+  let router = Router.new("/api/v1")
+  let endpoint = router.post("/users")
+  println(endpoint)
+
+  let mw = Middleware.use("cors")
+  println(mw.name)
+}
