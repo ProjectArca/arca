@@ -1,0 +1,12 @@
+// Test: ref and ptr type annotations
+// Expected output:
+// 50
+fn inspect(val: ref<i64>) -> i64 {
+  50
+}
+
+fn main() {
+  let a: i64 = 10
+  let res = inspect(borrow(a))
+  println(res)
+}

@@ -86,6 +86,7 @@ impl CodeGenerator {
                 PrimitiveType::Char => "char", PrimitiveType::Void => "void",
             },
             Type::Struct { name, .. } => name.as_str(),
+            Type::Reference { .. } => "void*",
             _ => "int64_t",
         }
     }
@@ -344,9 +345,7 @@ impl CodeGenerator {
             for instr in &block.instructions {
                 // Track stores within this block for copy propagation
                 if let AirInstruction::Store { ptr, val } = instr {
-                    if matches!(val, AirValue::Register(_)) {
-                        block_stores.insert(*ptr, val.clone());
-                    }
+                    block_stores.insert(*ptr, val.clone());
                 }
                 // Record copy sources (same-block store-then-load) but still declare
                 if let AirInstruction::Load { target, ptr, .. } = instr {
@@ -440,8 +439,12 @@ impl CodeGenerator {
                 self.emit_indent();
                 self.emit(&pn);
                 self.emit(" = ");
-                // Cast string values to int64_t since variables are int64_t slots
-                if is_string_value(&resolved, &self.var_types) {
+                // Cast string/pointer values to int64_t since variables are int64_t slots
+                let is_ptr = match &resolved {
+                    AirValue::Register(r) => self.var_types.get(r).map(|t| t == "void*" || t == "const char*").unwrap_or(false),
+                    _ => false,
+                };
+                if is_string_value(&resolved, &self.var_types) || is_ptr {
                     self.emit("(int64_t)");
                 }
                 self.emit_air_value(&resolved);
@@ -537,13 +540,13 @@ impl CodeGenerator {
                 }
             }
             AirInstruction::Ref { target, source } => {
-                let tn = self.var_names.get(target).cloned().unwrap_or_default();
-                let sn = self.var_names.get(source).cloned().unwrap_or_default();
+                let tn = self.reg_name(*target);
+                let sn = self.reg_name(*source);
                 self.emit_ln(&format!("{} = &{};", tn, sn));
             }
             AirInstruction::Deref { target, ptr } => {
-                let tn = self.var_names.get(target).cloned().unwrap_or_default();
-                let pn = self.var_names.get(ptr).cloned().unwrap_or_default();
+                let tn = self.reg_name(*target);
+                let pn = self.reg_name(*ptr);
                 self.emit_ln(&format!("{} = *{};", tn, pn));
             }
         }

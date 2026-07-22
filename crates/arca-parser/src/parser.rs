@@ -1056,6 +1056,31 @@ impl<'a> Parser<'a> {
                     body: block,
                 })
             }
+            TokenKind::Move | TokenKind::Borrow => {
+                let is_borrow = token.kind == TokenKind::Borrow;
+                let name = if is_borrow { "borrow".to_string() } else { "move".to_string() };
+                self.advance(); // move or borrow
+                if self.current_token.kind == TokenKind::OpenParen {
+                    self.advance(); // (
+                    let inner = self.parse_expression(Precedence::Lowest)?;
+                    let end_span = self.current_token.span;
+                    self.expect(TokenKind::CloseParen);
+                    Some(Expr::Call {
+                        callee: Box::new(Expr::Identifier { name, span: token.span }),
+                        args: vec![inner],
+                        span: Span::new(token.span.start, end_span.end, token.span.start_loc, end_span.end_loc),
+                    })
+                } else if let Some(inner) = self.parse_expression(Precedence::Primary) {
+                    let end_span = inner.span();
+                    Some(Expr::Call {
+                        callee: Box::new(Expr::Identifier { name, span: token.span }),
+                        args: vec![inner],
+                        span: Span::new(token.span.start, end_span.end, token.span.start_loc, end_span.end_loc),
+                    })
+                } else {
+                    Some(Expr::Identifier { name, span: token.span })
+                }
+            }
             TokenKind::Spawn => {
                 self.advance(); // spawn
                 if self.current_token.kind == TokenKind::OpenBrace {

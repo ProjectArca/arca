@@ -1,0 +1,8 @@
+// Test: move intrinsic
+// Expected output:
+// 100
+fn main() {
+  let x = 100
+  let y = move(x)
+  println(y)
+}

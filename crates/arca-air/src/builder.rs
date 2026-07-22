@@ -327,15 +327,20 @@ impl AirBuilder {
                     .unwrap_or(AirValue::ConstInt(0))
             }
             HirExpr::Borrow(inner) => {
-                let inner_val = self.lower_expr(inner, ctx, var_map);
-                let inner_reg = match inner_val {
-                    AirValue::Register(r) => r,
-                    _ => {
+                let inner_reg = if let HirExpr::VarRef(name) = &**inner {
+                    if let Some(&reg) = var_map.get(name) {
+                        reg
+                    } else {
                         let r = self.fresh_reg();
                         ctx.current.push(AirInstruction::Alloca { target: r, ty: Type::Primitive(PrimitiveType::I64) });
-                        ctx.current.push(AirInstruction::Store { ptr: r, val: inner_val });
                         r
                     }
+                } else {
+                    let inner_val = self.lower_expr(inner, ctx, var_map);
+                    let r = self.fresh_reg();
+                    ctx.current.push(AirInstruction::Alloca { target: r, ty: Type::Primitive(PrimitiveType::I64) });
+                    ctx.current.push(AirInstruction::Store { ptr: r, val: inner_val });
+                    r
                 };
                 let target = self.fresh_reg();
                 ctx.current.push(AirInstruction::Ref { target, source: inner_reg });
@@ -724,6 +729,9 @@ fn hir_type_to_air_type(ann: &arca_ast::TypeAnnotation) -> Type {
                 methods: std::collections::HashMap::new(),
             },
         },
+        arca_ast::TypeAnnotation::Ref { inner } | arca_ast::TypeAnnotation::Ptr { inner } => {
+            Type::Reference { inner: Box::new(hir_type_to_air_type(inner)), is_mut: false }
+        }
         _ => Type::Primitive(PrimitiveType::I64),
     }
 }

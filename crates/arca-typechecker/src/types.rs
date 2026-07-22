@@ -97,6 +97,12 @@ impl Type {
     }
 
     pub fn is_assignable_to(&self, target: &Type) -> bool {
+        if let (Type::Struct { name: n1, .. }, Type::Struct { name: n2, .. }) = (self, target) {
+            if !n1.is_empty() && n1 == n2 {
+                return true;
+            }
+        }
+
         if self == target {
             return true;
         }
@@ -119,6 +125,9 @@ impl Type {
                 matches!(p, PrimitiveType::F32 | PrimitiveType::F64)
             }
             (Type::Unknown, _) | (_, Type::Unknown) => true,
+            (Type::Reference { inner: i1, .. }, Type::Reference { inner: i2, .. }) => i1.is_assignable_to(i2),
+            (Type::Primitive(PrimitiveType::I32), Type::Primitive(PrimitiveType::I64)) => true,
+            (Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I32)) => true,
             (Type::None, Type::Reference { .. }) => true,
             (Type::None, Type::Option(_)) => true,
             (Type::None, Type::Primitive(PrimitiveType::Void)) => true,
