@@ -1,0 +1,7 @@
+// Test: none literal
+// Expected output:
+// 0
+fn main() {
+  let x = none
+  println(x)
+}

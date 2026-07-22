@@ -1,0 +1,8 @@
+// Test: borrow intrinsic
+// Expected output:
+// 42
+fn main() {
+  let x = 42
+  let r = borrow(x)
+  println(x)
+}
