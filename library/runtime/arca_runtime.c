@@ -80,3 +80,56 @@ const char* arca_str_slice(const char* s, int32_t start) {
     if (start < 0 || (size_t)start >= len) return "";
     return s + start;
 }
+
+static _Thread_local int64_t g_arca_last_error = 0;
+
+void __arca_throw(int64_t err) {
+    g_arca_last_error = err != 0 ? err : -1;
+}
+
+int64_t __arca_get_last_error(void) {
+    return g_arca_last_error;
+}
+
+void __arca_clear_last_error(void) {
+    g_arca_last_error = 0;
+}
+
+typedef struct {
+    int32_t tag;
+    int64_t val;
+} ArcaResult;
+
+int64_t arca_result_ok(int64_t val) {
+    ArcaResult* r = (ArcaResult*)malloc(sizeof(ArcaResult));
+    r->tag = 0;
+    r->val = val;
+    return (int64_t)r;
+}
+
+int64_t arca_result_err(int64_t err) {
+    ArcaResult* r = (ArcaResult*)malloc(sizeof(ArcaResult));
+    r->tag = 1;
+    r->val = err;
+    return (int64_t)r;
+}
+
+int32_t arca_result_is_ok(int64_t res) {
+    if (!res) return 0;
+    ArcaResult* r = (ArcaResult*)res;
+    return r->tag == 0 ? 1 : 0;
+}
+
+int64_t arca_result_unwrap(int64_t res) {
+    if (!res) return 0;
+    ArcaResult* r = (ArcaResult*)res;
+    return r->val;
+}
+
+int64_t arca_option_some(int64_t val) {
+    return arca_result_ok(val);
+}
+
+int32_t arca_option_is_some(int64_t opt) {
+    return arca_result_is_ok(opt);
+}

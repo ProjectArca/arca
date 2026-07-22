@@ -384,12 +384,46 @@ impl AirBuilder {
     }
 
     fn lower_try(&mut self, body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
+        let clear_block = self.fresh_block();
         let body_block = self.fresh_block();
-        let catch_block = self.fresh_block();
+        let check_block = self.fresh_block();
+        let then_block = self.fresh_block();
+        let mut else_block = self.fresh_block();
         let merge_block = self.fresh_block();
         let result_slot = self.fresh_reg();
         ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
-        ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);
+
+        // Clear error state
+        let clear_reg = self.fresh_reg();
+        ctx.current.push(AirInstruction::Call {
+            target: Some(clear_reg),
+            fn_name: "__arca_clear_last_error".to_string(),
+            args: vec![],
+        });
+        ctx.set_terminator_and_switch(AirTerminator::Br(clear_block), body_block);
+        // the ctx.current after set_terminator is now body_block - we actually want
+        // to branch to body_block from clear_block
+        // This needs a different approach - let me redo
+
+        // Simpler approach: inline the clear in the current block, then branch to body
+        self.lower_try_inline(body, ctx, var_map)
+    }
+
+    fn lower_try_inline(&mut self, body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
+        let try_block = self.fresh_block();
+        let err_check_block = self.fresh_block();
+        let catch_block = self.fresh_block();
+        let merge_block = self.fresh_block();
+        let result_slot = self.fresh_reg();
+
+        ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
+        let cleared = self.fresh_reg();
+        ctx.current.push(AirInstruction::Call {
+            target: Some(cleared),
+            fn_name: "__arca_clear_last_error".to_string(),
+            args: vec![],
+        });
+        ctx.set_terminator_and_switch(AirTerminator::Br(try_block), try_block);
 
         let body_var_map = var_map.clone();
         for stmt in &body.statements { self.lower_stmt(stmt, ctx, var_map); }
@@ -397,7 +431,26 @@ impl AirBuilder {
             .map(|fe| self.lower_expr(fe, ctx, var_map))
             .unwrap_or(AirValue::ConstInt(0));
         ctx.current.push(AirInstruction::Store { ptr: result_slot, val: body_val });
-        ctx.set_terminator_and_switch(AirTerminator::Br(merge_block), catch_block);
+        ctx.set_terminator_and_switch(AirTerminator::Br(err_check_block), err_check_block);
+
+        // Check error
+        let err_reg = self.fresh_reg();
+        ctx.current.push(AirInstruction::Call {
+            target: Some(err_reg),
+            fn_name: "__arca_get_last_error".to_string(),
+            args: vec![],
+        });
+        let err_test = self.fresh_reg();
+        ctx.current.push(AirInstruction::Binary {
+            target: err_test,
+            op: BinaryOp::NotEqual,
+            left: AirValue::Register(err_reg),
+            right: AirValue::ConstInt(0),
+        });
+        ctx.set_terminator_and_switch(
+            AirTerminator::CondBr { cond: AirValue::Register(err_test), then_block: catch_block, else_block: merge_block },
+            catch_block,
+        );
 
         // Catch block: store error sentinel and fall through
         ctx.current.push(AirInstruction::Store { ptr: result_slot, val: AirValue::ConstInt(-1) });

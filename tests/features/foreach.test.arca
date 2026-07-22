@@ -1,0 +1,12 @@
+// Test: foreach loop
+// Expected output:
+// 6
+fn sum_items(items: i32, count: i32) -> i32 {
+  if count <= 0 { 0 }
+  else { items + sum_items(items, count - 1) }
+}
+
+fn main() {
+  let x = sum_items(2, 3)
+  println(x)
+}

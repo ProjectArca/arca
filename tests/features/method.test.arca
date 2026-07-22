@@ -1,0 +1,18 @@
+// Test: inline method call on struct
+// Expected output:
+// hello Alice
+struct User {
+  name: string
+
+  fn greet(self) -> string {
+    "hello " + self.name
+  }
+}
+
+fn main() {
+  let u = User {
+    name: "Alice"
+  }
+  let msg = u.greet()
+  println(msg)
+}

@@ -1,0 +1,7 @@
+// Test: throw error
+// Expected output:
+// 0
+fn main() {
+  throw 99
+  println(1)
+}

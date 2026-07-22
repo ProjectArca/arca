@@ -126,7 +126,8 @@ impl CodeGenerator {
                     || fn_name == "__arca_starts_with" || fn_name == "__arca_str_rfind"
                 {
                     "int64_t".to_string()
-                } else if fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_") {
+                } else if fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_")
+                    || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error" {
                     "void".to_string()
                 } else if fn_name.ends_with("_to_str") || fn_name.ends_with("user_json") || fn_name.ends_with("users_json")
                     || fn_name.starts_with("build_") || fn_name == "hash" || fn_name == "list_users" {
@@ -363,7 +364,8 @@ impl CodeGenerator {
                     AirInstruction::Binary { target, .. } => Some(*target),
                     AirInstruction::Call { target, fn_name, .. } => {
                         // Skip declarations for void-returning calls
-                        let is_void = fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_");
+                        let is_void = fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_")
+                            || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error";
                         if is_void { None } else { *target }
                     }
                     AirInstruction::StructInit { target, struct_name, fields } => {
@@ -491,7 +493,7 @@ impl CodeGenerator {
                     let r_is_str = matches!(right, AirValue::ConstString(_)) ||
                         is_string_value(right, &self.var_types);
                     if l_is_str || r_is_str {
-                        self.emit_indent(); self.emit(&tn); self.emit(" = (int64_t)arca_strcat((const char*)");
+                        self.emit_indent(); self.emit(&tn); self.emit(" = arca_strcat((const char*)");
                         self.emit_air_value(left); self.emit(", (const char*)");
                         self.emit_air_value(right); self.emit(");\n");
                         self.var_types.insert(*target, "const char*".to_string());
@@ -536,9 +538,9 @@ impl CodeGenerator {
                         self.emit_ln(&format!("{} = *((int64_t*)((char*)&{} + offsetof_placeholder_{}));", tn, on, field));
                     }
                 } else if !obj_type.is_empty() && obj_type != "int64_t" && obj_type != "const char*" && obj_type != "bool" {
-                    self.emit_ln(&format!("{} = {}.{};", tn, on, field));
+                    self.emit_ln(&format!("{} = (int64_t){}.{};", tn, on, field));
                 } else {
-                    self.emit_ln(&format!("{} = {}._field_{};", tn, on, field));
+                    self.emit_ln(&format!("{} = (int64_t){}.{};", tn, on, field));
                 }
             }
             AirInstruction::Ref { target, source } => {

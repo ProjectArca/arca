@@ -75,6 +75,19 @@ void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);
 int64_t arca_channel_recv(void* channel);
 
+// Error Handling Helpers
+void __arca_throw(int64_t err);
+int64_t __arca_get_last_error(void);
+void __arca_clear_last_error(void);
+
+// Result & Option Helpers
+int64_t arca_result_ok(int64_t val);
+int64_t arca_result_err(int64_t err);
+int32_t arca_result_is_ok(int64_t res);
+int64_t arca_result_unwrap(int64_t res);
+int64_t arca_option_some(int64_t val);
+int32_t arca_option_is_some(int64_t opt);
+
 // Memory & Allocator Helpers
 void* arca_mem_alloc(size_t size);
 void arca_mem_free(void* ptr);

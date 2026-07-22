@@ -1,0 +1,12 @@
+// Test: try/catch error handling
+// Expected output:
+// trying
+// caught
+fn main() {
+  try {
+    println("trying")
+    throw 42
+  } catch err {
+    println("caught")
+  }
+}
