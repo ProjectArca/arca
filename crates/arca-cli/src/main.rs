@@ -423,7 +423,8 @@ fn main() {
 
             if backend_flag == "c" {
                 let mut air_builder = AirBuilder::new();
-                let air_module = air_builder.build_module(&hir);
+                let mut air_module = air_builder.build_module(&hir);
+                arca_air::AirOptimizer::optimize_module(&mut air_module);
                 let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
                 let c_code = cg.generate_c_from_air(&air_module);
                 let out_path = "build/output.c";
