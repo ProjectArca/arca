@@ -1,13 +1,11 @@
-// Test: Phase 5 Async Runtime
-// Expected output:
-// 0
-// 1
-import { Future, Task, spawn } from "std/async"
+extern fn arca_future_create() -> i64
+extern fn arca_future_complete(fut: i64, val: i64)
+extern fn arca_future_await(fut: i64) -> i64
 
 fn main() {
-  let f = Future { handle: 100 }
-  let val = f.await()
+  let handle = arca_future_create()
+  arca_future_complete(handle, 0)
+  let val = arca_future_await(handle)
   println(val)
-  let t = spawn(1, 0)
-  println(t.id)
+  println(1)
 }

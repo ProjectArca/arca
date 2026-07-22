@@ -134,6 +134,9 @@ impl CodeGenerator {
                     || fn_name == "env_get" || fn_name == "arca_env_get" || fn_name == "stdin_read_line"
                     || fn_name.starts_with("arca_path_") || fn_name.starts_with("path_")
                     || fn_name == "json_stringify"
+                    || fn_name == "OpenAI.chat" || fn_name == "OpenAI_chat"
+                    || fn_name == "RAGEngine.query" || fn_name == "RAGEngine_query"
+                    || fn_name.ends_with(".chat") || fn_name.ends_with(".query")
                     || fn_name == "current_dir"
                     || fn_name == "path_normalize"
                 {
@@ -388,7 +391,8 @@ impl CodeGenerator {
                     AirInstruction::Call { target, fn_name, .. } => {
                         // Skip declarations for void-returning calls
                         let is_void = fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_")
-                            || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error";
+                            || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error"
+                            || fn_name == "arca_future_complete";
                         if is_void { None } else { *target }
                     }
                     AirInstruction::StructInit { target, struct_name, fields } => {
@@ -816,7 +820,7 @@ impl CodeGenerator {
             "json_stringify" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
-                self.emit_ln(&format!("{} = (int64_t)arca_json_stringify((const char*){});", tn, s));
+                self.emit_ln(&format!("{} = (const char*)arca_json_stringify((const char*){});", tn, s));
             }
             "parse" | "arca_json_parse" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
@@ -859,7 +863,21 @@ impl CodeGenerator {
                 let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = (int64_t)arca_fs_read_dir((const char*){});", tn, path));
             }
-            "spawn" | "arca_process_spawn" => {
+            "spawn" => {
+                if args.len() >= 2 {
+                    // Async spawn: spawn(func: i64, arg: i64) -> Task
+                    let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                    let func = self.emit_air_value_str(&args[0]);
+                    let arg = self.emit_air_value_str(&args[1]);
+                    self.emit_ln(&format!("{} = arca_task_spawn((void(*)(void*))(intptr_t){}, (void*)(intptr_t){});", tn, func, arg));
+                } else {
+                    // Process spawn: spawn(cmd: string) -> i64
+                    let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                    let cmd = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                    self.emit_ln(&format!("{} = arca_process_spawn((const char*){});", tn, cmd));
+                }
+            }
+            "arca_process_spawn" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let cmd = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = arca_process_spawn((const char*){});", tn, cmd));
@@ -899,6 +917,11 @@ impl CodeGenerator {
                 let data_arg = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("arca_scheduler_spawn((void(*)(void*)){}, (void*)(intptr_t){});", fn_arg, data_arg));
             }
+            "arca_future_complete" => {
+                let fut = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let val = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("arca_future_complete({}, {});", fut, val));
+            }
             "arca_channel_create" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let cap = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "16".to_string() };
@@ -920,6 +943,61 @@ impl CodeGenerator {
                     self.emit_ln(&format!("{} = arca_channel_recv((void*){});", tn, chan));
                 } else {
                     self.emit_ln(&format!("arca_channel_recv((void*){});", chan));
+                }
+            }
+            n if n.ends_with(".chat") || n.ends_with("_chat") => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                if args.len() >= 2 {
+                    let self_reg = match self.resolve(&args[0]) {
+                        AirValue::Register(r) => r,
+                        _ => { self.emit_ln(&format!("{} = (const char*)\"\";", tn)); return; }
+                    };
+                    let prompt = self.emit_air_value_str(&args[1]);
+                    let mut model = "\"\"".to_string();
+                    let mut api_key = "\"\"".to_string();
+                    if let Some((_, fields)) = self.struct_inits.get(&self_reg) {
+                        for (fn_, fv) in fields {
+                            if fn_ == "model" { model = self.emit_air_value_str(fv); }
+                            if fn_ == "api_key" { api_key = self.emit_air_value_str(fv); }
+                        }
+                    }
+                    self.emit_ln(&format!("{} = (const char*)arca_ai_chat_completion(\"openai\", {}, {}, {}, \"\");", tn, model, prompt, api_key));
+                }
+            }
+            n if n.ends_with(".connect") => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let db_type = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                let conn_str = if args.len() > 2 { self.emit_air_value_str(&args[2]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_vector_db_connect({}, {});", tn, db_type, conn_str));
+            }
+            n if n.ends_with(".new") => {
+                if fn_name == "arca_channel_create" { /* handled elsewhere */ }
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let store_handle = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                let provider = if args.len() > 2 { self.emit_air_value_str(&args[2]) } else { "\"\"".to_string() };
+                let model = if args.len() > 3 { self.emit_air_value_str(&args[3]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_rag_create({}, {}, {});", tn, store_handle, provider, model));
+            }
+            n if n.ends_with(".query") => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let self_handle = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let query_text = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = (const char*)arca_rag_query({}, {});", tn, self_handle, query_text));
+            }
+            n if n.ends_with(".await") => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                if !args.is_empty() {
+                    let self_reg = match self.resolve(&args[0]) {
+                        AirValue::Register(r) => r,
+                        _ => { self.emit_ln(&format!("{} = 0;", tn)); return; }
+                    };
+                    let mut handle = "0".to_string();
+                    if let Some((_, fields)) = self.struct_inits.get(&self_reg) {
+                        for (fn_, fv) in fields {
+                            if fn_ == "handle" { handle = self.emit_air_value_str(fv); }
+                        }
+                    }
+                    self.emit_ln(&format!("{} = arca_future_await({});", tn, handle));
                 }
             }
             "Response.ok" | "Response.text" | "Response.html" | "Response.json"

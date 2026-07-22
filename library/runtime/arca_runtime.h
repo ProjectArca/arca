@@ -228,6 +228,10 @@ const char* arca_vector_db_search(int64_t handle, const char* query_vec_str, int
 int64_t arca_rag_create(int64_t db_handle, const char* llm_provider, const char* model);
 int32_t arca_rag_ingest_document(int64_t handle, const char* doc_text, int32_t chunk_size);
 const char* arca_rag_query(int64_t handle, const char* query_text);
+int64_t arca_future_create(void);
+void arca_future_complete(int64_t fut, int64_t val);
+int64_t arca_future_await(int64_t fut);
+int64_t arca_task_spawn(void (*func)(void*), void* arg);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
 void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);
