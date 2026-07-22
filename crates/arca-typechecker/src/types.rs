@@ -71,7 +71,7 @@ pub enum Type {
     Option(Box<Type>),
     Result(Box<Type>, Box<Type>),
     ErrorUnion(Vec<Type>),
-    Null,
+    None,
     Unknown,
 }
 
@@ -119,9 +119,9 @@ impl Type {
                 matches!(p, PrimitiveType::F32 | PrimitiveType::F64)
             }
             (Type::Unknown, _) | (_, Type::Unknown) => true,
-            (Type::Null, Type::Reference { .. }) => true,
-            (Type::Null, Type::Option(_)) => true,
-            (Type::Null, Type::Primitive(PrimitiveType::Void)) => true,
+            (Type::None, Type::Reference { .. }) => true,
+            (Type::None, Type::Option(_)) => true,
+            (Type::None, Type::Primitive(PrimitiveType::Void)) => true,
             (Type::Reference { .. }, Type::Primitive(PrimitiveType::Void)) => true,
             (Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::Void)) => true,
             _ => false,
@@ -143,9 +143,9 @@ impl fmt::Display for Type {
             }
             Type::Reference { is_mut, inner } => {
                 if *is_mut {
-                    write!(f, "&mut {}", inner)
+                    write!(f, "ptr<{}>", inner)
                 } else {
-                    write!(f, "&{}", inner)
+                    write!(f, "ref<{}>", inner)
                 }
             }
             Type::Option(inner) => write!(f, "Option<{}>", inner),
@@ -154,7 +154,7 @@ impl fmt::Display for Type {
                 let strs: Vec<String> = variants.iter().map(|v| format!("{}", v)).collect();
                 write!(f, "{}", strs.join(" | "))
             }
-            Type::Null => write!(f, "null"),
+            Type::None => write!(f, "none"),
             Type::Unknown => write!(f, "Unknown"),
         }
     }

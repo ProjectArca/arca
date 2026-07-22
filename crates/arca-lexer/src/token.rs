@@ -39,11 +39,12 @@ pub enum TokenKind {
     Extern,
     True,
     False,
-    Nil,
+    NoneKw,
     Break,
     Continue,
     ThrowKw,
     Try,
+    Catch,
     Group,
 
     // Identifiers & Literals
@@ -55,7 +56,9 @@ pub enum TokenKind {
 
     // Operators & Punctuation
     Plus,          // +
+    PlusAssign,    // +=
     Minus,         // -
+    MinusAssign,   // -=
     Star,          // *
     Slash,         // /
     Percent,       // %
@@ -130,11 +133,12 @@ impl fmt::Display for TokenKind {
             TokenKind::Extern => write!(f, "extern"),
             TokenKind::True => write!(f, "true"),
             TokenKind::False => write!(f, "false"),
-            TokenKind::Nil => write!(f, "nil"),
+            TokenKind::NoneKw => write!(f, "none"),
             TokenKind::Break => write!(f, "break"),
             TokenKind::Continue => write!(f, "continue"),
             TokenKind::ThrowKw => write!(f, "throw"),
             TokenKind::Try => write!(f, "try"),
+            TokenKind::Catch => write!(f, "catch"),
             TokenKind::Group => write!(f, "group"),
             TokenKind::Identifier(id) => write!(f, "Identifier({})", id),
             TokenKind::IntLiteral(n) => write!(f, "IntLiteral({})", n),
@@ -142,7 +146,9 @@ impl fmt::Display for TokenKind {
             TokenKind::StringLiteral(s) => write!(f, "StringLiteral(\"{}\")", s),
             TokenKind::CharLiteral(c) => write!(f, "CharLiteral('{}')", c),
             TokenKind::Plus => write!(f, "+"),
+            TokenKind::PlusAssign => write!(f, "+="),
             TokenKind::Minus => write!(f, "-"),
+            TokenKind::MinusAssign => write!(f, "-="),
             TokenKind::Star => write!(f, "*"),
             TokenKind::Slash => write!(f, "/"),
             TokenKind::Percent => write!(f, "%"),

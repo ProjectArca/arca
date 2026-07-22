@@ -73,6 +73,7 @@ impl<'a> Parser<'a> {
         match &self.current_token.kind {
             TokenKind::Struct => self.parse_struct_decl(),
             TokenKind::Actor => self.parse_struct_decl(),
+            TokenKind::Impl => self.parse_impl_decl(),
             TokenKind::Extend => self.parse_extend_decl(),
             TokenKind::Enum | TokenKind::ErrorKw => self.parse_enum_decl(),
             TokenKind::Capability => self.parse_capability_decl(),
@@ -185,6 +186,54 @@ impl<'a> Parser<'a> {
         Some(Decl::Struct {
             name,
             fields,
+            methods,
+            span: Span::new(
+                start_span.start,
+                end_span.end,
+                start_span.start_loc,
+                end_span.end_loc,
+            ),
+        })
+    }
+
+    fn parse_impl_decl(&mut self) -> Option<Decl> {
+        let start_span = self.current_token.span;
+        self.advance(); // impl
+
+        let target_name = match &self.current_token.kind {
+            TokenKind::Identifier(id) => id.clone(),
+            _ => {
+                self.diagnostics.push(
+                    Diagnostic::error("Expected type name after 'impl'")
+                        .with_span(self.current_token.span),
+                );
+                return None;
+            }
+        };
+        self.advance();
+
+        if !self.expect(TokenKind::OpenBrace) {
+            return None;
+        }
+
+        let mut methods = Vec::new();
+        while self.current_token.kind != TokenKind::CloseBrace
+            && self.current_token.kind != TokenKind::Eof
+        {
+            if self.current_token.kind == TokenKind::Fn {
+                if let Some(method) = self.parse_fn_decl() {
+                    methods.push(method);
+                }
+            } else {
+                self.advance();
+            }
+        }
+
+        let end_span = self.current_token.span;
+        self.expect(TokenKind::CloseBrace);
+
+        Some(Decl::Extend {
+            target_name,
             methods,
             span: Span::new(
                 start_span.start,
@@ -645,7 +694,14 @@ impl<'a> Parser<'a> {
                         }
                     }
                     self.expect(TokenKind::Greater);
-                    Some(TypeAnnotation::Generic { name: n, args })
+                    // ref<T> → Ref, ptr<T> → Ptr
+                    if n == "ref" && args.len() == 1 {
+                        Some(TypeAnnotation::Ref { inner: Box::new(args.into_iter().next().unwrap()) })
+                    } else if n == "ptr" && args.len() == 1 {
+                        Some(TypeAnnotation::Ptr { inner: Box::new(args.into_iter().next().unwrap()) })
+                    } else {
+                        Some(TypeAnnotation::Generic { name: n, args })
+                    }
                 } else {
                     Some(TypeAnnotation::Named(n))
                 }
@@ -716,10 +772,10 @@ impl<'a> Parser<'a> {
                     span: token.span,
                 })
             }
-            TokenKind::Nil => {
+            TokenKind::NoneKw => {
                 self.advance();
                 Some(Expr::Literal {
-                    value: LiteralKind::Null,
+                    value: LiteralKind::None,
                     span: token.span,
                 })
             }
@@ -788,53 +844,81 @@ impl<'a> Parser<'a> {
                 })
             }
             TokenKind::OpenParen => {
+                // Save state to potentially backtrack
+                let saved_lex = self.lexer.save();
+                let saved_current = self.current_token.clone();
+                let saved_peek = self.peek_token.clone();
+
                 self.advance();
+                // Try zero-param closure: () => expr
+                if self.current_token.kind == TokenKind::CloseParen
+                    && self.peek_token.kind == TokenKind::FatArrow
+                {
+                    self.advance(); // )
+                    self.advance(); // =>
+                    let body = self.parse_expression(Precedence::Lowest)?;
+                    let end_span = body.span();
+                    return Some(Expr::Closure {
+                        params: Vec::new(),
+                        body: Box::new(body),
+                        span: Span::new(
+                            token.span.start, end_span.end,
+                            token.span.start_loc, end_span.end_loc,
+                        ),
+                    });
+                }
+                // Try param closure: (ident, ...) => or (ident: Type, ...) =>
+                let mut params = Vec::new();
+                let mut ok = true;
+                loop {
+                    match &self.current_token.kind {
+                        TokenKind::CloseParen => {
+                            self.advance();
+                            break;
+                        }
+                        TokenKind::Identifier(pname) => {
+                            let pn = pname.clone();
+                            let pspan = self.current_token.span;
+                            self.advance();
+                            let type_ann = if self.current_token.kind == TokenKind::Colon {
+                                self.advance();
+                                self.parse_type_annotation()
+                            } else {
+                                None
+                            };
+                            params.push(ParamDef {
+                                name: pn,
+                                type_ann: type_ann.unwrap_or(TypeAnnotation::Named("void".into())),
+                                span: pspan,
+                            });
+                            if self.current_token.kind == TokenKind::Comma {
+                                self.advance();
+                            }
+                        }
+                        _ => { ok = false; break; }
+                    }
+                }
+                if ok && self.current_token.kind == TokenKind::FatArrow {
+                    self.advance(); // =>
+                    let body = self.parse_expression(Precedence::Lowest)?;
+                    let end_span = body.span();
+                    return Some(Expr::Closure {
+                        params,
+                        body: Box::new(body),
+                        span: Span::new(
+                            token.span.start, end_span.end,
+                            token.span.start_loc, end_span.end_loc,
+                        ),
+                    });
+                }
+                // Not a closure: restore lexer and parse as paren expr
+                self.lexer.restore(saved_lex);
+                self.current_token = saved_current;
+                self.peek_token = saved_peek;
+                self.advance(); // consume (
                 let expr = self.parse_expression(Precedence::Lowest)?;
                 self.expect(TokenKind::CloseParen);
                 Some(expr)
-            }
-            TokenKind::Pipe => {
-                // Closure: `|params| expr`
-                self.advance(); // |
-                let mut params = Vec::new();
-                while self.current_token.kind != TokenKind::Pipe
-                    && self.current_token.kind != TokenKind::Eof
-                {
-                    if let TokenKind::Identifier(pname) = &self.current_token.kind {
-                        let pn = pname.clone();
-                        let pspan = self.current_token.span;
-                        self.advance();
-                        let type_ann = if self.current_token.kind == TokenKind::Colon {
-                            self.advance();
-                            self.parse_type_annotation()
-                        } else {
-                            None
-                        };
-                        params.push(ParamDef {
-                            name: pn,
-                            type_ann: type_ann.unwrap_or(TypeAnnotation::Named("void".into())),
-                            span: pspan,
-                        });
-                    } else {
-                        self.advance();
-                    }
-                    if self.current_token.kind == TokenKind::Comma {
-                        self.advance();
-                    }
-                }
-                self.expect(TokenKind::Pipe);
-                let body = self.parse_expression(Precedence::Lowest)?;
-                let end_span = body.span();
-                Some(Expr::Closure {
-                    params,
-                    body: Box::new(body),
-                    span: Span::new(
-                        token.span.start,
-                        end_span.end,
-                        token.span.start_loc,
-                        end_span.end_loc,
-                    ),
-                })
             }
             TokenKind::Minus => {
                 self.advance();
@@ -948,15 +1032,74 @@ impl<'a> Parser<'a> {
             TokenKind::Try => {
                 self.advance(); // try
                 let block = self.parse_block_expr()?;
-                Some(Expr::TryBlock {
-                    span: Span::new(
-                        token.span.start,
-                        block.span.end,
-                        token.span.start_loc,
-                        block.span.end_loc,
-                    ),
-                    body: block,
-                })
+                // Optional catch block: catch err { ... } or catch { ... }
+                let catch_var = if self.current_token.kind == TokenKind::Catch {
+                    self.advance(); // catch
+                    match &self.current_token.kind {
+                        TokenKind::Identifier(name) => {
+                            let n = name.clone();
+                            self.advance();
+                            Some(n)
+                        }
+            _ => None,
+                    }
+                } else {
+                    None
+                };
+                if self.current_token.kind == TokenKind::OpenBrace {
+                    let catch_block = self.parse_block_expr()?;
+                    let catch_span = catch_block.span;
+                    let block_span = block.span;
+                    let try_expr = Expr::Block(block);
+                    let catch_expr = if let Some(var) = catch_var {
+                        Expr::Block(BlockExpr {
+                            statements: vec![Stmt::VarDecl {
+                                is_const: true,
+                                name: var,
+                                type_ann: None,
+                                init: Some(Expr::Identifier {
+                                    name: "__catch_err".into(),
+                                    span: catch_span,
+                                }),
+                                span: catch_span,
+                            }],
+                            final_expr: catch_block.final_expr,
+                            span: catch_span,
+                        })
+                    } else {
+                        Expr::Block(catch_block)
+                    };
+                    Some(Expr::GroupBlock {
+                        body: BlockExpr {
+                            statements: vec![
+                                Stmt::Expr { expr: try_expr, has_semicolon: false, span: block_span },
+                            ],
+                            final_expr: Some(Box::new(catch_expr)),
+                            span: Span::new(
+                                token.span.start,
+                                catch_span.end,
+                                token.span.start_loc,
+                                catch_span.end_loc,
+                            ),
+                        },
+                        span: Span::new(
+                            token.span.start,
+                            catch_span.end,
+                            token.span.start_loc,
+                            catch_span.end_loc,
+                        ),
+                    })
+                } else {
+                    Some(Expr::TryBlock {
+                        span: Span::new(
+                            token.span.start,
+                            block.span.end,
+                            token.span.start_loc,
+                            block.span.end_loc,
+                        ),
+                        body: block,
+                    })
+                }
             }
             TokenKind::Group => {
                 self.advance(); // group
@@ -980,58 +1123,6 @@ impl<'a> Parser<'a> {
                     value: Box::new(value),
                     span: Span::new(start.start, end.end, start.start_loc, end.end_loc),
                 })
-            }
-            TokenKind::Borrow | TokenKind::Move => {
-                let name = if token.kind == TokenKind::Borrow { "borrow" } else { "move" };
-                self.advance();
-                if self.current_token.kind == TokenKind::OpenParen {
-                    self.advance();
-                    let mut args = Vec::new();
-                    while self.current_token.kind != TokenKind::CloseParen
-                        && self.current_token.kind != TokenKind::Eof
-                    {
-                        if let Some(arg) = self.parse_expression(Precedence::Lowest) {
-                            args.push(arg);
-                        } else {
-                            self.advance();
-                        }
-                        if self.current_token.kind == TokenKind::Comma {
-                            self.advance();
-                        }
-                    }
-                    let end_span = self.current_token.span;
-                    self.expect(TokenKind::CloseParen);
-                    Some(Expr::Call {
-                        callee: Box::new(Expr::Identifier {
-                            name: name.into(),
-                            span: token.span,
-                        }),
-                        args,
-                        span: Span::new(
-                            token.span.start,
-                            end_span.end,
-                            token.span.start_loc,
-                            end_span.end_loc,
-                        ),
-                    })
-                } else if let Some(expr) = self.parse_expression(Precedence::Primary) {
-                    let end_span = expr.span();
-                    Some(Expr::Call {
-                        callee: Box::new(Expr::Identifier {
-                            name: name.into(),
-                            span: token.span,
-                        }),
-                        args: vec![expr],
-                        span: Span::new(
-                            token.span.start,
-                            end_span.end,
-                            token.span.start_loc,
-                            end_span.end_loc,
-                        ),
-                    })
-                } else {
-                    None
-                }
             }
             TokenKind::OpenBrace => {
                 self.parse_block_expr().map(Expr::Block)
@@ -1138,8 +1229,6 @@ impl<'a> Parser<'a> {
             self.advance(); // {
         }
         let mut fields = Vec::new();
-        let mut end_span = start_span;
-
         while self.current_token.kind != TokenKind::CloseBrace
             && self.current_token.kind != TokenKind::Eof
         {
@@ -1197,7 +1286,7 @@ impl<'a> Parser<'a> {
                 self.advance();
             }
         }
-        end_span = self.current_token.span;
+        let end_span = self.current_token.span;
         self.expect(TokenKind::CloseBrace);
 
         Some(Expr::StructLiteral {
@@ -1624,6 +1713,131 @@ impl<'a> Parser<'a> {
 
     fn parse_statement(&mut self) -> Option<Stmt> {
         match &self.current_token.kind {
+            TokenKind::For => {
+                let start_span = self.current_token.span;
+                self.advance(); // for
+
+                // for let i = 0; ... (C-style)
+                if self.current_token.kind == TokenKind::Let {
+                    self.advance(); // let
+                    let name = match &self.current_token.kind {
+                        TokenKind::Identifier(id) => id.clone(),
+                        _ => return None,
+                    };
+                    let init_span = self.current_token.span;
+                    self.advance();
+                    self.expect(TokenKind::Assign);
+                    let init_val = self.parse_expression(Precedence::Lowest)?;
+                    self.expect(TokenKind::Semicolon);
+                    let cond = self.parse_expression(Precedence::Lowest)?;
+                    self.expect(TokenKind::Semicolon);
+                    // Parse update: handle i += 1, i -= 1, i = expr, or bare expr
+                    let update_var = match &self.current_token.kind {
+                        TokenKind::Identifier(id) => id.clone(),
+                        _ => String::new(),
+                    };
+                    let update_stmt = if !update_var.is_empty() {
+                        let u_span = self.current_token.span;
+                        self.advance();
+                        match &self.current_token.kind {
+                            TokenKind::PlusAssign => {
+                                self.advance();
+                                let rhs = self.parse_expression(Precedence::Lowest)?;
+                                Some(Stmt::Assign {
+                                    target: update_var.clone(),
+                                    value: Box::new(Expr::Binary {
+                                        left: Box::new(Expr::Identifier { name: update_var.clone(), span: u_span }),
+                                        op: BinaryOp::Add,
+                                        right: Box::new(rhs),
+                                        span: u_span,
+                                    }),
+                                    span: u_span,
+                                })
+                            }
+                            TokenKind::MinusAssign => {
+                                self.advance();
+                                let rhs = self.parse_expression(Precedence::Lowest)?;
+                                Some(Stmt::Assign {
+                                    target: update_var.clone(),
+                                    value: Box::new(Expr::Binary {
+                                        left: Box::new(Expr::Identifier { name: update_var.clone(), span: u_span }),
+                                        op: BinaryOp::Sub,
+                                        right: Box::new(rhs),
+                                        span: u_span,
+                                    }),
+                                    span: u_span,
+                                })
+                            }
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    };
+                    let body = self.parse_block_expr()?;
+                    let end_span = body.span;
+
+                    let init_stmt = Stmt::VarDecl {
+                        is_const: false,
+                        name,
+                        type_ann: None,
+                        init: Some(init_val),
+                        span: init_span,
+                    };
+
+                    return Some(Stmt::Expr {
+                        expr: Expr::ForLoop {
+                            init: Some(Box::new(init_stmt)),
+                            cond: Some(Box::new(cond)),
+                            update: update_stmt.map(Box::new),
+                            body,
+                            span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                        },
+                        has_semicolon: false,
+                        span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                    });
+                }
+
+                // for ident in expr { ... } (foreach) or for ident, ident in expr { ... } (enumerate)
+                let first = match &self.current_token.kind {
+                    TokenKind::Identifier(id) => id.clone(),
+                    _ => return None,
+                };
+                self.advance();
+
+                let (index_var, item_var) = if self.current_token.kind == TokenKind::Comma {
+                    self.advance();
+                    let second = match &self.current_token.kind {
+                        TokenKind::Identifier(id) => id.clone(),
+                        _ => return None,
+                    };
+                    self.advance();
+                    (Some(first), second)
+                } else {
+                    (None, first)
+                };
+
+                if self.current_token.kind != TokenKind::Identifier("in".into()) {
+                    self.diagnostics.push(Diagnostic::error("Expected 'in' in for loop").with_span(self.current_token.span));
+                    return None;
+                }
+                self.advance(); // in
+
+                let iterable = self.parse_expression(Precedence::Lowest)?;
+                let body = self.parse_block_expr()?;
+                let end_span = body.span;
+
+                return Some(Stmt::Expr {
+                    expr: Expr::ForIn {
+                        index_var,
+                        item_var,
+                        iterable: Box::new(iterable),
+                        body,
+                        span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                    },
+                    has_semicolon: false,
+                    span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                });
+            }
             TokenKind::Let | TokenKind::Const => {
                 let is_const = self.current_token.kind == TokenKind::Const;
                 let start_span = self.current_token.span;

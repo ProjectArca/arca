@@ -51,6 +51,18 @@ pub enum HirExpr {
         body: Box<HirExpr>,
     },
     Loop(HirBlock),
+    ForLoop {
+        init: Option<Box<HirStmt>>,
+        cond: Option<Box<HirExpr>>,
+        update: Option<Box<HirStmt>>,
+        body: HirBlock,
+    },
+    ForIn {
+        index_var: Option<String>,
+        item_var: String,
+        iterable: Box<HirExpr>,
+        body: HirBlock,
+    },
     Throw(Box<HirExpr>),
 }
 
@@ -85,6 +97,10 @@ pub enum HirStmt {
     Break,
     Continue,
     Expr(HirExpr),
+    Assign {
+        target: String,
+        value: Box<HirExpr>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -249,6 +265,10 @@ impl Lowerer {
             Stmt::Break { .. } => HirStmt::Break,
             Stmt::Continue { .. } => HirStmt::Continue,
             Stmt::Expr { expr, .. } => HirStmt::Expr(self.lower_expr(expr)),
+            Stmt::Assign { target, value, .. } => HirStmt::Assign {
+                target: target.clone(),
+                value: Box::new(self.lower_expr(value)),
+            },
         }
     }
 
@@ -352,6 +372,18 @@ impl Lowerer {
             Expr::Closure { params, body, .. } => HirExpr::Closure {
                 params: params.clone(),
                 body: Box::new(self.lower_expr(body)),
+            },
+            Expr::ForLoop { init, cond, update, body, .. } => HirExpr::ForLoop {
+                init: init.as_ref().map(|s| Box::new(self.lower_stmt(s))),
+                cond: cond.as_ref().map(|e| Box::new(self.lower_expr(e))),
+                update: update.as_ref().map(|s| Box::new(self.lower_stmt(s))),
+                body: self.lower_block(body),
+            },
+            Expr::ForIn { index_var, item_var, iterable, body, .. } => HirExpr::ForIn {
+                index_var: index_var.clone(),
+                item_var: item_var.clone(),
+                iterable: Box::new(self.lower_expr(iterable)),
+                body: self.lower_block(body),
             },
             Expr::Throw { value, .. } => HirExpr::Throw(Box::new(self.lower_expr(value))),
             Expr::NullCoalesce { left, right, .. } => HirExpr::Binary {

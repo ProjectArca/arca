@@ -9,5 +9,5 @@ export fn cpu_count() -> i32 {
 }
 
 export fn env(name: string) -> string? {
-  nil
+  none
 }

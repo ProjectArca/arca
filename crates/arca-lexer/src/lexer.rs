@@ -35,6 +35,18 @@ impl<'a> Lexer<'a> {
         self.source
     }
 
+    pub fn save(&self) -> (usize, usize, usize) {
+        (self.current_byte, self.line, self.column)
+    }
+
+    pub fn restore(&mut self, state: (usize, usize, usize)) {
+        let (byte, line, column) = state;
+        self.current_byte = byte;
+        self.line = line;
+        self.column = column;
+        self.chars = self.source[byte..].char_indices().peekable();
+    }
+
     fn peek_char(&mut self) -> Option<char> {
         self.chars.peek().map(|(_, c)| *c)
     }
@@ -99,12 +111,22 @@ impl<'a> Lexer<'a> {
             ']' => TokenKind::CloseBracket,
             ';' => TokenKind::Semicolon,
             ',' => TokenKind::Comma,
-            '+' => TokenKind::Plus,
+            '+' => {
+                if self.peek_char() == Some('=') {
+                    self.next_char();
+                    TokenKind::PlusAssign
+                } else {
+                    TokenKind::Plus
+                }
+            }
             '*' => TokenKind::Star,
             '%' => TokenKind::Percent,
 
             '-' => {
-                if self.peek_char() == Some('>') {
+                if self.peek_char() == Some('=') {
+                    self.next_char();
+                    TokenKind::MinusAssign
+                } else if self.peek_char() == Some('>') {
                     self.next_char();
                     TokenKind::Arrow
                 } else {
@@ -297,11 +319,12 @@ impl<'a> Lexer<'a> {
             "extern" => TokenKind::Extern,
             "true" => TokenKind::True,
             "false" => TokenKind::False,
-            "nil" => TokenKind::Nil,
+            "none" => TokenKind::NoneKw,
             "break" => TokenKind::Break,
             "continue" => TokenKind::Continue,
             "throw" => TokenKind::ThrowKw,
             "try" => TokenKind::Try,
+            "catch" => TokenKind::Catch,
             "group" => TokenKind::Group,
             _ => TokenKind::Identifier(text),
         }

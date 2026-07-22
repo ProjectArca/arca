@@ -140,8 +140,12 @@ impl TypeChecker {
         match ann {
             TypeAnnotation::Named(name) => self.env.lookup_type_annotation(name),
             TypeAnnotation::Generic { name, .. } => self.env.lookup_type_annotation(name),
-            TypeAnnotation::Reference { is_mut, inner } => Type::Reference {
-                is_mut: *is_mut,
+            TypeAnnotation::Ref { inner } => Type::Reference {
+                is_mut: false,
+                inner: Box::new(self.resolve_ast_type(inner)),
+            },
+            TypeAnnotation::Ptr { inner } => Type::Reference {
+                is_mut: true,
                 inner: Box::new(self.resolve_ast_type(inner)),
             },
             TypeAnnotation::Fn { params, return_type } => Type::Fn(FnType {
@@ -279,6 +283,10 @@ impl TypeChecker {
             HirStmt::Expr(expr) => {
                 self.infer_expr(expr);
             }
+            HirStmt::Assign { target, value } => {
+                let val_ty = self.infer_expr(value);
+                self.env.insert_var(target.clone(), val_ty);
+            }
             HirStmt::Destructure { struct_name: _, fields, init } => {
                 let init_ty = self.infer_expr(init);
                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
@@ -307,7 +315,7 @@ impl TypeChecker {
                 LiteralKind::String(_) => Type::Primitive(PrimitiveType::String),
                 LiteralKind::Char(_) => Type::Primitive(PrimitiveType::Char),
                 LiteralKind::Bool(_) => Type::Primitive(PrimitiveType::Bool),
-                LiteralKind::Null => Type::Null,
+                LiteralKind::None => Type::None,
             },
             HirExpr::VarRef(name) => {
                 if let Some(ty) = self.env.lookup_var(name) {
@@ -561,6 +569,23 @@ impl TypeChecker {
                 .as_ref()
                 .map(|e| self.infer_expr(e))
                 .unwrap_or(Type::Primitive(PrimitiveType::Void)),
+            HirExpr::ForLoop { init, cond, update, body } => {
+                if let Some(s) = init { self.check_stmt(s, &Type::Primitive(PrimitiveType::Void)); }
+                if let Some(c) = cond { self.infer_expr(c); }
+                if let Some(u) = update { self.check_stmt(u, &Type::Primitive(PrimitiveType::Void)); }
+                self.env.push_scope();
+                let result = body.final_expr.as_ref().map(|e| self.infer_expr(e)).unwrap_or(Type::Primitive(PrimitiveType::Void));
+                self.env.pop_scope();
+                result
+            }
+            HirExpr::ForIn { index_var: _, item_var, iterable, body } => {
+                let _iter_ty = self.infer_expr(iterable);
+                self.env.push_scope();
+                self.env.insert_var(item_var.clone(), Type::Unknown);
+                let result = body.final_expr.as_ref().map(|e| self.infer_expr(e)).unwrap_or(Type::Primitive(PrimitiveType::Void));
+                self.env.pop_scope();
+                result
+            }
             HirExpr::Throw(value) => {
                 let _inner = self.infer_expr(value);
                 Type::Primitive(PrimitiveType::Void)

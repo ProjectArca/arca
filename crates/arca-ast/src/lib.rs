@@ -35,7 +35,7 @@ pub enum LiteralKind {
     String(String),
     Char(char),
     Bool(bool),
-    Null,
+    None,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -65,7 +65,8 @@ pub enum UnaryOp {
 pub enum TypeAnnotation {
     Named(String),
     Generic { name: String, args: Vec<TypeAnnotation> },
-    Reference { is_mut: bool, inner: Box<TypeAnnotation> },
+    Ref { inner: Box<TypeAnnotation> },
+    Ptr { inner: Box<TypeAnnotation> },
     Fn { params: Vec<TypeAnnotation>, return_type: Box<TypeAnnotation> },
     Union(Vec<TypeAnnotation>),
 }
@@ -78,12 +79,11 @@ impl fmt::Display for TypeAnnotation {
                 let args_str: Vec<String> = args.iter().map(|a| format!("{}", a)).collect();
                 write!(f, "{}<{}>", name, args_str.join(", "))
             }
-            TypeAnnotation::Reference { is_mut, inner } => {
-                if *is_mut {
-                    write!(f, "&mut {}", inner)
-                } else {
-                    write!(f, "&{}", inner)
-                }
+            TypeAnnotation::Ref { inner } => {
+                write!(f, "ref<{}>", inner)
+            }
+            TypeAnnotation::Ptr { inner } => {
+                write!(f, "ptr<{}>", inner)
             }
             TypeAnnotation::Fn { params, return_type } => {
                 let params_str: Vec<String> = params.iter().map(|p| format!("{}", p)).collect();
@@ -219,6 +219,20 @@ pub enum Expr {
         value: Box<Expr>,
         span: Span,
     },
+    ForLoop {
+        init: Option<Box<Stmt>>,
+        cond: Option<Box<Expr>>,
+        update: Option<Box<Stmt>>,
+        body: BlockExpr,
+        span: Span,
+    },
+    ForIn {
+        index_var: Option<String>,
+        item_var: String,
+        iterable: Box<Expr>,
+        body: BlockExpr,
+        span: Span,
+    },
 }
 
 impl Expr {
@@ -240,8 +254,10 @@ impl Expr {
             | Expr::GroupBlock { span, .. }
             | Expr::Closure { span, .. }
             | Expr::Loop { span, .. }
-            | Expr::IntrinsicCall { span, .. }
-            | Expr::Throw { span, .. } => *span,
+                | Expr::IntrinsicCall { span, .. }
+                | Expr::Throw { span, .. }
+                | Expr::ForLoop { span, .. }
+                | Expr::ForIn { span, .. } => *span,
             Expr::Block(b) => b.span,
         }
     }
@@ -279,6 +295,11 @@ pub enum Stmt {
     Expr {
         expr: Expr,
         has_semicolon: bool,
+        span: Span,
+    },
+    Assign {
+        target: String,
+        value: Box<Expr>,
         span: Span,
     },
 }

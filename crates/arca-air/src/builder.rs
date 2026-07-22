@@ -190,6 +190,12 @@ impl AirBuilder {
                     ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: init_val.clone() });
                 }
             }
+            HirStmt::Assign { target, value } => {
+                let val = self.lower_expr(value, ctx, var_map);
+                if let Some(&reg) = var_map.get(target) {
+                    ctx.current.push(AirInstruction::Store { ptr: reg, val });
+                }
+            }
         }
     }
 
@@ -201,7 +207,7 @@ impl AirBuilder {
                 LiteralKind::String(s) => AirValue::ConstString(s.clone()),
                 LiteralKind::Bool(b) => AirValue::ConstBool(*b),
                 LiteralKind::Char(c) => AirValue::ConstString(c.to_string()),
-                LiteralKind::Null => AirValue::ConstInt(0),
+                LiteralKind::None => AirValue::ConstInt(0),
             },
             HirExpr::VarRef(name) => {
                 if let Some(reg) = var_map.get(name) {
@@ -312,6 +318,8 @@ impl AirBuilder {
             HirExpr::Closure { body, .. } => self.lower_expr(body, ctx, var_map),
             HirExpr::TryBlock(b) => self.lower_try(b, ctx, var_map),
             HirExpr::Spawn(b) => self.lower_spawn(b, ctx, var_map),
+            HirExpr::ForLoop { init, cond, update, body } => self.lower_for_loop(init.as_deref(), cond.as_deref(), update.as_deref(), body, ctx, var_map),
+            HirExpr::ForIn { index_var, item_var, iterable, body } => self.lower_for_in(index_var, item_var, iterable, body, ctx, var_map),
             HirExpr::Throw(value) => {
                 let val = self.lower_expr(value, ctx, var_map);
                 let err_slot = self.fresh_reg();
@@ -490,6 +498,76 @@ impl AirBuilder {
             return (callee_name.to_string(), new_args);
         }
         (callee_name.to_string(), args.to_vec())
+    }
+
+    fn lower_for_loop(&mut self, init: Option<&HirStmt>, cond: Option<&HirExpr>, update: Option<&HirStmt>,
+                       body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
+        let header_block = self.fresh_block();
+        let _cond_block = self.fresh_block();
+        let body_block = self.fresh_block();
+        let update_block = self.fresh_block();
+        let exit_block = self.fresh_block();
+
+        // Init
+        if let Some(init_stmt) = init {
+            self.lower_stmt(init_stmt, ctx, var_map);
+        }
+        ctx.set_terminator_and_switch(AirTerminator::Br(header_block), header_block);
+
+        // Header: cond check
+        let cond_val = if let Some(c) = cond {
+            self.lower_expr(c, ctx, var_map)
+        } else {
+            AirValue::ConstBool(true)
+        };
+        ctx.set_terminator_and_switch(
+            AirTerminator::CondBr { cond: cond_val, then_block: body_block, else_block: exit_block },
+            body_block,
+        );
+
+        // Body
+        ctx.push_loop(update_block, exit_block);
+        let body_var_map = var_map.clone();
+        for stmt in &body.statements { self.lower_stmt(stmt, ctx, var_map); }
+        if let Some(ref fe) = body.final_expr { self.lower_expr(fe, ctx, var_map); }
+        ctx.set_terminator_and_switch(AirTerminator::Br(update_block), update_block);
+
+        // Update
+        if let Some(u) = update { self.lower_stmt(u, ctx, var_map); }
+        ctx.set_terminator_and_switch(AirTerminator::Br(header_block), exit_block);
+        ctx.pop_loop();
+        *var_map = body_var_map;
+        AirValue::ConstInt(0)
+    }
+
+    fn lower_for_in(&mut self, index_var: &Option<String>, item_var: &str, iterable: &HirExpr,
+                     body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
+        let _iter_val = self.lower_expr(iterable, ctx, var_map);
+        let _header_block = self.fresh_block();
+        let _body_block = self.fresh_block();
+        let _exit_block = self.fresh_block();
+
+        let _idx_ptr = self.fresh_reg();
+        ctx.current.push(AirInstruction::Alloca { target: _idx_ptr, ty: Type::Primitive(PrimitiveType::I64) });
+        ctx.current.push(AirInstruction::Call {
+            target: Some(_idx_ptr),
+            fn_name: "__arca_for_in_iter".to_string(),
+            args: vec![],
+        });
+
+        let item_ptr = self.fresh_reg();
+        ctx.current.push(AirInstruction::Alloca { target: item_ptr, ty: Type::Primitive(PrimitiveType::I64) });
+        var_map.insert(item_var.to_string(), item_ptr);
+
+        if let Some(idx_var) = index_var {
+            let idx_ptr = self.fresh_reg();
+            ctx.current.push(AirInstruction::Alloca { target: idx_ptr, ty: Type::Primitive(PrimitiveType::I64) });
+            var_map.insert(idx_var.clone(), idx_ptr);
+        }
+
+        for stmt in &body.statements { self.lower_stmt(stmt, ctx, var_map); }
+        if let Some(ref fe) = body.final_expr { self.lower_expr(fe, ctx, var_map); }
+        AirValue::ConstInt(0)
     }
 
     fn lower_loop(&mut self, body: &HirBlock, ctx: &mut LoweringCtx, var_map: &mut HashMap<String, RegisterId>) -> AirValue {
