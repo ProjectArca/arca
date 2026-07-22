@@ -1772,6 +1772,64 @@ impl<'a> Parser<'a> {
 
     fn parse_statement(&mut self) -> Option<Stmt> {
         match &self.current_token.kind {
+            TokenKind::Identifier(name) if self.peek_token.kind == TokenKind::Assign => {
+                let start_span = self.current_token.span;
+                let target = name.clone();
+                self.advance(); // ident
+                self.advance(); // =
+                let value = self.parse_expression(Precedence::Lowest)?;
+                let end_span = value.span();
+                if self.current_token.kind == TokenKind::Semicolon {
+                    self.advance();
+                }
+                Some(Stmt::Assign {
+                    target,
+                    value: Box::new(value),
+                    span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                })
+            }
+            TokenKind::Identifier(name) if self.peek_token.kind == TokenKind::PlusAssign => {
+                let start_span = self.current_token.span;
+                let target = name.clone();
+                self.advance(); // ident
+                self.advance(); // +=
+                let rhs = self.parse_expression(Precedence::Lowest)?;
+                let end_span = rhs.span();
+                if self.current_token.kind == TokenKind::Semicolon {
+                    self.advance();
+                }
+                Some(Stmt::Assign {
+                    target: target.clone(),
+                    value: Box::new(Expr::Binary {
+                        left: Box::new(Expr::Identifier { name: target.clone(), span: start_span }),
+                        op: BinaryOp::Add,
+                        right: Box::new(rhs),
+                        span: start_span,
+                    }),
+                    span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                })
+            }
+            TokenKind::Identifier(name) if self.peek_token.kind == TokenKind::MinusAssign => {
+                let start_span = self.current_token.span;
+                let target = name.clone();
+                self.advance(); // ident
+                self.advance(); // -=
+                let rhs = self.parse_expression(Precedence::Lowest)?;
+                let end_span = rhs.span();
+                if self.current_token.kind == TokenKind::Semicolon {
+                    self.advance();
+                }
+                Some(Stmt::Assign {
+                    target: target.clone(),
+                    value: Box::new(Expr::Binary {
+                        left: Box::new(Expr::Identifier { name: target.clone(), span: start_span }),
+                        op: BinaryOp::Sub,
+                        right: Box::new(rhs),
+                        span: start_span,
+                    }),
+                    span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                })
+            }
             TokenKind::For => {
                 let start_span = self.current_token.span;
                 self.advance(); // for
@@ -1824,6 +1882,15 @@ impl<'a> Parser<'a> {
                                         right: Box::new(rhs),
                                         span: u_span,
                                     }),
+                                    span: u_span,
+                                })
+                            }
+                            TokenKind::Assign => {
+                                self.advance();
+                                let rhs = self.parse_expression(Precedence::Lowest)?;
+                                Some(Stmt::Assign {
+                                    target: update_var.clone(),
+                                    value: Box::new(rhs),
                                     span: u_span,
                                 })
                             }

@@ -439,8 +439,8 @@ impl CodeGenerator {
                 self.emit_indent();
                 self.emit(&pn);
                 self.emit(" = ");
-                // Cast string literals to int64_t since variables are int64_t
-                if matches!(&resolved, AirValue::ConstString(_)) {
+                // Cast string values to int64_t since variables are int64_t slots
+                if is_string_value(&resolved, &self.var_types) {
                     self.emit("(int64_t)");
                 }
                 self.emit_air_value(&resolved);

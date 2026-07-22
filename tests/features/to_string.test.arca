@@ -1,0 +1,8 @@
+// Test: number to_string
+// Expected output:
+// 456
+fn main() {
+  let n = 456
+  let s = n.to_string()
+  println(s)
+}
