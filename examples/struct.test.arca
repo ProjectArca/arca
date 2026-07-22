@@ -1,0 +1,17 @@
+// Test: struct with inline method
+struct User {
+  id: i32
+  name: string
+
+  fn greet(self) -> string {
+    "User: " + self.name
+  }
+}
+
+fn main() {
+  let u = User {
+    id: 1,
+    name: "Alice"
+  }
+  println(u.greet())
+}

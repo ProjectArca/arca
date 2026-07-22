@@ -80,6 +80,7 @@ impl<'a> Parser<'a> {
             TokenKind::Fn => self.parse_fn_decl().map(Decl::Fn),
             TokenKind::Extern => self.parse_extern_decl(),
             TokenKind::Import => self.parse_import_decl(),
+            TokenKind::Let | TokenKind::Const => self.parse_top_var_decl(),
             TokenKind::Export => {
                 let start_span = self.current_token.span;
                 self.advance(); // export
@@ -589,7 +590,8 @@ impl<'a> Parser<'a> {
                 let pspan = self.current_token.span;
                 self.advance();
 
-                if self.expect(TokenKind::Colon) {
+                if self.current_token.kind == TokenKind::Colon {
+                    self.advance();
                     if let Some(t) = self.parse_type_annotation() {
                         params.push(ParamDef {
                             name: pn,
@@ -597,6 +599,12 @@ impl<'a> Parser<'a> {
                             span: pspan,
                         });
                     }
+                } else if pn == "self" {
+                    params.push(ParamDef {
+                        name: pn,
+                        type_ann: TypeAnnotation::Named("Self".into()),
+                        span: pspan,
+                    });
                 }
                 if self.current_token.kind == TokenKind::Comma {
                     self.advance();
@@ -657,6 +665,57 @@ impl<'a> Parser<'a> {
                 end_span.end_loc,
             ),
         })
+    }
+
+    fn parse_top_var_decl(&mut self) -> Option<Decl> {
+        let is_const = self.current_token.kind == TokenKind::Const;
+        let start_span = self.current_token.span;
+        self.advance(); // let / const
+
+        let name = match &self.current_token.kind {
+            TokenKind::Identifier(id) => id.clone(),
+            _ => return None,
+        };
+        let name_span = self.current_token.span;
+        self.advance();
+
+        let type_ann = if self.current_token.kind == TokenKind::Colon {
+            self.advance();
+            self.parse_type_annotation()
+        } else {
+            None
+        };
+
+        let init = if self.current_token.kind == TokenKind::Assign {
+            self.advance();
+            self.parse_expression(Precedence::Lowest)
+        } else {
+            None
+        };
+
+        let end_span = self.current_token.span;
+
+        if is_const {
+            if let Some(init_val) = init {
+                let ret_type = type_ann.unwrap_or(TypeAnnotation::Named("void".into()));
+                Some(Decl::Fn(FnDecl {
+                    name,
+                    params: Vec::new(),
+                    return_type: Some(ret_type),
+                    throws_type: None,
+                    body: BlockExpr {
+                        statements: Vec::new(),
+                        final_expr: Some(Box::new(init_val)),
+                        span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                    },
+                    span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                }))
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 
     fn parse_type_annotation(&mut self) -> Option<TypeAnnotation> {

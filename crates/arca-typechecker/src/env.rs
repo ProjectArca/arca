@@ -158,6 +158,7 @@ impl TypeEnv {
             "string" => Type::Primitive(PrimitiveType::String),
             "char" => Type::Primitive(PrimitiveType::Char),
             "void" => Type::Primitive(PrimitiveType::Void),
+            "Self" => Type::Unknown,
             "c_void_ptr" => Type::Primitive(PrimitiveType::Void),
             custom => {
                 if let Some(st) = self.structs.get(custom) {

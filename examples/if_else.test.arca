@@ -1,0 +1,13 @@
+// Test: if/else expression
+fn main() {
+  let age = 20
+
+  if age >= 18 {
+    println("Adult")
+  } else {
+    println("Child")
+  }
+
+  let x = if age > 10 { 1 } else { 0 }
+  println(x)
+}

@@ -1,0 +1,11 @@
+// Test: comparison and boolean
+fn main() {
+  println(true)
+  println(false)
+  println(5 == 5)
+  println(5 != 4)
+  println(10 > 3)
+  println(10 >= 10)
+  println(2 < 7)
+  println(2 <= 2)
+}

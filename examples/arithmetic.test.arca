@@ -1,0 +1,8 @@
+// Test: arithmetic operators
+fn main() {
+  println(10 + 20)
+  println(20 - 5)
+  println(5 * 6)
+  println(20 / 4)
+  println(20 % 3)
+}

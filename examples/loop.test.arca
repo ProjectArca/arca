@@ -1,0 +1,12 @@
+// Test: loop with break
+fn sum_to(n: i32) -> i32 {
+  if n <= 0 { 0 }
+  else { n + sum_to(n - 1) }
+}
+
+fn main() {
+  loop {
+    println(sum_to(3))
+    break
+  }
+}

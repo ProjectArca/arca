@@ -1,0 +1,202 @@
+// Arca Language Showcase
+// Every feature here is tested and working
+
+import { Instant } from "std/time"
+
+// -------------------------------------------------------
+// Constants & variables
+// -------------------------------------------------------
+
+const APP = "Arca"
+
+fn main() {
+  println("=== ", APP, " Showcase ===")
+
+  // -------------------------------------------------------
+  // Variables
+  // -------------------------------------------------------
+
+  let name = "Lutfi"
+  let age: i32 = 24
+  let pi = 3.1415926
+
+  println(name, " ", age, " ", pi)
+
+  // -------------------------------------------------------
+  // Arithmetic
+  // -------------------------------------------------------
+
+  println(10 + 20)
+  println(20 - 5)
+  println(5 * 6)
+  println(20 / 4)
+  println(20 % 3)
+
+  // -------------------------------------------------------
+  // Boolean & comparison
+  // -------------------------------------------------------
+
+  println(true, " ", false)
+  println(5 == 5, " ", 5 != 4, " ", 10 > 3)
+  println(10 >= 10, " ", 2 < 7, " ", 2 <= 2)
+
+  // -------------------------------------------------------
+  // If/else expression
+  // -------------------------------------------------------
+
+  if age >= 18 {
+    println("Adult")
+  } else {
+    println("Child")
+  }
+
+  // -------------------------------------------------------
+  // Recursion: Fibonacci
+  // -------------------------------------------------------
+
+  let t1 = Instant.now()
+  println("fib(40) =", fib(40), " (", t1.elapsed_ms(), "ms)")
+
+  // -------------------------------------------------------
+  // Recursion: Prime counting
+  // -------------------------------------------------------
+
+  let t2 = Instant.now()
+  println("primes under 10000 =", count_primes(10000, 2), " (", t2.elapsed_ms(), "ms)")
+
+  // -------------------------------------------------------
+  // 3-sort
+  // -------------------------------------------------------
+
+  println(min3(9, 3, 7), " ", mid3(9, 3, 7), " ", max3(9, 3, 7))
+
+  // -------------------------------------------------------
+  // String concat
+  // -------------------------------------------------------
+
+  let msg = "Hello, " + name + "!"
+  println(msg)
+
+  // -------------------------------------------------------
+  // String methods: starts_with, rfind, slice, parse_int
+  // -------------------------------------------------------
+
+  let path = "/users/42"
+  println(path, " starts with /users:", path.starts_with("/users"))
+  println(path, " starts with /posts:", path.starts_with("/posts"))
+  let slash_pos = path.rfind("/")
+  println("last '/' at:", slash_pos)
+  let id_str = path.slice(slash_pos + 1)
+  println("id string:", id_str)
+  println("id parsed:", id_str.parse_int())
+
+  // -------------------------------------------------------
+  // Integer to string
+  // -------------------------------------------------------
+
+  println("answer: ", 42.to_string())
+
+  // -------------------------------------------------------
+  // Struct with inline methods
+  // -------------------------------------------------------
+
+  let user = User {
+    id: 1,
+    name: "Alice"
+  }
+
+  println(user.greet())
+
+  // -------------------------------------------------------
+  // Loop with break
+  // -------------------------------------------------------
+
+  let sum = 0
+  let counter = 0
+  loop {
+    if counter >= 5 {
+      break
+    }
+    sum = sum + counter
+    counter = counter + 1
+  }
+  println("sum 0..4 =", sum)
+
+  // -------------------------------------------------------
+  // Timing
+  // -------------------------------------------------------
+
+  let t3 = Instant.now()
+  let _ = fib(35)
+  let elapsed = t3.elapsed_ms()
+  println("fib(35) took ", elapsed, "ms")
+
+  // -------------------------------------------------------
+  // Done
+  // -------------------------------------------------------
+
+  println("=== Done ===")
+}
+
+// -------------------------------------------------------
+// Recursive fibonacci
+// -------------------------------------------------------
+
+fn fib(n: i32) -> i32 {
+  if n <= 1 { n }
+  else { fib(n - 1) + fib(n - 2) }
+}
+
+// -------------------------------------------------------
+// Prime checker
+// -------------------------------------------------------
+
+fn is_prime(n: i32, d: i32) -> bool {
+  if d * d > n { true }
+  else if n % d == 0 { false }
+  else { is_prime(n, d + 1) }
+}
+
+fn count_primes(limit: i32, cur: i32) -> i32 {
+  if cur > limit { 0 }
+  else {
+    (if is_prime(cur, 2) { 1 } else { 0 }) + count_primes(limit, cur + 1)
+  }
+}
+
+// -------------------------------------------------------
+// 3-sort helpers
+// -------------------------------------------------------
+
+fn min3(a: i32, b: i32, c: i32) -> i32 {
+  if a <= b {
+    if a <= c { a } else { c }
+  } else {
+    if b <= c { b } else { c }
+  }
+}
+
+fn max3(a: i32, b: i32, c: i32) -> i32 {
+  if a >= b {
+    if a >= c { a } else { c }
+  } else {
+    if b >= c { b } else { c }
+  }
+}
+
+fn mid3(a: i32, b: i32, c: i32) -> i32 {
+  a + b + c - min3(a, b, c) - max3(a, b, c)
+}
+
+// -------------------------------------------------------
+// Struct
+// -------------------------------------------------------
+
+struct User {
+  id: i32
+  name: string
+
+  fn greet(self) -> string {
+    "User #" + self.id.to_string() + ": " + self.name
+  }
+}
