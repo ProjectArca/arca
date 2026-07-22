@@ -130,7 +130,74 @@ impl TypeEnv {
             params: vec![Type::Primitive(PrimitiveType::String)],
             return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
         };
-        self.functions.insert("info".into(), info_fn);
+        self.functions.insert("info".into(), info_fn.clone());
+
+        // log module extras
+        self.functions.insert("warn".into(), info_fn.clone());
+        self.functions.insert("error".into(), info_fn.clone());
+        self.functions.insert("debug".into(), info_fn);
+
+        // crypto extras
+        self.functions.insert("random_bytes".into(), string_fn.clone());
+        self.functions.insert("aes_gcm_encrypt".into(), string_fn.clone());
+
+        // compress extras
+        let decompress_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("decompress".into(), decompress_fn);
+
+        // json
+        let string_to_void_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("Json.stringify".into(), string_fn.clone());
+
+        // random
+        self.functions.insert("Random.next_i64".into(), time_fn.clone());
+        let uuid_fn = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("Random.uuid_v4".into(), uuid_fn.clone());
+
+        // fs
+        self.functions.insert("File.open".into(), string_fn.clone());
+        let file_close_fn = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        };
+        self.functions.insert("File.close".into(), file_close_fn);
+
+        // net
+        self.functions.insert("TcpListener.bind".into(), int_fn.clone());
+
+        // sync (channel already has handlers)
+        self.functions.insert("Channel.new".into(), int_fn.clone());
+
+        // task
+        self.functions.insert("Task.yield_now".into(), void_to_void.clone());
+
+        // http
+        let response_text_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("Response.ok".into(), time_fn.clone());
+        self.functions.insert("Response.text".into(), response_text_fn.clone());
+        self.functions.insert("Response.html".into(), response_text_fn.clone());
+        self.functions.insert("Response.json".into(), response_text_fn.clone());
+        self.functions.insert("Response.not_found".into(), time_fn.clone());
+
+        let request_string_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("Request.param".into(), request_string_fn.clone());
+        self.functions.insert("Request.query".into(), request_string_fn.clone());
+        self.functions.insert("Request.header".into(), request_string_fn.clone());
         let os_arch = FnType {
             params: Vec::new(),
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),
