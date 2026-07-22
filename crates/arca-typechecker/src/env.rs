@@ -359,6 +359,7 @@ impl TypeEnv {
         self.insert_var("Middleware".into(), Type::Unknown);
         self.insert_var("WebSocket".into(), Type::Unknown);
         self.insert_var("SSE".into(), Type::Unknown);
+        self.insert_var("Json".into(), Type::Unknown);
         self.insert_var("OpenAI".into(), Type::Unknown);
         self.insert_var("Anthropic".into(), Type::Unknown);
         self.insert_var("CustomAIProvider".into(), Type::Unknown);

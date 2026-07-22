@@ -1,0 +1,31 @@
+// Arca REST API Server Example
+import { Request, Response, Router, Cookie, Middleware, Headers, serve } from "std/http"
+import { Json } from "std/json"
+
+fn main() {
+  println("=========================================")
+  println("          Arca Native REST API Server    ")
+  println("=========================================")
+
+  let router = Router.new("/api/v1")
+  let users_endpoint = router.get("/users")
+  println("Registered GET Endpoint: " + users_endpoint)
+
+  let post_endpoint = router.post("/users")
+  println("Registered POST Endpoint: " + post_endpoint)
+
+  let auth_cookie = Cookie.new("session_token", "arca_auth_xyz123")
+  println("Session Cookie: " + auth_cookie.to_header())
+
+  let mw = Middleware.use("CORS & Logger")
+  println("Active Middleware: " + mw.name)
+
+  let json_response = Json.stringify("{\"status\":\"success\",\"data\":{\"user_id\":42,\"name\":\"Arca Dev\"}}")
+  println("Response JSON: " + json_response)
+
+  let res = Response.json(json_response)
+  println("HTTP Response Status: " + res.status)
+  println("HTTP Content-Type: " + res.content_type)
+  println("=========================================")
+  println("REST API Ready & Functional!")
+}

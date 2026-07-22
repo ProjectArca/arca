@@ -55,6 +55,7 @@ impl StdLibResolver {
             StdSymbol { name: "serve".into(), module: "std/http".into(), is_intrinsic: true },
         ];
         let std_json = vec![
+            StdSymbol { name: "Json".into(), module: "std/json".into(), is_intrinsic: false },
             StdSymbol { name: "json".into(), module: "std/json".into(), is_intrinsic: true },
             StdSymbol { name: "parse".into(), module: "std/json".into(), is_intrinsic: true },
             StdSymbol { name: "stringify".into(), module: "std/json".into(), is_intrinsic: true },
