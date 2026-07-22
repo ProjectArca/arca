@@ -134,7 +134,7 @@ impl CodeGenerator {
                     || fn_name == "env_get" || fn_name == "arca_env_get" || fn_name == "stdin_read_line"
                     || fn_name.starts_with("arca_path_") || fn_name.starts_with("path_")
                     || fn_name == "json_stringify"
-                    || fn_name == "current_dir" || fn_name == "fs_metadata"
+                    || fn_name == "current_dir"
                     || fn_name == "path_normalize"
                 {
                     "const char*".to_string()
@@ -736,7 +736,7 @@ impl CodeGenerator {
             }
             "current_dir" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                self.emit_ln(&format!("{} = (int64_t)arca_current_dir();", tn));
+                self.emit_ln(&format!("{} = (const char*)arca_current_dir();", tn));
             }
             "stdin_read_line" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();

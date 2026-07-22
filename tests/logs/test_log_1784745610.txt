@@ -28,3 +28,121 @@ Runtime Stdout:
 42
 99
 Result: PASS
+-----------------------------------------
+Test Name: comparison.test.arca
+File: tests/features/comparison.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/comparison.test.arca
+1
+1
+1
+1
+1
+1
+Result: PASS
+-----------------------------------------
+Test Name: defer.test.arca
+File: tests/features/defer.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/defer.test.arca
+1
+2
+Result: PASS
+-----------------------------------------
+Test Name: enum.test.arca
+File: tests/features/enum.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/enum.test.arca
+10
+20
+Result: PASS
+-----------------------------------------
+Test Name: env.test.arca
+File: tests/features/env.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/env.test.arca
+/Users/hy4-mac-002
+Result: PASS
+-----------------------------------------
+Test Name: env_full.test.arca
+File: tests/features/env_full.test.arca
+Duration: 2s
+Runtime Stdout:
+build/output.c:15:6: error: incompatible integer to pointer conversion assigning to 'const char *' from 'int64_t' (aka 'long long') [-Wint-conversion]
+   15 |   v3 = (int64_t)arca_current_dir();
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: extend.test.arca
+File: tests/features/extend.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/extend.test.arca
+99
+Result: PASS
+-----------------------------------------
+Test Name: for_loop.test.arca
+File: tests/features/for_loop.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/for_loop.test.arca
+10
+Result: PASS
+-----------------------------------------
+Test Name: foreach.test.arca
+File: tests/features/foreach.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/foreach.test.arca
+6
+Result: PASS
+-----------------------------------------
+Test Name: fs.test.arca
+File: tests/features/fs.test.arca
+Duration: 15s
+Runtime Stdout:
+[arca] Running: tests/features/fs.test.arca
+0
+-1
+Result: PASS
+-----------------------------------------
+Test Name: fs_full.test.arca
+File: tests/features/fs_full.test.arca
+Duration: 2s
+Runtime Stdout:
+build/output.c:21:6: error: incompatible integer to pointer conversion assigning to 'const char *' from 'int64_t' (aka 'long long') [-Wint-conversion]
+   21 |   v5 = (int64_t)arca_fs_metadata((const char*)"/tmp");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: functions.test.arca
+File: tests/features/functions.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/functions.test.arca
+55
+Result: PASS
+-----------------------------------------
+Test Name: if_else.test.arca
+File: tests/features/if_else.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/if_else.test.arca
+20
+Result: PASS
+-----------------------------------------
+Test Name: impl.test.arca
+File: tests/features/impl.test.arca
+Duration: 14s
+Runtime Stdout:
+[arca] Running: tests/features/impl.test.arca
+42
+Result: PASS

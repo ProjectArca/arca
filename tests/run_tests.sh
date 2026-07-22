@@ -1,11 +1,17 @@
 #!/bin/bash
-# Arca Test Suite Runner — Executes ALL 58 tests and records full runtime stdout in tests/logs/
+# High-Performance Arca Test Suite Runner
+# Pre-builds release binary once and logs full program stdout for ALL 58 tests.
 set +e
 
 mkdir -p tests/logs
 
 TIMESTAMP=$(date +%s)
 LOG_FILE="tests/logs/test_log_${TIMESTAMP}.txt"
+
+echo "Building Arca compiler binary (Release mode)..."
+cargo build --release -q
+
+ARCA_BIN="./target/release/arca-cli"
 
 echo "Arca Test Execution & Runtime Stdout Log" > "$LOG_FILE"
 echo "Timestamp: $(date -u)" >> "$LOG_FILE"
@@ -14,25 +20,27 @@ echo "=========================================" >> "$LOG_FILE"
 
 PASS=0
 FAIL=0
+TOTAL=0
 
 for dir in tests/features tests/std-libs; do
   for f in "$dir"/*.test.arca; do
     [ -f "$f" ] || continue
     name=$(basename "$f")
+    TOTAL=$((TOTAL + 1))
     echo -n "[test] $name ... "
 
     START_TIME=$(date +%s)
     if [[ "$name" == "serve.test.arca" ]]; then
-      output=$(perl -e 'alarm 2; exec @ARGV' cargo run -q -- run "$f" 2>&1 || true)
+      output=$(perl -e 'alarm 2; exec @ARGV' "$ARCA_BIN" run "$f" 2>&1 || true)
     else
-      output=$(cargo run -q -- run "$f" 2>&1)
+      output=$("$ARCA_BIN" run "$f" 2>&1)
     fi
     EXIT_CODE=$?
     END_TIME=$(date +%s)
     DURATION=$((END_TIME - START_TIME))
 
     echo "-----------------------------------------" >> "$LOG_FILE"
-    echo "Test Name: $name" >> "$LOG_FILE"
+    echo "Test #$TOTAL: $name" >> "$LOG_FILE"
     echo "File: $f" >> "$LOG_FILE"
     echo "Duration: ${DURATION}s" >> "$LOG_FILE"
     echo "Runtime Stdout:" >> "$LOG_FILE"
@@ -52,9 +60,9 @@ for dir in tests/features tests/std-libs; do
 done
 
 echo "=========================================" >> "$LOG_FILE"
-echo "Results: $PASS passed, $FAIL failed" >> "$LOG_FILE"
+echo "Results: $PASS passed, $FAIL failed out of $TOTAL total tests" >> "$LOG_FILE"
 
 echo "---"
-echo "Results: $PASS passed, $FAIL failed"
+echo "Results: $PASS passed, $FAIL failed out of $TOTAL total tests"
 echo "Test log saved to: $LOG_FILE"
 [ "$FAIL" -eq 0 ]
