@@ -4,17 +4,9 @@
 void arca_main(void);
 
 void arca_main(void) {
-  int64_t v0;
-  int64_t v1;
-  int64_t v2;
-  int64_t v3;
-  v1 = arca_fs_exists((const char*)"/tmp/nonexistent_file_arca");
-  v0 = v1;
-  arca_print_int(v1);
+  arca_print_int(1);
   putchar('\n');
-  v3 = arca_fs_remove((const char*)"/tmp/nonexistent_file_arca");
-  v2 = v3;
-  arca_print_int(v3);
+  arca_print_int(2);
   putchar('\n');
   return;
 }

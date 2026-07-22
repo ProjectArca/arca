@@ -421,25 +421,39 @@ fn main() {
                 process::exit(1);
             }
 
-            if backend_flag == "llvm" || backend_flag == "native" {
-                let mut air_builder = AirBuilder::new();
-                let mut air_module = air_builder.build_module(&hir);
-                arca_air::AirOptimizer::optimize_module(&mut air_module);
-                let mut cg = CodeGenerator::new(BackendKind::Llvm, TargetArch::Arm64);
-                let llvm_ir = cg.generate_llvm_ir_from_air(&air_module);
-                fs::create_dir_all("build").unwrap();
-                fs::write("build/output.ll", &llvm_ir).expect("Failed to write build/output.ll");
-                println!("[arca-backend] LLVM IR Native Backend: Emitted build/output.ll");
+            match backend_flag {
+                "c" => {
+                    let mut air_builder = AirBuilder::new();
+                    let mut air_module = air_builder.build_module(&hir);
+                    arca_air::AirOptimizer::optimize_module(&mut air_module);
+                    let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+                    let c_code = cg.generate_c_from_air(&air_module);
+                    fs::create_dir_all("build").ok();
+                    fs::write("build/output.c", &c_code).ok();
+                    println!("[arca-backend] C Backend: Emitted build/output.c");
+                }
+                "llvm" => {
+                    let mut air_builder = AirBuilder::new();
+                    let mut air_module = air_builder.build_module(&hir);
+                    arca_air::AirOptimizer::optimize_module(&mut air_module);
+                    let mut cg = CodeGenerator::new(BackendKind::Llvm, TargetArch::Arm64);
+                    let llvm_ir = cg.generate_llvm_ir_from_air(&air_module);
+                    fs::create_dir_all("build").ok();
+                    fs::write("build/output.ll", &llvm_ir).ok();
+                    println!("[arca-backend] LLVM IR Backend: Emitted build/output.ll");
+                }
+                _ => {
+                    let mut air_builder = AirBuilder::new();
+                    let mut air_module = air_builder.build_module(&hir);
+                    arca_air::AirOptimizer::optimize_module(&mut air_module);
+                    let mut cg = CodeGenerator::new(BackendKind::Native, TargetArch::Arm64);
+                    let bytes = cg.generate_native_machine_code(&air_module);
+                    fs::create_dir_all("build").ok();
+                    fs::write("build/output.bin", &bytes).ok();
+                    fs::write("build/output.c", &cg.generate_c_from_air(&air_module)).ok();
+                    println!("[arca-backend] Native Backend: Emitted build/output.bin & build/output.c");
+                }
             }
-
-            let mut air_builder = AirBuilder::new();
-            let mut air_module = air_builder.build_module(&hir);
-            arca_air::AirOptimizer::optimize_module(&mut air_module);
-            let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-            let c_code = cg.generate_c_from_air(&air_module);
-            fs::create_dir_all("build").ok();
-            fs::write("build/output.c", &c_code).ok();
-            println!("[arca-backend] Emitted build/output.c");
             println!("[arca] Build status: SUCCESS");
         }
         "run" => {
