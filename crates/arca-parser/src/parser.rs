@@ -1830,6 +1830,24 @@ impl<'a> Parser<'a> {
                     span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
                 })
             }
+            TokenKind::While => {
+                let start_span = self.current_token.span;
+                self.advance(); // while
+                let cond = self.parse_expression(Precedence::Lowest)?;
+                let body = self.parse_block_expr()?;
+                let end_span = body.span;
+                Some(Stmt::Expr {
+                    expr: Expr::ForLoop {
+                        init: None,
+                        cond: Some(Box::new(cond)),
+                        update: None,
+                        body,
+                        span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                    },
+                    has_semicolon: false,
+                    span: Span::new(start_span.start, end_span.end, start_span.start_loc, end_span.end_loc),
+                })
+            }
             TokenKind::For => {
                 let start_span = self.current_token.span;
                 self.advance(); // for

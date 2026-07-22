@@ -1,0 +1,12 @@
+// Test: while loop
+// Expected output:
+// 10
+fn main() {
+  let i = 0
+  let sum = 0
+  while i <= 4 {
+    sum = sum + i;
+    i = i + 1;
+  }
+  println(sum)
+}

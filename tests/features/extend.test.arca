@@ -1,0 +1,18 @@
+// Test: extend block method
+// Expected output:
+// 99
+struct Box {
+  item: i32
+}
+
+extend Box {
+  fn get_item(self) -> i32 {
+    self.item
+  }
+}
+
+fn main() {
+  let b = Box { item: 99 }
+  let v = b.get_item()
+  println(v)
+}

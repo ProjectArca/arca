@@ -1,0 +1,9 @@
+// Test: string slice operation
+// Expected output:
+// 1
+fn main() {
+  let s = "hello world"
+  let sub = s.slice(6)
+  let check = sub.starts_with("world")
+  println(check)
+}

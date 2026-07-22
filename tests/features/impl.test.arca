@@ -1,0 +1,18 @@
+// Test: impl block method
+// Expected output:
+// 42
+struct Counter {
+  val: i32
+}
+
+impl Counter {
+  fn get_val(self) -> i32 {
+    self.val
+  }
+}
+
+fn main() {
+  let c = Counter { val: 42 }
+  let v = c.get_val()
+  println(v)
+}

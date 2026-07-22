@@ -1,0 +1,8 @@
+// Test: defer statement
+// Expected output:
+// 1
+// 2
+fn main() {
+  defer println(2)
+  println(1)
+}

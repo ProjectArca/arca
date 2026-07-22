@@ -33,6 +33,7 @@ struct LoweringCtx {
     loop_stack: Vec<LoopFrame>,
     param_regs: Vec<RegisterId>,
     last_expr_value: Option<AirValue>,
+    defer_stack: Vec<HirExpr>,
 }
 
 impl LoweringCtx {
@@ -40,6 +41,7 @@ impl LoweringCtx {
         Self {
             blocks: Vec::new(), current: BlockBuilder::new(entry_id),
             loop_stack: Vec::new(), param_regs: Vec::new(), last_expr_value: None,
+            defer_stack: Vec::new(),
         }
     }
 
@@ -78,11 +80,12 @@ impl LoweringCtx {
 pub struct AirBuilder {
     next_reg: u32,
     next_block: u32,
+    known_struct_vars: HashMap<String, String>,
 }
 
 impl AirBuilder {
     pub fn new() -> Self {
-        Self { next_reg: 0, next_block: 0 }
+        Self { next_reg: 0, next_block: 0, known_struct_vars: HashMap::new() }
     }
 
     fn fresh_reg(&mut self) -> RegisterId {
@@ -100,7 +103,13 @@ impl AirBuilder {
         }
         for hir_struct in hir.structs.values() {
             for (mname, mfn) in &hir_struct.methods {
-                functions.insert(format!("{}.{}", hir_struct.name, mname), self.build_function(mfn));
+                let mut method_fn = mfn.clone();
+                if let Some(first_param) = method_fn.params.first_mut() {
+                    if first_param.name == "self" {
+                        first_param.type_ann = arca_ast::TypeAnnotation::Named(hir_struct.name.clone());
+                    }
+                }
+                functions.insert(format!("{}.{}", hir_struct.name, mname), self.build_function(&method_fn));
             }
         }
         AirModule { name: "main_module".to_string(), functions }
@@ -123,6 +132,11 @@ impl AirBuilder {
 
         let ret_val = hir_fn.body.final_expr.as_ref()
             .map(|e| self.lower_expr(e, &mut ctx, &mut var_map));
+
+        let defers = std::mem::take(&mut ctx.defer_stack);
+        for d in defers.into_iter().rev() {
+            self.lower_expr(&d, &mut ctx, &mut var_map);
+        }
 
         let return_type = hir_fn
             .return_type
@@ -155,12 +169,19 @@ impl AirBuilder {
                 ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
                 var_map.insert(name.clone(), ptr_reg);
                 if let Some(init_expr) = init {
+                    if let HirExpr::StructInit { struct_name, .. } = init_expr {
+                        self.known_struct_vars.insert(name.clone(), struct_name.clone());
+                    }
                     let val = self.lower_expr(init_expr, ctx, var_map);
                     ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val });
                 }
             }
             HirStmt::Return(opt_expr) => {
                 let ret_val = opt_expr.as_ref().map(|e| self.lower_expr(e, ctx, var_map));
+                let defers = std::mem::take(&mut ctx.defer_stack);
+                for d in defers.into_iter().rev() {
+                    self.lower_expr(&d, ctx, var_map);
+                }
                 let next = self.fresh_block();
                 ctx.set_terminator_and_switch(AirTerminator::Ret(ret_val), next);
             }
@@ -168,7 +189,7 @@ impl AirBuilder {
                 let val = self.lower_expr(expr, ctx, var_map);
                 ctx.last_expr_value = Some(val);
             }
-            HirStmt::Defer(expr) => { self.lower_expr(expr, ctx, var_map); }
+            HirStmt::Defer(expr) => { ctx.defer_stack.push(expr.clone()); }
             HirStmt::Break => {
                 if let Some(exit) = ctx.loop_exit() {
                     let next = self.fresh_block();
@@ -246,10 +267,17 @@ impl AirBuilder {
                     HirExpr::VarRef(n) => (n.clone(), None),
                     HirExpr::Member { object, property, .. } => {
                         let obj_val = Some(self.lower_expr(object, ctx, var_map));
-                        match &**object {
-                            HirExpr::VarRef(n) => (format!("{}.{}", n, property), obj_val),
-                            _ => (property.clone(), obj_val),
-                        }
+                        let fn_name = match &**object {
+                            HirExpr::VarRef(n) => {
+                                if let Some(sname) = self.known_struct_vars.get(n) {
+                                    format!("{}.{}", sname, property)
+                                } else {
+                                    format!("{}.{}", n, property)
+                                }
+                            }
+                            _ => property.clone(),
+                        };
+                        (fn_name, obj_val)
                     }
                     _ => ("unknown_callee".to_string(), None),
                 };
@@ -497,7 +525,12 @@ impl AirBuilder {
             new_args.extend_from_slice(args);
             return (callee_name.to_string(), new_args);
         }
-        (callee_name.to_string(), args.to_vec())
+        let mut final_args = Vec::new();
+        if let Some(obj) = method_obj {
+            final_args.push(obj);
+        }
+        final_args.extend_from_slice(args);
+        (callee_name.to_string(), final_args)
     }
 
     fn lower_for_loop(&mut self, init: Option<&HirStmt>, cond: Option<&HirExpr>, update: Option<&HirStmt>,
@@ -608,7 +641,11 @@ fn hir_type_to_air_type(ann: &arca_ast::TypeAnnotation) -> Type {
             "bool" => Type::Primitive(PrimitiveType::Bool),
             "string" => Type::Primitive(PrimitiveType::String),
             "void" => Type::Primitive(PrimitiveType::Void),
-            _ => Type::Primitive(PrimitiveType::I64),
+            custom => Type::Struct {
+                name: custom.to_string(),
+                fields: std::collections::HashMap::new(),
+                methods: std::collections::HashMap::new(),
+            },
         },
         _ => Type::Primitive(PrimitiveType::I64),
     }

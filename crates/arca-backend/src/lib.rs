@@ -74,7 +74,7 @@ impl CodeGenerator {
     }
     fn emit_indent(&mut self) { self.output.push_str(&"  ".repeat(self.indent)); }
 
-    fn air_type_to_c(&self, ty: &Type) -> &str {
+    fn air_type_to_c<'a>(&self, ty: &'a Type) -> &'a str {
         match ty {
             Type::Primitive(p) => match p {
                 PrimitiveType::I8 => "int8_t", PrimitiveType::I16 => "int16_t",
@@ -85,6 +85,7 @@ impl CodeGenerator {
                 PrimitiveType::Bool => "bool", PrimitiveType::String => "const char*",
                 PrimitiveType::Char => "char", PrimitiveType::Void => "void",
             },
+            Type::Struct { name, .. } => name.as_str(),
             _ => "int64_t",
         }
     }
@@ -521,6 +522,7 @@ impl CodeGenerator {
                     _ => *object,
                 };
                 let on = self.reg_name(resolved_obj);
+                let obj_type = self.var_types.get(&resolved_obj).cloned().unwrap_or_default();
                 // If the object was created by a StructInit, use struct type for field access
                 if let Some((sname, _)) = self.struct_inits.get(&resolved_obj) {
                     if !sname.is_empty() {
@@ -528,6 +530,8 @@ impl CodeGenerator {
                     } else {
                         self.emit_ln(&format!("{} = *((int64_t*)((char*)&{} + offsetof_placeholder_{}));", tn, on, field));
                     }
+                } else if !obj_type.is_empty() && obj_type != "int64_t" && obj_type != "const char*" && obj_type != "bool" {
+                    self.emit_ln(&format!("{} = {}.{};", tn, on, field));
                 } else {
                     self.emit_ln(&format!("{} = {}._field_{};", tn, on, field));
                 }
