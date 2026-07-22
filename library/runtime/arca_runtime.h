@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+#include <math.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 

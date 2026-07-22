@@ -119,6 +119,26 @@ impl TypeEnv {
         };
         self.functions.insert("__arca_clear_last_error".into(), void_to_void.clone());
 
+        // std/math
+        let math_i64_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("sqrt".into(), math_i64_fn.clone());
+        self.functions.insert("sin".into(), math_i64_fn.clone());
+        self.functions.insert("cos".into(), math_i64_fn.clone());
+        self.functions.insert("abs".into(), math_i64_fn.clone());
+        let math_i64_i64_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("pow".into(), math_i64_i64_fn);
+        let math_void_fn = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("rand".into(), math_void_fn);
+
         // std/os module
         let string_fn = FnType {
             params: vec![Type::Primitive(PrimitiveType::String)],

@@ -1,0 +1,14 @@
+// Test: std/math — sqrt, sin, cos, abs, random
+// Expected output:
+// 3
+// 0
+// 1
+// 99
+// [any non-negative integer]
+fn main() {
+  println(sqrt(9))
+  println(sin(0))
+  println(cos(0))
+  println(abs(-99))
+  println(rand())
+}

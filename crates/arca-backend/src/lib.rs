@@ -269,6 +269,8 @@ impl CodeGenerator {
                         if !defined_fns.contains(fn_name) && !fn_name.starts_with("__arca_")
                             && !fn_name.starts_with("arca_")
                             && fn_name != "println" && fn_name != "print"
+                            && fn_name != "sqrt" && fn_name != "sin" && fn_name != "cos" && fn_name != "abs"
+                            && fn_name != "pow" && fn_name != "rand"
                         {
                             extern_fns.insert(safe);
                         }
@@ -682,6 +684,23 @@ impl CodeGenerator {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let tag = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = {};", tn, tag));
+            }
+            // std/math
+            "sqrt" | "sin" | "cos" | "abs" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let math_fn = if fn_name == "abs" { "llabs" } else { fn_name };
+                self.emit_ln(&format!("{} = (int64_t){}((double){});", tn, math_fn, x));
+            }
+            "pow" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let y = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)pow((double){}, (double){});", tn, x, y));
+            }
+            "rand" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                self.emit_ln(&format!("{} = (int64_t)rand();", tn));
             }
             "arca_scheduler_spawn" | "__arca_spawn" => {
                 let fn_arg = if !args.is_empty() {
