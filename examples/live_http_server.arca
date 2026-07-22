@@ -1,0 +1,7 @@
+// Live Arca HTTP Server Example
+import { serve } from "std/http"
+
+fn main() {
+  println("Starting Arca Native Live HTTP Server on port 8085...")
+  serve(8085)
+}

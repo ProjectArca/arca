@@ -2,40 +2,13 @@
 #include "arca_runtime.h"
 
 void arca_main(void);
+int64_t serve();
 
 void arca_main(void) {
   int64_t v0;
-  int64_t v1;
-  int64_t v2;
-  bool v3;
-  int64_t v4;
-  int64_t v5;
-  int64_t v6;
-  int64_t v7;
-  int64_t v8;
-  int64_t v9;
-  v0 = 0;
-  v1 = 0;
-  goto bb_1;
-  bb_1: ;
-  v2 = v0;
-  v3 = v2 <= 4;
-  if (v3) goto bb_2; else goto bb_4;
-  bb_2: ;
-  v4 = v1;
-  v5 = v0;
-  v6 = v4 + v5;
-  v1 = v6;
-  v7 = v0;
-  v8 = v7 + 1;
-  v0 = v8;
-  goto bb_3;
-  bb_3: ;
-  goto bb_1;
-  bb_4: ;
-  v9 = v1;
-  arca_print_int(v9);
+  arca_print_string("Starting Arca Native Live HTTP Server on port 8085...");
   putchar('\n');
+  v0 = arca_std_http_serve(8085);
   return;
 }
 

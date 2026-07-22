@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include <math.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 
 #ifdef __cplusplus

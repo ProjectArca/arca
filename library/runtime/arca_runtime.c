@@ -502,6 +502,12 @@ void arca_list_free(int64_t handle) { arca_vec_free(handle); }
 // Phase 5: Async Runtime Implementation
 typedef struct { int32_t ready; int64_t val; pthread_mutex_t lock; pthread_cond_t cond; } ArcaFuture;
 
+void arca_scheduler_spawn(void (*func)(void*), void* arg) {
+    pthread_t thread;
+    pthread_create(&thread, NULL, (void*(*)(void*))func, arg);
+    pthread_detach(thread);
+}
+
 int64_t arca_task_spawn(void (*func)(void*), void* arg) {
     arca_scheduler_spawn(func, arg);
     return 1;
