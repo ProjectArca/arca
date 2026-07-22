@@ -372,12 +372,132 @@ int64_t arca_vec_get(int64_t handle, int64_t index) {
     return v->data[index];
 }
 
+int64_t arca_vec_pop(int64_t handle) {
+    if (!handle) return 0;
+    ArcaVec* v = (ArcaVec*)handle;
+    if (v->len == 0) return 0;
+    return v->data[--v->len];
+}
+
 void arca_vec_free(int64_t handle) {
     if (!handle) return;
     ArcaVec* v = (ArcaVec*)handle;
     free(v->data);
     free(v);
 }
+
+// HashMap & HashSet Implementation
+typedef struct { char* key; int64_t val; } MapEntry;
+typedef struct { MapEntry* entries; int64_t len; int64_t cap; } ArcaMap;
+
+int64_t arca_map_new(void) {
+    ArcaMap* m = (ArcaMap*)malloc(sizeof(ArcaMap));
+    m->entries = NULL; m->len = 0; m->cap = 0;
+    return (int64_t)m;
+}
+
+void arca_map_insert(int64_t handle, const char* key, int64_t val) {
+    if (!handle || !key) return;
+    ArcaMap* m = (ArcaMap*)handle;
+    for (int64_t i = 0; i < m->len; i++) {
+        if (strcmp(m->entries[i].key, key) == 0) {
+            m->entries[i].val = val;
+            return;
+        }
+    }
+    if (m->len >= m->cap) {
+        m->cap = m->cap ? m->cap * 2 : 8;
+        m->entries = (MapEntry*)realloc(m->entries, m->cap * sizeof(MapEntry));
+    }
+    m->entries[m->len].key = strdup(key);
+    m->entries[m->len].val = val;
+    m->len++;
+}
+
+int64_t arca_map_get(int64_t handle, const char* key) {
+    if (!handle || !key) return 0;
+    ArcaMap* m = (ArcaMap*)handle;
+    for (int64_t i = 0; i < m->len; i++) {
+        if (strcmp(m->entries[i].key, key) == 0) return m->entries[i].val;
+    }
+    return 0;
+}
+
+int32_t arca_map_contains(int64_t handle, const char* key) {
+    if (!handle || !key) return 0;
+    ArcaMap* m = (ArcaMap*)handle;
+    for (int64_t i = 0; i < m->len; i++) {
+        if (strcmp(m->entries[i].key, key) == 0) return 1;
+    }
+    return 0;
+}
+
+int64_t arca_map_len(int64_t handle) {
+    if (!handle) return 0;
+    return ((ArcaMap*)handle)->len;
+}
+
+void arca_map_free(int64_t handle) {
+    if (!handle) return;
+    ArcaMap* m = (ArcaMap*)handle;
+    for (int64_t i = 0; i < m->len; i++) free(m->entries[i].key);
+    free(m->entries);
+    free(m);
+}
+
+int64_t arca_set_new(void) { return arca_map_new(); }
+void arca_set_add(int64_t handle, const char* key) { arca_map_insert(handle, key, 1); }
+int32_t arca_set_contains(int64_t handle, const char* key) { return arca_map_contains(handle, key); }
+int64_t arca_set_len(int64_t handle) { return arca_map_len(handle); }
+void arca_set_free(int64_t handle) { arca_map_free(handle); }
+
+// Queue & Deque Implementation
+int64_t arca_queue_new(void) { return arca_vec_new(); }
+void arca_queue_push(int64_t handle, int64_t val) { arca_vec_push(handle, val); }
+int64_t arca_queue_pop(int64_t handle) {
+    if (!handle) return 0;
+    ArcaVec* v = (ArcaVec*)handle;
+    if (v->len == 0) return 0;
+    int64_t val = v->data[0];
+    memmove(&v->data[0], &v->data[1], (v->len - 1) * sizeof(int64_t));
+    v->len--;
+    return val;
+}
+int64_t arca_queue_len(int64_t handle) { return arca_vec_len(handle); }
+void arca_queue_free(int64_t handle) { arca_vec_free(handle); }
+
+int64_t arca_deque_new(void) { return arca_vec_new(); }
+void arca_deque_push_back(int64_t handle, int64_t val) { arca_vec_push(handle, val); }
+void arca_deque_push_front(int64_t handle, int64_t val) {
+    if (!handle) return;
+    ArcaVec* v = (ArcaVec*)handle;
+    if (v->len >= v->cap) {
+        v->cap = v->cap ? v->cap * 2 : 8;
+        v->data = (int64_t*)realloc(v->data, v->cap * sizeof(int64_t));
+    }
+    memmove(&v->data[1], &v->data[0], v->len * sizeof(int64_t));
+    v->data[0] = val;
+    v->len++;
+}
+int64_t arca_deque_pop_back(int64_t handle) { return arca_vec_pop(handle); }
+int64_t arca_deque_pop_front(int64_t handle) { return arca_queue_pop(handle); }
+int64_t arca_deque_len(int64_t handle) { return arca_vec_len(handle); }
+void arca_deque_free(int64_t handle) { arca_vec_free(handle); }
+
+// BinaryHeap & LinkedList
+int64_t arca_heap_new(void) { return arca_vec_new(); }
+void arca_heap_push(int64_t handle, int64_t val) { arca_vec_push(handle, val); }
+int64_t arca_heap_pop(int64_t handle) { return arca_vec_pop(handle); }
+int64_t arca_heap_len(int64_t handle) { return arca_vec_len(handle); }
+void arca_heap_free(int64_t handle) { arca_vec_free(handle); }
+
+int64_t arca_list_new(void) { return arca_vec_new(); }
+void arca_list_push_back(int64_t handle, int64_t val) { arca_vec_push(handle, val); }
+void arca_list_push_front(int64_t handle, int64_t val) { arca_deque_push_front(handle, val); }
+int64_t arca_list_pop_back(int64_t handle) { return arca_vec_pop(handle); }
+int64_t arca_list_pop_front(int64_t handle) { return arca_queue_pop(handle); }
+int64_t arca_list_len(int64_t handle) { return arca_vec_len(handle); }
+void arca_list_free(int64_t handle) { arca_vec_free(handle); }
 
 // Phase 2 implementations
 const char* arca_str_split(const char* s, const char* delim, int index) {

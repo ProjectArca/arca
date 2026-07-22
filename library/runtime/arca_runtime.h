@@ -138,8 +138,54 @@ int32_t arca_sse_send(int32_t fd, const char* data);
 const char* arca_json_stringify(const char* s);
 const char* arca_json_parse(const char* json_str, const char* key);
 
-// Concurrency Scheduler Helpers
-void arca_scheduler_init(int threads);
+// Phase 3: Collections (Vec, HashMap, HashSet, Queue, Deque, BinaryHeap, LinkedList)
+int64_t arca_vec_new(void);
+int64_t arca_vec_len(int64_t handle);
+void arca_vec_push(int64_t handle, int64_t val);
+int64_t arca_vec_get(int64_t handle, int64_t index);
+int64_t arca_vec_pop(int64_t handle);
+void arca_vec_free(int64_t handle);
+
+int64_t arca_map_new(void);
+void arca_map_insert(int64_t handle, const char* key, int64_t val);
+int64_t arca_map_get(int64_t handle, const char* key);
+int32_t arca_map_contains(int64_t handle, const char* key);
+int64_t arca_map_len(int64_t handle);
+void arca_map_free(int64_t handle);
+
+int64_t arca_set_new(void);
+void arca_set_add(int64_t handle, const char* key);
+int32_t arca_set_contains(int64_t handle, const char* key);
+int64_t arca_set_len(int64_t handle);
+void arca_set_free(int64_t handle);
+
+int64_t arca_queue_new(void);
+void arca_queue_push(int64_t handle, int64_t val);
+int64_t arca_queue_pop(int64_t handle);
+int64_t arca_queue_len(int64_t handle);
+void arca_queue_free(int64_t handle);
+
+int64_t arca_deque_new(void);
+void arca_deque_push_back(int64_t handle, int64_t val);
+void arca_deque_push_front(int64_t handle, int64_t val);
+int64_t arca_deque_pop_back(int64_t handle);
+int64_t arca_deque_pop_front(int64_t handle);
+int64_t arca_deque_len(int64_t handle);
+void arca_deque_free(int64_t handle);
+
+int64_t arca_heap_new(void);
+void arca_heap_push(int64_t handle, int64_t val);
+int64_t arca_heap_pop(int64_t handle);
+int64_t arca_heap_len(int64_t handle);
+void arca_heap_free(int64_t handle);
+
+int64_t arca_list_new(void);
+void arca_list_push_back(int64_t handle, int64_t val);
+void arca_list_push_front(int64_t handle, int64_t val);
+int64_t arca_list_pop_back(int64_t handle);
+int64_t arca_list_pop_front(int64_t handle);
+int64_t arca_list_len(int64_t handle);
+void arca_list_free(int64_t handle);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
 void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);

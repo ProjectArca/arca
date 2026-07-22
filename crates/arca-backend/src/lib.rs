@@ -867,6 +867,14 @@ impl CodeGenerator {
                 let cmd = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = arca_process_command((const char*){});", tn, cmd));
             }
+            n if n.starts_with("arca_vec_") || n.starts_with("arca_map_") || n.starts_with("arca_set_")
+                || n.starts_with("arca_queue_") || n.starts_with("arca_deque_")
+                || n.starts_with("arca_heap_") || n.starts_with("arca_list_") => {
+                let pre = target.and_then(|t| self.var_names.get(&t).cloned()).map(|n| format!("{} = ", n)).unwrap_or_default();
+                self.emit_indent(); self.emit(&pre); self.emit(fn_name); self.emit("(");
+                for (i, arg) in args.iter().enumerate() { if i > 0 { self.emit(", "); } self.emit_air_value(arg); }
+                self.emit(");\n");
+            }
             "arca_scheduler_spawn" | "__arca_spawn" => {
                 let fn_arg = if !args.is_empty() {
                     match &args[0] {
