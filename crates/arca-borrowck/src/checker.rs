@@ -84,7 +84,7 @@ impl BorrowChecker {
                     self.tracker.declare_var(f.clone());
                 }
             }
-            HirStmt::Assign { target, value } => {
+            HirStmt::Assign { target: _, value } => {
                 self.check_expr(value);
             }
         }

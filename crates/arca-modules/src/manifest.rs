@@ -33,7 +33,7 @@ impl PackageManifest {
         let mut dependencies = HashMap::new();
 
         let mut lang_version = "1.0".to_string();
-        let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+        let capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
 
         let mut current_section = "";
 

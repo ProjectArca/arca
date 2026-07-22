@@ -423,7 +423,7 @@ impl AirBuilder {
         });
         ctx.set_terminator_and_switch(AirTerminator::Br(try_block), try_block);
 
-        let body_var_map = var_map.clone();
+        let _body_var_map = var_map.clone();
         for stmt in &body.statements { self.lower_stmt(stmt, ctx, var_map); }
         let body_val = body.final_expr.as_ref()
             .map(|fe| self.lower_expr(fe, ctx, var_map))

@@ -1,4 +1,4 @@
-use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BlockId, RegisterId};
 use arca_ast::BinaryOp;
 use arca_typechecker::{PrimitiveType, Type};
 use std::collections::{HashMap, HashSet};
@@ -10,6 +10,7 @@ pub enum BackendKind { Native, Llvm, C }
 pub enum TargetArch { X86_64, Arm64, Riscv64, Wasm, C }
 
 pub struct CodeGenerator {
+    #[allow(dead_code)]
     backend: BackendKind,
     target: TargetArch,
     var_names: HashMap<RegisterId, String>,
@@ -247,7 +248,7 @@ impl CodeGenerator {
         }
 
         // Forward declarations for defined functions
-        let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+        let defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
         for (name, func) in &module.functions {
             let safe = name.replace('.', "_");
             if name == "main" { let _ = safe; }

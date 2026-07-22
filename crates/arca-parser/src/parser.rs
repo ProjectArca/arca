@@ -676,7 +676,7 @@ impl<'a> Parser<'a> {
             TokenKind::Identifier(id) => id.clone(),
             _ => return None,
         };
-        let name_span = self.current_token.span;
+        let _name_span = self.current_token.span;
         self.advance();
 
         let type_ann = if self.current_token.kind == TokenKind::Colon {

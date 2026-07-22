@@ -302,7 +302,7 @@ impl TypeChecker {
             }
             HirStmt::Destructure { struct_name: _, fields, init } => {
                 let init_ty = self.infer_expr(init);
-                let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+                let _field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
                     fmap.keys().cloned().collect()
                 } else {
                     fields.clone()

@@ -1146,3 +1146,3331 @@ warning: field `backend` is never read
 [arca-backend] Native Backend: Emitted build/output.bin & build/output.c
 [arca] Build status: SUCCESS
 Result: PASS
+-----------------------------------------
+Test Name: fs.test.arca
+File: tests/features/fs.test.arca
+Duration: 25s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: fs_full.test.arca
+File: tests/features/fs_full.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: functions.test.arca
+File: tests/features/functions.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: if_else.test.arca
+File: tests/features/if_else.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: impl.test.arca
+File: tests/features/impl.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: io.test.arca
+File: tests/features/io.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: json.test.arca
+File: tests/features/json.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: loop.test.arca
+File: tests/features/loop.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: match.test.arca
+File: tests/features/match.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: match_payload.test.arca
+File: tests/features/match_payload.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: math.test.arca
+File: tests/features/math.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: method.test.arca
+File: tests/features/method.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: move.test.arca
+File: tests/features/move.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: none.test.arca
+File: tests/features/none.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: option.test.arca
+File: tests/features/option.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: parse_int.test.arca
+File: tests/features/parse_int.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: path.test.arca
+File: tests/features/path.test.arca
+Duration: 12s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: path_full.test.arca
+File: tests/features/path_full.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: process.test.arca
+File: tests/features/process.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: ref_ptr.test.arca
+File: tests/features/ref_ptr.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: result.test.arca
+File: tests/features/result.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: sleep.test.arca
+File: tests/features/sleep.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: spawn.test.arca
+File: tests/features/spawn.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: string.test.arca
+File: tests/features/string.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: string_slice.test.arca
+File: tests/features/string_slice.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: strings.test.arca
+File: tests/features/strings.test.arca
+Duration: 44s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: struct.test.arca
+File: tests/features/struct.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: throw.test.arca
+File: tests/features/throw.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: to_string.test.arca
+File: tests/features/to_string.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: try_catch.test.arca
+File: tests/features/try_catch.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: variables.test.arca
+File: tests/features/variables.test.arca
+Duration: 0s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS
+-----------------------------------------
+Test Name: while_loop.test.arca
+File: tests/features/while_loop.test.arca
+Duration: 1s
+Output:
+warning: unused variable: `std_log`
+   --> crates/arca-stdlib/src/lib.rs:120:13
+    |
+120 |         let std_log = vec![StdSymbol { name: "log".into(), module: "std/log".into(), is_intrinsic: false }];
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_log`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `std_iterator`
+   --> crates/arca-stdlib/src/lib.rs:137:13
+    |
+137 |         let std_iterator = vec![
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_iterator`
+
+warning: unused variable: `std_async`
+   --> crates/arca-stdlib/src/lib.rs:145:13
+    |
+145 |         let std_async = vec![
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_std_async`
+
+warning: unused variable: `field_names`
+   --> crates/arca-typechecker/src/checker.rs:305:21
+    |
+305 |                 let field_names = if let Type::Struct { fields: fmap, .. } = &init_ty {
+    |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_field_names`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `string_to_void_fn`
+   --> crates/arca-typechecker/src/env.rs:172:13
+    |
+172 |         let string_to_void_fn = FnType {
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_string_to_void_fn`
+
+warning: unused variable: `name_span`
+   --> crates/arca-parser/src/parser.rs:679:13
+    |
+679 |         let name_span = self.current_token.span;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_name_span`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `body_var_map`
+   --> crates/arca-air/src/builder.rs:426:13
+    |
+426 |         let body_var_map = var_map.clone();
+    |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_body_var_map`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> crates/arca-modules/src/manifest.rs:36:13
+   |
+36 |         let mut capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
+   |             ----^^^^^^^^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `target`
+  --> crates/arca-borrowck/src/checker.rs:87:31
+   |
+87 |             HirStmt::Assign { target, value } => {
+   |                               ^^^^^^ help: try ignoring the field: `target: _`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused import: `BasicBlock`
+ --> crates/arca-backend/src/lib.rs:1:81
+  |
+1 | use arca_air::{AirFunction, AirInstruction, AirModule, AirTerminator, AirValue, BasicBlock, BlockId, RegisterId};
+  |                                                                                 ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/arca-backend/src/lib.rs:250:13
+    |
+250 |         let mut defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
+    |             ----^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: field `backend` is never read
+  --> crates/arca-backend/src/lib.rs:13:5
+   |
+12 | pub struct CodeGenerator {
+   |            ------------- field in this struct
+13 |     backend: BackendKind,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+[arca-backend] Native Backend: Emitted build/output.bin & build/output.c
+[arca] Build status: SUCCESS
+Result: PASS

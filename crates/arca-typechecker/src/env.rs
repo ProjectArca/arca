@@ -169,7 +169,7 @@ impl TypeEnv {
         self.functions.insert("decompress".into(), decompress_fn);
 
         // json
-        let string_to_void_fn = FnType {
+        let _string_to_void_fn = FnType {
             params: vec![Type::Primitive(PrimitiveType::String)],
             return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
         };
