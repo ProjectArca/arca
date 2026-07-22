@@ -158,16 +158,9 @@ static void process_client(int client_fd) {
         }
 
         if (!matched) {
-            if (g_route_count == 0 && !g_default_handler) {
-                // No routes or handlers configured — use built-in default
-                res.status = 200;
-                res.content_type = "application/json";
-                res.body = "{\"message\": \"hello\"}";
-            } else {
-                res.status = 404;
-                res.content_type = "application/json";
-                res.body = "{\"error\":\"not found\"}";
-            }
+            res.status = 404;
+            res.content_type = "application/json";
+            res.body = "{\"error\":\"Not Found\"}";
         }
 
         build_response(client_fd, res);

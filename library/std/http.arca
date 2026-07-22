@@ -62,24 +62,24 @@ extend Response {
   fn not_found() -> Response {
     Response {
       status: 404,
-      content_type: "text/plain",
-      body: "Not Found"
+      content_type: "application/json",
+      body: "{\"error\":\"Not Found\"}"
     }
   }
 
   fn bad_request() -> Response {
     Response {
       status: 400,
-      content_type: "text/plain",
-      body: "Bad Request"
+      content_type: "application/json",
+      body: "{\"error\":\"Bad Request\"}"
     }
   }
 
   fn internal_error() -> Response {
     Response {
       status: 500,
-      content_type: "text/plain",
-      body: "Internal Server Error"
+      content_type: "application/json",
+      body: "{\"error\":\"Internal Server Error\"}"
     }
   }
 
@@ -107,6 +107,14 @@ extend Router {
   }
 
   fn post(self, path: string) -> string {
+    self.prefix + path
+  }
+
+  fn put(self, path: string) -> string {
+    self.prefix + path
+  }
+
+  fn delete(self, path: string) -> string {
     self.prefix + path
   }
 }

@@ -1,0 +1,60 @@
+// Arca Native Pure REST API Application Example
+import { Request, Response, Router, Cookie, Middleware, Headers, serve } from "std/http"
+import { Json } from "std/json"
+
+fn handle_request(req: Request) -> Response {
+  let path = req.path
+  let method = req.method
+
+  if (method == "GET" && path == "/api/v1/users") {
+    return Response.json("[{\"id\":1,\"name\":\"Alice\",\"role\":\"Admin\"},{\"id\":2,\"name\":\"Bob\",\"role\":\"Developer\"}]")
+  }
+
+  if (method == "POST" && path == "/api/v1/users") {
+    return Response.json("{\"status\":\"created\",\"user\":{\"id\":3,\"name\":\"Charlie\",\"role\":\"Member\"}}")
+  }
+
+  if (method == "PUT" && path == "/api/v1/users") {
+    return Response.json("{\"status\":\"updated\",\"user\":{\"id\":3,\"name\":\"Charlie Updated\"}}")
+  }
+
+  if (method == "DELETE" && path == "/api/v1/users") {
+    return Response.json("{\"status\":\"deleted\",\"user_id\":3}")
+  }
+
+  return Response.not_found()
+}
+
+fn main() {
+  println("=========================================")
+  println("     Arca Native Pure REST API App       ")
+  println("=========================================")
+
+  let router = Router.new("/api/v1")
+  println("GET Route: " + router.get("/users"))
+  println("POST Route: " + router.post("/users"))
+  println("PUT Route: " + router.put("/users"))
+  println("DELETE Route: " + router.delete("/users"))
+
+  let cookie = Cookie.new("session", "token_xyz")
+  println(cookie.to_header())
+
+  let req_get = Request { method: "GET", path: "/api/v1/users", url: "http://localhost:3000/api/v1/users" }
+  let res_get = handle_request(req_get)
+  println("GET /api/v1/users -> Status: " + res_get.status + ", Body: " + res_get.body)
+
+  let req_post = Request { method: "POST", path: "/api/v1/users", url: "http://localhost:3000/api/v1/users" }
+  let res_post = handle_request(req_post)
+  println("POST /api/v1/users -> Status: " + res_post.status + ", Body: " + res_post.body)
+
+  let req_put = Request { method: "PUT", path: "/api/v1/users", url: "http://localhost:3000/api/v1/users" }
+  let res_put = handle_request(req_put)
+  println("PUT /api/v1/users -> Status: " + res_put.status + ", Body: " + res_put.body)
+
+  let req_del = Request { method: "DELETE", path: "/api/v1/users", url: "http://localhost:3000/api/v1/users" }
+  let res_del = handle_request(req_del)
+  println("DELETE /api/v1/users -> Status: " + res_del.status + ", Body: " + res_del.body)
+
+  println("=========================================")
+  println("Arca Native REST API Verification Complete!")
+}
