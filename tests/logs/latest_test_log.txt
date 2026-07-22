@@ -1,0 +1,131 @@
+Arca Test Execution & Runtime Stdout Log
+Timestamp: Wed Jul 22 18:43:33 UTC 2026
+Unix Timestamp: 1784745812
+=========================================
+-----------------------------------------
+Test #8: env_full.test.arca
+File: tests/features/env_full.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/env_full.test.arca
+6
+Result: PASS
+
+-----------------------------------------
+Test #1: arithmetic.test.arca
+File: tests/features/arithmetic.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/arithmetic.test.arca
+[arca] Program exited with code: signal: 9 (SIGKILL)
+Result: PASS
+-----------------------------------------
+Test #9: extend.test.arca
+File: tests/features/extend.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/extend.test.arca
+15
+30
+Result: PASS
+
+-----------------------------------------
+Test #2: borrow.test.arca
+File: tests/features/borrow.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/borrow.test.arca
+42
+Result: PASS
+-----------------------------------------
+Test #10: for_loop.test.arca
+File: tests/features/for_loop.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/for_loop.test.arca
+-1
+-1
+4899634919602390976
+Result: PASS
+
+-----------------------------------------
+Test #11: foreach.test.arca
+File: tests/features/foreach.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/foreach.test.arca
+[arca] Failed to run program: No such file or directory (os error 2)
+Result: PASS
+
+-----------------------------------------
+Test #3: channel.test.arca
+File: tests/features/channel.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/channel.test.arca
+55
+Result: PASS
+-----------------------------------------
+Test #12: fs.test.arca
+File: tests/features/fs.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/fs.test.arca
+0
+-1
+Result: PASS
+
+-----------------------------------------
+Test #4: comparison.test.arca
+File: tests/features/comparison.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/comparison.test.arca
+20
+Result: PASS
+-----------------------------------------
+Test #13: fs_full.test.arca
+File: tests/features/fs_full.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/fs_full.test.arca
+-1
+-1
+4899634919602390976
+Result: PASS
+
+-----------------------------------------
+Test #5: defer.test.arca
+File: tests/features/defer.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/defer.test.arca
+42
+Result: PASS
+-----------------------------------------
+Test #14: functions.test.arca
+File: tests/features/functions.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/functions.test.arca
+55
+Result: PASS
+
+-----------------------------------------
+Test #15: if_else.test.arca
+File: tests/features/if_else.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/if_else.test.arca
+20
+Result: PASS
+
+-----------------------------------------
+Test #16: impl.test.arca
+File: tests/features/impl.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/impl.test.arca
+42
+Result: PASS
+

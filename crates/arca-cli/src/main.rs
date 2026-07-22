@@ -492,11 +492,14 @@ fn main() {
             let air_module = air_builder.build_module(&hir);
             let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
             let c_code = cg.generate_c_from_air(&air_module);
+            let pid = std::process::id();
+            let c_path = format!("build/output_{}.c", pid);
+            let bin_path = format!("build/output_{}", pid);
             fs::create_dir_all("build").ok();
-            fs::write("build/output.c", &c_code).ok();
+            fs::write(&c_path, &c_code).ok();
 
             let status = std::process::Command::new("cc")
-                .args(&["-O3", "-o", "build/output", "build/output.c",
+                .args(&["-O3", "-o", &bin_path, &c_path,
                         "-I", "library/runtime",
                         "library/runtime/arca_runtime.c",
                         "library/net/http.c"])
@@ -504,7 +507,9 @@ fn main() {
             match status {
                 Ok(s) if s.success() => {
                     println!("[arca] Running: {}", target);
-                    let run_status = std::process::Command::new("./build/output").status();
+                    let run_status = std::process::Command::new(&bin_path).status();
+                    fs::remove_file(&c_path).ok();
+                    fs::remove_file(&bin_path).ok();
                     match run_status {
                         Ok(rs) if rs.success() => {}
                         Ok(rs) => eprintln!("[arca] Program exited with code: {}", rs),
@@ -512,10 +517,14 @@ fn main() {
                     }
                 }
                 Ok(s) => {
+                    fs::remove_file(&c_path).ok();
+                    fs::remove_file(&bin_path).ok();
                     eprintln!("[arca] C compilation failed with code: {}", s);
                     process::exit(1);
                 }
                 Err(e) => {
+                    fs::remove_file(&c_path).ok();
+                    fs::remove_file(&bin_path).ok();
                     eprintln!("[arca] Failed to invoke C compiler 'cc': {}", e);
                     eprintln!("       Install clang or gcc to run Arca programs.");
                     process::exit(1);
