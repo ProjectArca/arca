@@ -1,9 +1,25 @@
 // Arca Standard Library - Networking (std/net)
-// Provides clean, high-level TCP and network abstractions for application developers.
 
 extern fn arca_std_http_serve(port: i32) -> i32
+extern fn arca_tcp_connect(host: string, port: i32) -> i32
+extern fn arca_udp_bind(port: i32) -> i32
+extern fn arca_udp_send_to(fd: i32, msg: string, host: string, port: i32) -> i32
+extern fn arca_udp_recv_from(fd: i32) -> string
 
 struct TcpListener {
+  port: i32
+}
+
+struct TcpStream {
+  fd: i32
+}
+
+struct UdpSocket {
+  fd: i32
+}
+
+struct SocketAddr {
+  ip: string
   port: i32
 }
 

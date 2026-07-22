@@ -1,0 +1,12 @@
+// Arca Standard Math (std/math)
+
+extern fn sqrt(x: i64) -> i64
+extern fn pow(x: i64, y: i64) -> i64
+extern fn sin(x: i64) -> i64
+extern fn cos(x: i64) -> i64
+extern fn abs(x: i64) -> i64
+extern fn rand() -> i64
+
+fn random() -> i64 {
+  rand()
+}

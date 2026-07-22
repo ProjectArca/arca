@@ -1,0 +1,27 @@
+// Arca Standard Path (std/path)
+
+extern fn arca_path_join(a: string, b: string) -> string
+extern fn arca_path_extension(path: string) -> string
+extern fn arca_path_filename(path: string) -> string
+extern fn arca_path_normalize(path: string) -> string
+extern fn arca_path_parent(path: string) -> string
+
+fn join(a: string, b: string) -> string {
+  arca_path_join(a, b)
+}
+
+fn extension(path: string) -> string {
+  arca_path_extension(path)
+}
+
+fn filename(path: string) -> string {
+  arca_path_filename(path)
+}
+
+fn normalize(path: string) -> string {
+  arca_path_normalize(path)
+}
+
+fn parent(path: string) -> string {
+  arca_path_parent(path)
+}

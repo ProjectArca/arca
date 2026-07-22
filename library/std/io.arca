@@ -12,3 +12,13 @@ struct BufReader {}
 struct BufWriter {}
 struct Cursor {}
 struct Pipe {}
+
+struct Stdin {}
+struct Stdout {}
+struct Stderr {}
+
+extern fn arca_stdin_read_line() -> string
+extern fn arca_stdout_write(s: string)
+extern fn arca_stderr_write(s: string)
+extern fn println(s: string)
+extern fn print(s: string)

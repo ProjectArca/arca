@@ -288,6 +288,53 @@ impl TypeEnv {
         // std/json
         self.functions.insert("json_stringify".into(), string_fn.clone());
 
+        // std/string extras
+        let string_string_i32_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::I32)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        let string_3_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        let string_2_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("arca_str_split".into(), string_string_i32_fn.clone());
+        self.functions.insert("split".into(), string_string_i32_fn);
+        self.functions.insert("arca_str_replace".into(), string_3_fn.clone());
+        self.functions.insert("replace".into(), string_3_fn);
+        self.functions.insert("arca_str_format".into(), string_2_fn.clone());
+        self.functions.insert("format".into(), string_2_fn);
+
+        // std/fs extras
+        self.functions.insert("arca_fs_mkdir".into(), i64_to_i32.clone());
+        self.functions.insert("arca_fs_rmdir".into(), i64_to_i32.clone());
+        self.functions.insert("arca_fs_read_dir".into(), uuid_fn.clone());
+
+        // std/process extras
+        self.functions.insert("arca_process_command".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("arca_process_spawn".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("arca_process_wait".into(), i64_to_i32.clone());
+
+        // std/net extras
+        self.functions.insert("arca_tcp_connect".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::I32)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        });
+        self.functions.insert("arca_udp_bind".into(), int_fn.clone());
+
+        // std/json extras
+        self.functions.insert("arca_json_parse".into(), string_fn.clone());
+        self.functions.insert("parse".into(), string_fn.clone());
+
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);
@@ -302,8 +349,21 @@ impl TypeEnv {
         self.insert_var("process".into(), Type::Unknown);
         self.insert_var("time".into(), Type::Unknown);
         self.insert_var("Process".into(), Type::Unknown);
+        self.insert_var("Command".into(), Type::Unknown);
+        self.insert_var("Directory".into(), Type::Unknown);
+        self.insert_var("TcpStream".into(), Type::Unknown);
+        self.insert_var("UdpSocket".into(), Type::Unknown);
+        self.insert_var("SocketAddr".into(), Type::Unknown);
+        self.insert_var("Headers".into(), Type::Unknown);
+        self.insert_var("Cookie".into(), Type::Unknown);
+        self.insert_var("Middleware".into(), Type::Unknown);
+        self.insert_var("WebSocket".into(), Type::Unknown);
+        self.insert_var("SSE".into(), Type::Unknown);
+        self.insert_var("Value".into(), Type::Unknown);
+        self.insert_var("Object".into(), Type::Unknown);
         self.insert_var("Instant".into(), Type::Unknown);
         self.insert_var("Duration".into(), Type::Unknown);
+        self.insert_var("Timer".into(), Type::Unknown);
         self.insert_var("ArenaAllocator".into(), Type::Unknown);
         self.insert_var("Response".into(), Type::Unknown);
         self.insert_var("Request".into(), Type::Unknown);

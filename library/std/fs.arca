@@ -4,12 +4,47 @@ struct File {
   handle: c_void_ptr
 }
 
+struct Directory {
+  path: string
+}
+
+extern fn arca_fs_open(path: string, mode: string) -> i64
+extern fn arca_fs_close(handle: i64) -> i32
+extern fn arca_fs_exists(path: string) -> i32
+extern fn arca_fs_remove(path: string) -> i32
+extern fn arca_fs_rename(old_path: string, new_path: string) -> i32
+extern fn arca_fs_copy(src: string, dst: string) -> i32
+extern fn arca_fs_metadata(path: string) -> i64
+extern fn arca_fs_mkdir(path: string) -> i32
+extern fn arca_fs_rmdir(path: string) -> i32
+extern fn arca_fs_read_dir(path: string) -> string
+
 extend File {
-  fn open(path: string) -> File {
+  fn open(path: string, mode: string) -> File {
     File { handle: 0 }
   }
 
   fn close(self) -> i32 {
     0
   }
+}
+
+fn copy(src: string, dst: string) -> i32 {
+  arca_fs_copy(src, dst)
+}
+
+fn rename(old_path: string, new_path: string) -> i32 {
+  arca_fs_rename(old_path, new_path)
+}
+
+fn exists(path: string) -> i32 {
+  arca_fs_exists(path)
+}
+
+fn remove(path: string) -> i32 {
+  arca_fs_remove(path)
+}
+
+fn metadata(path: string) -> i64 {
+  arca_fs_metadata(path)
 }

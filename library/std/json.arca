@@ -1,9 +1,36 @@
 // Arca Standard JSON (std/json)
 
+struct Value {
+  raw: string
+}
+
+struct Object {
+  raw: string
+}
+
+struct Array {
+  len: i64
+}
+
+extern fn arca_json_stringify(data: string) -> string
+extern fn arca_json_parse(json_str: string, key: string) -> string
+
 struct Json {}
 
 extend Json {
   fn stringify(data: string) -> string {
-    data
+    arca_json_stringify(data)
   }
+
+  fn parse(json_str: string, key: string) -> string {
+    arca_json_parse(json_str, key)
+  }
+}
+
+fn parse(json_str: string, key: string) -> string {
+  arca_json_parse(json_str, key)
+}
+
+fn stringify(data: string) -> string {
+  arca_json_stringify(data)
 }

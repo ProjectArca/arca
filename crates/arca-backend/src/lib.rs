@@ -811,6 +811,62 @@ impl CodeGenerator {
                 let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = (int64_t)arca_json_stringify((const char*){});", tn, s));
             }
+            "parse" | "arca_json_parse" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let k = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)arca_json_parse((const char*){}, (const char*){});", tn, s, k));
+            }
+            "split" | "arca_str_split" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let d = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                let idx = if args.len() > 2 { self.emit_air_value_str(&args[2]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)arca_str_split((const char*){}, (const char*){}, (int){});", tn, s, d, idx));
+            }
+            "replace" | "arca_str_replace" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let f = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                let t_val = if args.len() > 2 { self.emit_air_value_str(&args[2]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)arca_str_replace((const char*){}, (const char*){}, (const char*){});", tn, s, f, t_val));
+            }
+            "format" | "arca_str_format" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let fmt = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let arg = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)arca_str_format((const char*){}, (const char*){});", tn, fmt, arg));
+            }
+            "arca_fs_mkdir" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_fs_mkdir((const char*){});", tn, path));
+            }
+            "arca_fs_rmdir" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_fs_rmdir((const char*){});", tn, path));
+            }
+            "arca_fs_read_dir" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let path = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)arca_fs_read_dir((const char*){});", tn, path));
+            }
+            "spawn" | "arca_process_spawn" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let cmd = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_process_spawn((const char*){});", tn, cmd));
+            }
+            "wait" | "arca_process_wait" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let pid = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = arca_process_wait((int64_t){});", tn, pid));
+            }
+            "arca_process_command" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let cmd = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_process_command((const char*){});", tn, cmd));
+            }
             "arca_scheduler_spawn" | "__arca_spawn" => {
                 let fn_arg = if !args.is_empty() {
                     match &args[0] {

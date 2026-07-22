@@ -1,5 +1,4 @@
 // Arca Standard Library - HTTP (std/http)
-// RFC: Bun-style declarative HTTP server with compile-time route dispatch
 
 // ===== Request =====
 
@@ -84,10 +83,36 @@ extend Response {
     Response {
       status: 302,
       content_type: "text/plain",
-      body: "",
-      .header("Location", location)
+      body: ""
     }
   }
+}
+
+// ===== Extra Abstractions =====
+
+struct Router {
+  prefix: string
+}
+
+struct Headers {
+  raw: string
+}
+
+struct Cookie {
+  name: string
+  value: string
+}
+
+struct Middleware {
+  name: string
+}
+
+struct WebSocket {
+  fd: i32
+}
+
+struct SSE {
+  fd: i32
 }
 
 // ===== Server Config =====
@@ -99,7 +124,6 @@ struct ServerConfig {
 // ===== Public API =====
 
 extern fn arca_std_http_serve(port: i32) -> i32
-extern fn arca_std_http_serve_with_handler(port: i32) -> i32
 
 fn serve(port: i32) -> i32 {
   arca_std_http_serve(port)

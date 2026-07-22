@@ -1,0 +1,37 @@
+// Arca Standard String Helpers (std/string)
+
+extern fn arca_str_trim(s: string) -> string
+extern fn arca_str_contains(s: string, sub: string) -> i32
+extern fn arca_starts_with(s: string, prefix: string) -> i32
+extern fn arca_ends_with(s: string, suffix: string) -> i32
+extern fn arca_str_split(s: string, delim: string, index: i32) -> string
+extern fn arca_str_replace(s: string, from: string, to: string) -> string
+extern fn arca_str_format(fmt: string, arg: string) -> string
+
+fn trim(s: string) -> string {
+  arca_str_trim(s)
+}
+
+fn contains(s: string, sub: string) -> i32 {
+  arca_str_contains(s, sub)
+}
+
+fn starts_with(s: string, prefix: string) -> i32 {
+  arca_starts_with(s, prefix)
+}
+
+fn ends_with(s: string, suffix: string) -> i32 {
+  arca_ends_with(s, suffix)
+}
+
+fn split(s: string, delim: string, index: i32) -> string {
+  arca_str_split(s, delim, index)
+}
+
+fn replace(s: string, from: string, to: string) -> string {
+  arca_str_replace(s, from, to)
+}
+
+fn format(fmt: string, arg: string) -> string {
+  arca_str_format(fmt, arg)
+}

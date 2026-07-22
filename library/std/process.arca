@@ -2,7 +2,29 @@
 
 struct Process {}
 
+struct Command {
+  program: string
+}
+
+extern fn arca_exit(code: i64)
+extern fn arca_process_command(cmd: string) -> i64
+extern fn arca_process_spawn(cmd: string) -> i64
+extern fn arca_process_wait(pid: i64) -> i32
+
 extend Process {
   fn exit(code: i32) {
+    arca_exit(code)
   }
+}
+
+fn exit(code: i64) {
+  arca_exit(code)
+}
+
+fn spawn(cmd: string) -> i64 {
+  arca_process_spawn(cmd)
+}
+
+fn wait(pid: i64) -> i32 {
+  arca_process_wait(pid)
 }

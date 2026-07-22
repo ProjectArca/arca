@@ -1,9 +1,21 @@
 // Arca Standard Library - Time (std/time)
-// Provides Bun/Go style high-level Instant & Duration primitives.
 
 struct Instant {
   start: i64
 }
+
+struct Duration {
+  ms: i64
+}
+
+struct Timer {
+  start_time: i64
+}
+
+extern fn arca_sleep_ms(ms: i64)
+extern fn arca_duration_ms(ms: i64) -> i64
+extern fn arca_timer_start() -> i64
+extern fn arca_timer_stop(timer: i64) -> i64
 
 extend Instant {
   fn now() -> i64 {
@@ -17,4 +29,8 @@ extend Instant {
   fn elapsed_ns(self) -> i64 {
     self.elapsed_ns()
   }
+}
+
+fn sleep(ms: i64) {
+  arca_sleep_ms(ms)
 }

@@ -73,14 +73,21 @@ const char* arca_str_slice(const char* s, int32_t start);
 const char* arca_str_trim(const char* s);
 int32_t arca_str_contains(const char* s, const char* sub);
 int32_t arca_ends_with(const char* s, const char* suffix);
+const char* arca_str_split(const char* s, const char* delim, int index);
+const char* arca_str_replace(const char* s, const char* from, const char* to);
+const char* arca_str_format(const char* fmt, const char* arg);
 
 // std/time
 void arca_sleep_ms(int64_t ms);
+int64_t arca_duration_ms(int64_t ms);
+int64_t arca_timer_start(void);
+int64_t arca_timer_stop(int64_t timer);
 
 // std/env
 int64_t arca_env_get(const char* name);
 int64_t arca_env_set(const char* name, const char* value);
 int64_t arca_current_dir(void);
+const char* arca_env_args(int index);
 
 // std/io: stdin read line
 const char* arca_stdin_read_line(void);
@@ -97,6 +104,9 @@ int64_t arca_fs_write(int64_t handle, const char* data, int64_t count);
 int32_t arca_fs_rename(const char* old, const char* new_);
 int32_t arca_fs_copy(const char* src, const char* dst);
 int64_t arca_fs_metadata(const char* path);
+int32_t arca_fs_mkdir(const char* path);
+int32_t arca_fs_rmdir(const char* path);
+const char* arca_fs_read_dir(const char* path);
 
 // std/path
 const char* arca_path_extension(const char* path);
@@ -107,9 +117,26 @@ const char* arca_path_normalize(const char* path);
 
 // std/process
 void arca_exit(int64_t code);
+int64_t arca_process_command(const char* cmd);
+int64_t arca_process_spawn(const char* cmd);
+int32_t arca_process_wait(int64_t pid);
+
+// std/net extended
+int32_t arca_tcp_connect(const char* host, int32_t port);
+int32_t arca_udp_bind(int32_t port);
+int32_t arca_udp_send_to(int32_t fd, const char* msg, const char* host, int32_t port);
+const char* arca_udp_recv_from(int32_t fd);
+
+// std/http extra
+int32_t arca_http_router_add(const char* method, const char* path);
+const char* arca_http_header_get(const char* headers, const char* key);
+const char* arca_http_cookie_get(const char* cookies, const char* key);
+int32_t arca_ws_upgrade(int32_t fd);
+int32_t arca_sse_send(int32_t fd, const char* data);
 
 // std/json
 const char* arca_json_stringify(const char* s);
+const char* arca_json_parse(const char* json_str, const char* key);
 
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);

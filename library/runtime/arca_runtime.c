@@ -378,3 +378,180 @@ void arca_vec_free(int64_t handle) {
     free(v->data);
     free(v);
 }
+
+// Phase 2 implementations
+const char* arca_str_split(const char* s, const char* delim, int index) {
+    if (!s || !delim) return "";
+    static char buf[4096];
+    char temp[4096];
+    strncpy(temp, s, sizeof(temp) - 1);
+    temp[sizeof(temp) - 1] = 0;
+    char* tok = strtok(temp, delim);
+    int idx = 0;
+    while (tok) {
+        if (idx == index) {
+            strncpy(buf, tok, sizeof(buf) - 1);
+            buf[sizeof(buf) - 1] = 0;
+            return buf;
+        }
+        tok = strtok(NULL, delim);
+        idx++;
+    }
+    return "";
+}
+
+const char* arca_str_replace(const char* s, const char* from, const char* to) {
+    if (!s || !from || !to) return s ? s : "";
+    static char result[8192];
+    result[0] = 0;
+    const char* p = s;
+    size_t from_len = strlen(from);
+    if (from_len == 0) return s;
+    while (*p) {
+        if (strncmp(p, from, from_len) == 0) {
+            strncat(result, to, sizeof(result) - strlen(result) - 1);
+            p += from_len;
+        } else {
+            size_t rlen = strlen(result);
+            if (rlen < sizeof(result) - 1) {
+                result[rlen] = *p;
+                result[rlen + 1] = 0;
+            }
+            p++;
+        }
+    }
+    return result;
+}
+
+const char* arca_str_format(const char* fmt, const char* arg) {
+    if (!fmt) return "";
+    static char buf[4096];
+    snprintf(buf, sizeof(buf), fmt, arg ? arg : "");
+    return buf;
+}
+
+int64_t arca_duration_ms(int64_t ms) { return ms; }
+int64_t arca_timer_start(void) { return arca_time_ms(); }
+int64_t arca_timer_stop(int64_t timer) { return arca_time_ms() - timer; }
+
+const char* arca_env_args(int index) {
+    (void)index;
+    return "";
+}
+
+#include <sys/stat.h>
+#include <dirent.h>
+int32_t arca_fs_mkdir(const char* path) {
+    if (!path) return -1;
+    return mkdir(path, 0755);
+}
+
+int32_t arca_fs_rmdir(const char* path) {
+    if (!path) return -1;
+    return rmdir(path);
+}
+
+const char* arca_fs_read_dir(const char* path) {
+    if (!path) return "";
+    DIR* d = opendir(path);
+    if (!d) return "";
+    static char buf[8192];
+    buf[0] = 0;
+    struct dirent* dir;
+    while ((dir = readdir(d)) != NULL) {
+        if (buf[0] != 0) strcat(buf, ",");
+        strncat(buf, dir->d_name, sizeof(buf) - strlen(buf) - 1);
+    }
+    closedir(d);
+    return buf;
+}
+
+int64_t arca_process_command(const char* cmd) {
+    if (!cmd) return -1;
+    return (int64_t)system(cmd);
+}
+
+int64_t arca_process_spawn(const char* cmd) {
+    return arca_process_command(cmd);
+}
+
+int32_t arca_process_wait(int64_t pid) {
+    (void)pid;
+    return 0;
+}
+
+int32_t arca_tcp_connect(const char* host, int32_t port) {
+    (void)host; (void)port;
+    return 0;
+}
+
+int32_t arca_udp_bind(int32_t port) {
+    (void)port;
+    return 0;
+}
+
+int32_t arca_udp_send_to(int32_t fd, const char* msg, const char* host, int32_t port) {
+    (void)fd; (void)msg; (void)host; (void)port;
+    return 0;
+}
+
+const char* arca_udp_recv_from(int32_t fd) {
+    (void)fd;
+    return "";
+}
+
+int32_t arca_http_router_add(const char* method, const char* path) {
+    (void)method; (void)path;
+    return 0;
+}
+
+const char* arca_http_header_get(const char* headers, const char* key) {
+    (void)headers; (void)key;
+    return "";
+}
+
+const char* arca_http_cookie_get(const char* cookies, const char* key) {
+    (void)cookies; (void)key;
+    return "";
+}
+
+int32_t arca_ws_upgrade(int32_t fd) {
+    (void)fd;
+    return 0;
+}
+
+int32_t arca_sse_send(int32_t fd, const char* data) {
+    (void)fd; (void)data;
+    return 0;
+}
+
+const char* arca_json_parse(const char* json_str, const char* key) {
+    if (!json_str || !key) return "";
+    static char buf[4096];
+    char search_pattern[256];
+    snprintf(search_pattern, sizeof(search_pattern), "\"%s\"", key);
+    const char* pos = strstr(json_str, search_pattern);
+    if (!pos) return "";
+    const char* val = strchr(pos, ':');
+    if (!val) return "";
+    val++;
+    while (*val == ' ' || *val == '\t') val++;
+    if (*val == '"') {
+        val++;
+        const char* end = strchr(val, '"');
+        if (end) {
+            size_t len = end - val;
+            if (len >= sizeof(buf)) len = sizeof(buf) - 1;
+            strncpy(buf, val, len);
+            buf[len] = 0;
+            return buf;
+        }
+    }
+    size_t len = 0;
+    while (val[len] && val[len] != ',' && val[len] != '}' && val[len] != ']') len++;
+    if (len >= sizeof(buf)) len = sizeof(buf) - 1;
+    strncpy(buf, val, len);
+    buf[len] = 0;
+    return buf;
+}
+
