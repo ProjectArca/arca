@@ -15,3 +15,4 @@ Thumbs.db
 .kilo/kilo.jsonc
 project-arca.code-workspace
 build/output.c
+build/output_*
