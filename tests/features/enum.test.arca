@@ -1,0 +1,24 @@
+// Test: enum definition and pattern matching
+// Expected output:
+// 10
+// 20
+enum Status {
+  Active,
+  Inactive
+}
+
+fn main() {
+  let s1 = Status.Active
+  let res1 = match s1 {
+    Status.Active => 10,
+    Status.Inactive => 20,
+  }
+  println(res1)
+
+  let s2 = Status.Inactive
+  let res2 = match s2 {
+    Status.Active => 10,
+    Status.Inactive => 20,
+  }
+  println(res2)
+}

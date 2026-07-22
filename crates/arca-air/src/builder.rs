@@ -81,11 +81,17 @@ pub struct AirBuilder {
     next_reg: u32,
     next_block: u32,
     known_struct_vars: HashMap<String, String>,
+    enum_map: HashMap<String, HashMap<String, i64>>,
 }
 
 impl AirBuilder {
     pub fn new() -> Self {
-        Self { next_reg: 0, next_block: 0, known_struct_vars: HashMap::new() }
+        Self {
+            next_reg: 0,
+            next_block: 0,
+            known_struct_vars: HashMap::new(),
+            enum_map: HashMap::new(),
+        }
     }
 
     fn fresh_reg(&mut self) -> RegisterId {
@@ -97,6 +103,7 @@ impl AirBuilder {
     }
 
     pub fn build_module(&mut self, hir: &HirProgram) -> AirModule {
+        self.enum_map = hir.enums.clone();
         let mut functions = HashMap::new();
         for (name, hir_fn) in &hir.functions {
             functions.insert(name.clone(), self.build_function(hir_fn));
@@ -488,12 +495,53 @@ impl AirBuilder {
                             body_block,
                         );
                     }
+                    Pattern::Variant { enum_name, variant, .. } => {
+                        let tag = if let Some(ename) = enum_name {
+                            self.enum_map.get(ename).and_then(|vmap| vmap.get(variant)).copied()
+                        } else {
+                            self.enum_map.values().find_map(|vmap| vmap.get(variant).copied())
+                        }.unwrap_or(0);
+                        let cmp_reg = self.fresh_reg();
+                        ctx.current.push(AirInstruction::Binary {
+                            target: cmp_reg,
+                            op: arca_ast::BinaryOp::Equal,
+                            left: match_val.clone(),
+                            right: AirValue::ConstInt(tag),
+                        });
+                        ctx.set_terminator_and_switch(
+                            AirTerminator::CondBr {
+                                cond: AirValue::Register(cmp_reg),
+                                then_block: body_block,
+                                else_block: next_test_block,
+                            },
+                            body_block,
+                        );
+                    }
                     Pattern::Identifier(name) if name != "_" => {
-                        let ptr_reg = self.fresh_reg();
-                        ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
-                        ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: match_val.clone() });
-                        var_map.insert(name.clone(), ptr_reg);
-                        ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);
+                        let enum_tag = self.enum_map.values().find_map(|vmap| vmap.get(name).copied());
+                        if let Some(tag) = enum_tag {
+                            let cmp_reg = self.fresh_reg();
+                            ctx.current.push(AirInstruction::Binary {
+                                target: cmp_reg,
+                                op: arca_ast::BinaryOp::Equal,
+                                left: match_val.clone(),
+                                right: AirValue::ConstInt(tag),
+                            });
+                            ctx.set_terminator_and_switch(
+                                AirTerminator::CondBr {
+                                    cond: AirValue::Register(cmp_reg),
+                                    then_block: body_block,
+                                    else_block: next_test_block,
+                                },
+                                body_block,
+                            );
+                        } else {
+                            let ptr_reg = self.fresh_reg();
+                            ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
+                            ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: match_val.clone() });
+                            var_map.insert(name.clone(), ptr_reg);
+                            ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);
+                        }
                     }
                     _ => {
                         ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);

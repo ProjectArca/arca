@@ -130,12 +130,14 @@ pub struct HirExternFn {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HirProgram {
     pub structs: HashMap<String, HirStruct>,
+    pub enums: HashMap<String, HashMap<String, i64>>,
     pub functions: HashMap<String, HirFn>,
     pub externs: Vec<HirExternFn>,
 }
 
 pub struct Lowerer {
     structs: HashMap<String, HirStruct>,
+    enums: HashMap<String, HashMap<String, i64>>,
     functions: HashMap<String, HirFn>,
     externs: Vec<HirExternFn>,
 }
@@ -144,12 +146,24 @@ impl Lowerer {
     pub fn new() -> Self {
         Self {
             structs: HashMap::new(),
+            enums: HashMap::new(),
             functions: HashMap::new(),
             externs: Vec::new(),
         }
     }
 
     pub fn lower_program(mut self, program: &Program) -> HirProgram {
+        // Collect enums
+        for decl in &program.declarations {
+            if let Decl::Enum { name, variants, .. } = decl {
+                let mut vmap = HashMap::new();
+                for (idx, v) in variants.iter().enumerate() {
+                    vmap.insert(v.name.clone(), idx as i64);
+                }
+                self.enums.insert(name.clone(), vmap);
+            }
+        }
+
         // First pass: collect struct definitions
         for decl in &program.declarations {
             if let Decl::Struct { name, fields, methods, .. } = decl {
@@ -214,6 +228,7 @@ impl Lowerer {
 
         HirProgram {
             structs: self.structs,
+            enums: self.enums,
             functions: self.functions,
             externs: self.externs,
         }
@@ -314,6 +329,13 @@ impl Lowerer {
                 }
             }
             Expr::MemberAccess { object, property, is_optional, .. } => {
+                if let Expr::Identifier { name: ename, .. } = &**object {
+                    if let Some(vmap) = self.enums.get(ename) {
+                        if let Some(&tag) = vmap.get(property) {
+                            return HirExpr::Literal(LiteralKind::Int(tag));
+                        }
+                    }
+                }
                 let obj_hir = self.lower_expr(object);
                 // Canonicalize x.borrow() and x.move() method calls
                 if property == "borrow" {

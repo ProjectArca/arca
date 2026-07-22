@@ -1544,7 +1544,36 @@ impl<'a> Parser<'a> {
             TokenKind::Identifier(id) => {
                 let name = id.clone();
                 self.advance();
-                if name == "_" {
+                if self.current_token.kind == TokenKind::Dot {
+                    self.advance(); // .
+                    let variant = match &self.current_token.kind {
+                        TokenKind::Identifier(v) => v.clone(),
+                        _ => return None,
+                    };
+                    self.advance();
+                    let mut inner = Vec::new();
+                    if self.current_token.kind == TokenKind::OpenParen {
+                        self.advance();
+                        while self.current_token.kind != TokenKind::CloseParen
+                            && self.current_token.kind != TokenKind::Eof
+                        {
+                            if let Some(p) = self.parse_pattern() {
+                                inner.push(p);
+                            } else {
+                                self.advance();
+                            }
+                            if self.current_token.kind == TokenKind::Comma {
+                                self.advance();
+                            }
+                        }
+                        self.expect(TokenKind::CloseParen);
+                    }
+                    Some(Pattern::Variant {
+                        enum_name: Some(name),
+                        variant,
+                        inner,
+                    })
+                } else if name == "_" {
                     Some(Pattern::Wildcard)
                 } else if self.current_token.kind == TokenKind::OpenParen {
                     self.advance();
