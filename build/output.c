@@ -3,8 +3,8 @@
 
 void arca_main(void);
 int32_t fib(int32_t);
-int64_t Instant_now();
 int64_t t_elapsed_ms();
+int64_t Instant_now();
 
 void arca_main(void) {
   int64_t v0;

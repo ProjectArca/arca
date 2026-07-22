@@ -1,0 +1,7 @@
+// Test: std/io — stdin_read_line (compile test only)
+// Expected output:
+// 0
+fn main() {
+  let line = stdin_read_line()
+  println(0)
+}

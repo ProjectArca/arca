@@ -1,0 +1,7 @@
+// Test: std/time — sleep
+// Expected output:
+// 0
+fn main() {
+  sleep(1)
+  println(0)
+}

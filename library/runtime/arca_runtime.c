@@ -157,3 +157,39 @@ int32_t arca_ends_with(const char* s, const char* suffix) {
     if (suflen > slen) return 0;
     return strcmp(s + slen - suflen, suffix) == 0 ? 1 : 0;
 }
+
+// std/time
+void arca_sleep_ms(int64_t ms) {
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000L;
+    nanosleep(&ts, NULL);
+}
+
+// std/env
+int64_t arca_env_get(const char* name) {
+    if (!name) return 0;
+    const char* val = getenv(name);
+    return (int64_t)val;
+}
+
+int64_t arca_env_set(const char* name, const char* value) {
+    if (!name || !value) return -1;
+    return (int64_t)(setenv(name, value, 1) == 0 ? 0 : -1);
+}
+
+int64_t arca_current_dir(void) {
+    char* cwd = getcwd(NULL, 0);
+    if (!cwd) return 0;
+    int64_t ptr = (int64_t)cwd;
+    return ptr;
+}
+
+// std/io: stdin read line
+const char* arca_stdin_read_line(void) {
+    static char buf[4096];
+    if (!fgets(buf, sizeof(buf), stdin)) return "";
+    size_t len = strlen(buf);
+    if (len > 0 && buf[len-1] == '\n') buf[len-1] = 0;
+    return buf;
+}

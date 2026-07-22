@@ -229,6 +229,19 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
         });
 
+        // std/time
+        let sleep_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("sleep".into(), sleep_fn);
+
+        // std/env
+        self.functions.insert("env_get".into(), string_fn.clone());
+
+        // std/io
+        self.functions.insert("stdin_read_line".into(), uuid_fn.clone());
+
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);

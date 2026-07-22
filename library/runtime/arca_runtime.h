@@ -74,6 +74,14 @@ const char* arca_str_trim(const char* s);
 int32_t arca_str_contains(const char* s, const char* sub);
 int32_t arca_ends_with(const char* s, const char* suffix);
 
+// std/time
+void arca_sleep_ms(int64_t ms);
+
+// std/env
+int64_t arca_env_get(const char* name);
+int64_t arca_env_set(const char* name, const char* value);
+int64_t arca_current_dir(void);
+
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);

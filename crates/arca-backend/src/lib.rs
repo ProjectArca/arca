@@ -129,7 +129,9 @@ impl CodeGenerator {
                     "int64_t".to_string()
                 } else if fn_name.ends_with("_to_str") || fn_name.ends_with("user_json") || fn_name.ends_with("users_json")
                     || fn_name.starts_with("build_") || fn_name == "hash" || fn_name == "list_users"
-                    || fn_name == "__arca_str_trim" {
+                    || fn_name == "__arca_str_trim"
+                    || fn_name == "env_get" || fn_name == "stdin_read_line"
+                {
                     "const char*".to_string()
                 } else {
                     "int64_t".to_string()
@@ -271,6 +273,8 @@ impl CodeGenerator {
                             && fn_name != "println" && fn_name != "print"
                             && fn_name != "sqrt" && fn_name != "sin" && fn_name != "cos" && fn_name != "abs"
                             && fn_name != "pow" && fn_name != "rand"
+                            && fn_name != "sleep" && fn_name != "env_get"
+                            && fn_name != "stdin_read_line"
                         {
                             extern_fns.insert(safe);
                         }
@@ -701,6 +705,19 @@ impl CodeGenerator {
             "rand" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 self.emit_ln(&format!("{} = (int64_t)rand();", tn));
+            }
+            "sleep" => {
+                let ms = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("arca_sleep_ms({});", ms));
+            }
+            "env_get" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let name = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                self.emit_ln(&format!("{} = arca_env_get((const char*){});", tn, name));
+            }
+            "stdin_read_line" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                self.emit_ln(&format!("{} = (int64_t)arca_stdin_read_line();", tn));
             }
             "arca_scheduler_spawn" | "__arca_spawn" => {
                 let fn_arg = if !args.is_empty() {
