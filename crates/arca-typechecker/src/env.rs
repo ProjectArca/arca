@@ -363,6 +363,94 @@ impl TypeEnv {
         self.insert_var("OpenAI".into(), Type::Unknown);
         self.insert_var("Anthropic".into(), Type::Unknown);
         self.insert_var("CustomAIProvider".into(), Type::Unknown);
+        self.insert_var("ai".into(), Type::Unknown);
+
+        // std/ai structs
+        let tensor_struct = Type::Struct {
+            name: "Tensor".into(),
+            fields: vec![
+                ("shape".into(), Type::Primitive(PrimitiveType::String)),
+                ("data_ptr".into(), Type::Primitive(PrimitiveType::I64)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Tensor".into(), tensor_struct);
+
+        let dataset_struct = Type::Struct {
+            name: "Dataset".into(),
+            fields: vec![
+                ("format".into(), Type::Primitive(PrimitiveType::String)),
+                ("path".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Dataset".into(), dataset_struct);
+
+        let tokenizer_struct = Type::Struct {
+            name: "Tokenizer".into(),
+            fields: vec![
+                ("kind".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Tokenizer".into(), tokenizer_struct);
+
+        let mut openai_methods = HashMap::new();
+        openai_methods.insert("chat".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+
+        let openai_struct = Type::Struct {
+            name: "OpenAI".into(),
+            fields: vec![
+                ("api_key".into(), Type::Primitive(PrimitiveType::String)),
+                ("model".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: openai_methods,
+        };
+        self.structs.insert("OpenAI".into(), openai_struct.clone());
+
+        let vector_store_struct = Type::Struct {
+            name: "VectorStore".into(),
+            fields: vec![
+                ("handle".into(), Type::Primitive(PrimitiveType::I64)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("VectorStore".into(), vector_store_struct.clone());
+
+        let mut rag_methods = HashMap::new();
+        rag_methods.insert("query".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+
+        let rag_engine_struct = Type::Struct {
+            name: "RAGEngine".into(),
+            fields: vec![
+                ("handle".into(), Type::Primitive(PrimitiveType::I64)),
+            ].into_iter().collect(),
+            methods: rag_methods,
+        };
+        self.structs.insert("RAGEngine".into(), rag_engine_struct.clone());
+
+        self.functions.insert("OpenAI.chat".into(), FnType {
+            params: vec![openai_struct, Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+        self.functions.insert("VectorStore.connect".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(vector_store_struct.clone()),
+        });
+        self.functions.insert("RAGEngine.new".into(), FnType {
+            params: vec![vector_store_struct, Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(rag_engine_struct.clone()),
+        });
+        self.functions.insert("RAGEngine.query".into(), FnType {
+            params: vec![rag_engine_struct, Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
         self.insert_var("VectorStore".into(), Type::Unknown);
         self.insert_var("RAGEngine".into(), Type::Unknown);
         self.insert_var("Tensor".into(), Type::Unknown);

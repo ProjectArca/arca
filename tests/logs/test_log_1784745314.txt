@@ -240,3 +240,271 @@ Runtime Stdout:
 1
 99
 Result: PASS
+-----------------------------------------
+Test Name: parse_int.test.arca
+File: tests/features/parse_int.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/parse_int.test.arca
+10
+20
+Result: PASS
+-----------------------------------------
+Test Name: path.test.arca
+File: tests/features/path.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/path.test.arca
+.txt
+file.txt
+/tmp
+/tmp/notes.txt
+Result: PASS
+-----------------------------------------
+Test Name: path_full.test.arca
+File: tests/features/path_full.test.arca
+Duration: 1s
+Runtime Stdout:
+build/output.c:15:6: error: incompatible integer to pointer conversion assigning to 'const char *' from 'int64_t' (aka 'long long') [-Wint-conversion]
+   15 |   v3 = (int64_t)arca_current_dir();
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: process.test.arca
+File: tests/features/process.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/process.test.arca
+0
+Result: PASS
+-----------------------------------------
+Test Name: ref_ptr.test.arca
+File: tests/features/ref_ptr.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/ref_ptr.test.arca
+10
+Result: PASS
+-----------------------------------------
+Test Name: result.test.arca
+File: tests/features/result.test.arca
+Duration: 1s
+Runtime Stdout:
+build/output.c:30:1: error: unknown type name 'turn'
+   30 | turn v5;
+      | ^
+build/output.c:31:1: error: extraneous closing brace ('}')
+   31 | }
+      | ^
+build/output.c:33:6: error: redefinition of 'arca_main'
+   33 | void arca_main(void) {
+      |      ^
+build/output.c:6:6: note: previous definition is here
+    6 | void arca_main(void) {
+      |      ^
+build/output.c:36:8: error: call to undeclared function 'sum_items'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   36 |   v1 = sum_items(2, 3);
+      |        ^
+build/output.c:43:5: error: redefinition of 'main'
+   43 | int main(int argc, char** argv) {
+      |     ^
+build/output.c:26:5: note: previous definition is here
+   26 | int main(int argc, char** argv) {
+      |     ^
+5 errors generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: sleep.test.arca
+File: tests/features/sleep.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/sleep.test.arca
+0
+Result: PASS
+-----------------------------------------
+Test Name: spawn.test.arca
+File: tests/features/spawn.test.arca
+Duration: 1s
+Runtime Stdout:
+build/output.c:21:6: error: incompatible integer to pointer conversion assigning to 'const char *' from 'int64_t' (aka 'long long') [-Wint-conversion]
+   21 |   v5 = (int64_t)arca_fs_metadata((const char*)"/tmp");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: string.test.arca
+File: tests/features/string.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/string.test.arca
+hello  
+1
+1
+Result: PASS
+-----------------------------------------
+Test Name: string_slice.test.arca
+File: tests/features/string_slice.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/string_slice.test.arca
+1
+Result: PASS
+-----------------------------------------
+Test Name: strings.test.arca
+File: tests/features/strings.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/strings.test.arca
+42
+Result: PASS
+-----------------------------------------
+Test Name: struct.test.arca
+File: tests/features/struct.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/struct.test.arca
+1
+24
+Result: PASS
+-----------------------------------------
+Test Name: throw.test.arca
+File: tests/features/throw.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/throw.test.arca
+1
+Result: PASS
+-----------------------------------------
+Test Name: to_string.test.arca
+File: tests/features/to_string.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/to_string.test.arca
+6
+Result: PASS
+-----------------------------------------
+Test Name: try_catch.test.arca
+File: tests/features/try_catch.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/try_catch.test.arca
+100
+Result: PASS
+-----------------------------------------
+Test Name: variables.test.arca
+File: tests/features/variables.test.arca
+Duration: 1s
+Runtime Stdout:
+build/output.c:18:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   18 | v1;
+      | ^
+      | int
+build/output.c:19:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   19 |   v3 = v1 != 0;
+      |   ^
+      |   int
+build/output.c:19:11: error: initializer element is not a compile-time constant
+   19 |   v3 = v1 != 0;
+      |        ~~~^~~~
+build/output.c:20:3: error: expected identifier or '('
+   20 |   if (v3) goto bb_1; else goto bb_2;
+      |   ^
+build/output.c:20:22: error: expected identifier or '('
+   20 |   if (v3) goto bb_1; else goto bb_2;
+      |                      ^
+build/output.c:21:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   21 |   bb_1: ;
+      |   ^
+      |   int
+build/output.c:21:7: error: expected ';' after top level declarator
+   21 |   bb_1: ;
+      |       ^
+      |       ;
+build/output.c:22:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   22 |   v4 = arca_result_unwrap(v1);
+      |   ^
+      |   int
+build/output.c:22:8: error: initializer element is not a compile-time constant
+   22 |   v4 = arca_result_unwrap(v1);
+      |        ^~~~~~~~~~~~~~~~~~~~~~
+build/output.c:23:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   23 |   v5 = v4;
+      |   ^
+      |   int
+build/output.c:23:8: error: initializer element is not a compile-time constant
+   23 |   v5 = v4;
+      |        ^~
+build/output.c:24:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   24 |   arca_print_int(v4);
+      |   ^
+      |   int
+build/output.c:24:18: error: a parameter list without types is only allowed in a function definition
+   24 |   arca_print_int(v4);
+      |                  ^
+build/output.c:25:11: error: expected parameter declarator
+   25 |   putchar('\n');
+      |           ^
+build/output.c:25:11: error: expected ')'
+build/output.c:25:10: note: to match this '('
+   25 |   putchar('\n');
+      |          ^
+build/output.c:25:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   25 |   putchar('\n');
+      |   ^
+      |   int
+build/output.c:25:3: warning: a function declaration without a prototype is deprecated in all versions of C and is treated as a zero-parameter prototype in C23, conflicting with a previous declaration [-Wdeprecated-non-prototype]
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_stdio.h:266:6: note: conflicting prototype is here
+  266 | int      putchar(int);
+      |          ^
+build/output.c:26:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   26 |   v2 = 0;
+      |   ^
+      |   int
+build/output.c:27:3: error: expected identifier or '('
+   27 |   goto bb_4;
+      |   ^
+build/output.c:28:3: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+   28 |   bb_2: ;
+      |   ^
+      |   int
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+1 warning and 20 errors generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: while_loop.test.arca
+File: tests/features/while_loop.test.arca
+Duration: 2s
+Runtime Stdout:
+build/output.c:23:17: warning: using integer absolute value function 'llabs' when argument is of floating point type [-Wabsolute-value]
+   23 |   v4 = (int64_t)llabs((double)v3);
+      |                 ^
+build/output.c:23:17: note: use function 'fabs' instead
+   23 |   v4 = (int64_t)llabs((double)v3);
+      |                 ^~~~~
+      |                 fabs
+1 warning generated.
+[arca] Running: tests/features/while_loop.test.arca
+3
+0
+1
+99
+16807
+Result: PASS
+-----------------------------------------
+Test Name: ai.test.arca
+File: tests/std-libs/ai.test.arca
+Duration: 1s
+Runtime Stdout:
+error: Unknown struct type 'Tensor'
+
+error: Unknown struct type 'Dataset'
+
+error: Unknown struct type 'Tokenizer'
+
+error: Unknown struct type 'OpenAI'
+Result: FAIL

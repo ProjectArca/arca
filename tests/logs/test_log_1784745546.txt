@@ -1,0 +1,47 @@
+Arca Test Execution & Runtime Stdout Log
+Timestamp: Wed Jul 22 18:39:06 UTC 2026
+Unix Timestamp: 1784745546
+=========================================
+-----------------------------------------
+Test Name: arithmetic.test.arca
+File: tests/features/arithmetic.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/arithmetic.test.arca
+15
+30
+Result: PASS
+-----------------------------------------
+Test Name: borrow.test.arca
+File: tests/features/borrow.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/borrow.test.arca
+99
+Result: PASS
+-----------------------------------------
+Test Name: channel.test.arca
+File: tests/features/channel.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/features/channel.test.arca
+42
+99
+Result: PASS
+-----------------------------------------
+Test Name: comparison.test.arca
+File: tests/features/comparison.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/comparison.test.arca
+6
+Result: PASS
+-----------------------------------------
+Test Name: defer.test.arca
+File: tests/features/defer.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/defer.test.arca
+1
+2
+Result: PASS
