@@ -2,55 +2,15 @@
 #include "arca_runtime.h"
 
 void arca_main(void);
-int32_t fib(int32_t);
-int64_t t_elapsed_ms();
-int64_t Instant_now();
 
 void arca_main(void) {
   int64_t v0;
-  int64_t v1;
-  int64_t v2;
-  int64_t v3;
-  int64_t v4;
-  int64_t v5;
-  v1 = fib(10);
-  v0 = v1;
-  arca_print_int(v1);
-  putchar('\n');
-  v3 = arca_time_ns();
-  v2 = v3;
-  v5 = (arca_time_ns() - v3) / 1000000LL;
-  v4 = v5;
-  arca_print_int(v5);
+  const char* v1;
+  v1 = arca_env_get((const char*)"HOME");
+  v0 = (int64_t)v1;
+  arca_print_string(v1);
   putchar('\n');
   return;
-}
-
-int32_t fib(int32_t n) {
-  bool v0;
-  int64_t v1;
-  int64_t v2;
-  int64_t v3;
-  int64_t v4;
-  int64_t v5;
-  int64_t v6;
-  int64_t v7;
-  v0 = n <= 1;
-  if (v0) goto bb_1; else goto bb_2;
-  bb_1: ;
-  v1 = n;
-  goto bb_3;
-  bb_2: ;
-  v2 = n - 1;
-  v3 = fib(v2);
-  v4 = n - 2;
-  v5 = fib(v4);
-  v6 = v3 + v5;
-  v1 = v6;
-  goto bb_3;
-  bb_3: ;
-  v7 = v1;
-  return v7;
 }
 
 int main(int argc, char** argv) {

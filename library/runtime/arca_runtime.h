@@ -188,7 +188,7 @@ int64_t arca_list_pop_front(int64_t handle);
 int64_t arca_iter_filter(int64_t handle, int64_t pred_fn);
 int64_t arca_iter_map(int64_t handle, int64_t map_fn);
 int64_t arca_iter_take(int64_t handle, int64_t count);
-// Phase 6: AI Standard Library (Tensor, Dataset, Tokenizer, Embedding, Inference, SIMD)
+// Phase 6: AI Standard Library (Tensor, Dataset, Tokenizer, Embedding, Inference, SIMD, AI Providers, Vector DB, RAG)
 int64_t arca_tensor_new(const char* shape);
 int64_t arca_tensor_reshape(int64_t h, const char* new_shape);
 int64_t arca_tensor_transpose(int64_t h);
@@ -213,6 +213,20 @@ int64_t arca_inference_predict(int64_t h, int64_t input);
 
 int64_t arca_simd_dot_product(int64_t a, int64_t b);
 int64_t arca_simd_matmul(int64_t a, int64_t b);
+
+// AI Provider Integrations (OpenAI, Anthropic, Custom OpenAI-Compatible)
+const char* arca_ai_chat_completion(const char* provider, const char* model, const char* prompt, const char* api_key, const char* base_url);
+const char* arca_ai_embeddings(const char* provider, const char* model, const char* input, const char* api_key);
+
+// Vector DB Integrations (Memory, PGVector, Qdrant, Chroma)
+int64_t arca_vector_db_connect(const char* db_type, const char* conn_str);
+int32_t arca_vector_db_insert(int64_t handle, const char* id, const char* vector_str, const char* metadata);
+const char* arca_vector_db_search(int64_t handle, const char* query_vec_str, int32_t top_k);
+
+// RAG Pipeline (Retrieval-Augmented Generation)
+int64_t arca_rag_create(int64_t db_handle, const char* llm_provider, const char* model);
+int32_t arca_rag_ingest_document(int64_t handle, const char* doc_text, int32_t chunk_size);
+const char* arca_rag_query(int64_t handle, const char* query_text);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);
 void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);

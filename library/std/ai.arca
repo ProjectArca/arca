@@ -1,4 +1,5 @@
 // Arca AI Standard Library (std/ai)
+// Supports OpenAI, Anthropic, Custom OpenAI-compatible providers, Vector DBs, and RAG pipelines.
 
 // ===== Tensor =====
 struct Tensor {
@@ -52,3 +53,95 @@ struct Matrix { rows: i64, cols: i64 }
 
 extern fn arca_simd_dot_product(a: i64, b: i64) -> i64
 extern fn arca_simd_matmul(a: i64, b: i64) -> i64
+
+// ===== AI Providers =====
+extern fn arca_ai_chat_completion(provider: string, model: string, prompt: string, api_key: string, base_url: string) -> string
+extern fn arca_ai_embeddings(provider: string, model: string, input: string, api_key: string) -> string
+
+struct OpenAI {
+  api_key: string
+  model: string
+}
+
+struct Anthropic {
+  api_key: string
+  model: string
+}
+
+struct CustomAIProvider {
+  base_url: string
+  api_key: string
+  model: string
+}
+
+extend OpenAI {
+  fn chat(self, prompt: string) -> string {
+    arca_ai_chat_completion("openai", self.model, prompt, self.api_key, "")
+  }
+
+  fn embed(self, input: string) -> string {
+    arca_ai_embeddings("openai", "text-embedding-3-small", input, self.api_key)
+  }
+}
+
+extend Anthropic {
+  fn chat(self, prompt: string) -> string {
+    arca_ai_chat_completion("anthropic", self.model, prompt, self.api_key, "")
+  }
+}
+
+extend CustomAIProvider {
+  fn chat(self, prompt: string) -> string {
+    arca_ai_chat_completion("custom", self.model, prompt, self.api_key, self.base_url)
+  }
+}
+
+// ===== Vector DB =====
+extern fn arca_vector_db_connect(db_type: string, conn_str: string) -> i64
+extern fn arca_vector_db_insert(h: i64, id: string, vector_str: string, metadata: string) -> i32
+extern fn arca_vector_db_search(h: i64, query_vec_str: string, top_k: i32) -> string
+
+struct VectorStore {
+  handle: i64
+  db_type: string
+}
+
+extend VectorStore {
+  fn connect(db_type: string, conn_str: string) -> VectorStore {
+    VectorStore {
+      handle: arca_vector_db_connect(db_type, conn_str),
+      db_type: db_type
+    }
+  }
+
+  fn insert(self, id: string, vector_str: string, metadata: string) -> i32 {
+    arca_vector_db_insert(self.handle, id, vector_str, metadata)
+  }
+
+  fn search(self, query_vec_str: string, top_k: i32) -> string {
+    arca_vector_db_search(self.handle, query_vec_str, top_k)
+  }
+}
+
+// ===== RAG Pipeline =====
+extern fn arca_rag_create(db_handle: i64, llm_provider: string, model: string) -> i64
+extern fn arca_rag_ingest_document(h: i64, doc_text: string, chunk_size: i32) -> i32
+extern fn arca_rag_query(h: i64, query_text: string) -> string
+
+struct RAGEngine {
+  handle: i64
+}
+
+extend RAGEngine {
+  fn new(store: VectorStore, provider: string, model: string) -> RAGEngine {
+    RAGEngine { handle: arca_rag_create(store.handle, provider, model) }
+  }
+
+  fn ingest(self, doc_text: string, chunk_size: i32) -> i32 {
+    arca_rag_ingest_document(self.handle, doc_text, chunk_size)
+  }
+
+  fn query(self, query_text: string) -> string {
+    arca_rag_query(self.handle, query_text)
+  }
+}

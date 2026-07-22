@@ -156,6 +156,11 @@ impl StdLibResolver {
             StdSymbol { name: "InferenceModel".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Vector".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Matrix".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "OpenAI".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Anthropic".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "CustomAIProvider".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "VectorStore".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "RAGEngine".into(), module: "std/ai".into(), is_intrinsic: false },
         ];
         symbols.insert("std/ai".into(), std_ai);
 
