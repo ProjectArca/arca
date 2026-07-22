@@ -1,7 +1,7 @@
 //! Optimization passes for Arca AIR (Inlining, DCE, Constant Folding, Escape Analysis, Monomorphization, Loop Unrolling).
 
 use crate::nodes::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 pub struct AirOptimizer;
 
@@ -22,9 +22,9 @@ impl AirOptimizer {
                     if let AirInstruction::Binary { target: _, op, left, right } = instr {
                         if let (AirValue::ConstInt(a), AirValue::ConstInt(b)) = (left, right) {
                             let res = match op {
-                                arca_ast::BinaryOp::Add => a + b,
-                                arca_ast::BinaryOp::Sub => a - b,
-                                arca_ast::BinaryOp::Mul => a * b,
+                                arca_ast::BinaryOp::Add => *a + *b,
+                                arca_ast::BinaryOp::Sub => *a - *b,
+                                arca_ast::BinaryOp::Mul => *a * *b,
                                 _ => continue,
                             };
                             *left = AirValue::ConstInt(res);
