@@ -82,6 +82,21 @@ int64_t arca_env_get(const char* name);
 int64_t arca_env_set(const char* name, const char* value);
 int64_t arca_current_dir(void);
 
+// std/io: stdin read line
+const char* arca_stdin_read_line(void);
+
+// std/fs
+int64_t arca_fs_open(const char* path, const char* mode);
+int32_t arca_fs_close(int64_t handle);
+int32_t arca_fs_exists(const char* path);
+int32_t arca_fs_remove(const char* path);
+
+// std/path
+const char* arca_path_extension(const char* path);
+const char* arca_path_filename(const char* path);
+const char* arca_path_parent(const char* path);
+const char* arca_path_join(const char* a, const char* b);
+
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);

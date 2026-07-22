@@ -193,3 +193,59 @@ const char* arca_stdin_read_line(void) {
     if (len > 0 && buf[len-1] == '\n') buf[len-1] = 0;
     return buf;
 }
+
+// std/fs: file operations
+int64_t arca_fs_open(const char* path, const char* mode) {
+    FILE* f = fopen(path, mode);
+    return (int64_t)f;
+}
+
+int32_t arca_fs_close(int64_t handle) {
+    if (!handle) return -1;
+    return fclose((FILE*)handle);
+}
+
+int32_t arca_fs_exists(const char* path) {
+    if (!path) return 0;
+    return access(path, F_OK) == 0 ? 1 : 0;
+}
+
+int32_t arca_fs_remove(const char* path) {
+    if (!path) return -1;
+    return remove(path) == 0 ? 0 : -1;
+}
+
+// std/path
+const char* arca_path_extension(const char* path) {
+    if (!path) return "";
+    const char* dot = strrchr(path, '.');
+    if (!dot) return "";
+    return dot;
+}
+
+const char* arca_path_filename(const char* path) {
+    if (!path) return "";
+    const char* slash = strrchr(path, '/');
+    return slash ? slash + 1 : path;
+}
+
+const char* arca_path_parent(const char* path) {
+    if (!path || !*path) return "";
+    static char buf[4096];
+    strncpy(buf, path, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = 0;
+    char* slash = strrchr(buf, '/');
+    if (!slash) return "";
+    *slash = 0;
+    return buf;
+}
+
+const char* arca_path_join(const char* a, const char* b) {
+    if (!a) a = "";
+    if (!b) b = "";
+    static char buf[4096];
+    size_t alen = strlen(a);
+    int has_slash = alen > 0 && a[alen-1] == '/';
+    snprintf(buf, sizeof(buf), "%s%s%s", a, has_slash ? "" : "/", b);
+    return buf;
+}

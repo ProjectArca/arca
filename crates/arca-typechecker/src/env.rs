@@ -242,6 +242,25 @@ impl TypeEnv {
         // std/io
         self.functions.insert("stdin_read_line".into(), uuid_fn.clone());
 
+        // std/fs
+        let fs_open_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("File.open".into(), fs_open_fn);
+        self.functions.insert("fs_exists".into(), string_fn.clone());
+        self.functions.insert("fs_remove".into(), string_fn.clone());
+
+        // std/path
+        self.functions.insert("path_extension".into(), string_fn.clone());
+        self.functions.insert("path_filename".into(), string_fn.clone());
+        self.functions.insert("path_parent".into(), string_fn.clone());
+        let path_join_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("path_join".into(), path_join_fn);
+
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);

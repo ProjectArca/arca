@@ -1,0 +1,12 @@
+// Test: std/path — extension, filename, parent, join
+// Expected output:
+// .txt
+// file.txt
+// /tmp
+// /tmp/notes.txt
+fn main() {
+  println(path_extension("/tmp/file.txt"))
+  println(path_filename("/tmp/file.txt"))
+  println(path_parent("/tmp/file.txt"))
+  println(path_join("/tmp", "notes.txt"))
+}

@@ -1,0 +1,10 @@
+// Test: std/fs — exists, remove
+// Expected output:
+// 0
+// 0
+fn main() {
+  let e = fs_exists("/tmp/nonexistent_file_arca")
+  println(e)
+  let r = fs_remove("/tmp/nonexistent_file_arca")
+  println(r)
+}
