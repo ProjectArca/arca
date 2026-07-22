@@ -455,25 +455,54 @@ impl AirBuilder {
         let result_slot = self.fresh_reg();
         ctx.current.push(AirInstruction::Alloca { target: result_slot, ty: Type::Primitive(PrimitiveType::I64) });
         let merge_block = self.fresh_block();
+
         if arms.is_empty() {
             ctx.current.push(AirInstruction::Store { ptr: result_slot, val: AirValue::ConstInt(0) });
             ctx.set_terminator_and_switch(AirTerminator::Br(merge_block), merge_block);
         } else {
-            let arm_blocks: Vec<BlockId> = (0..arms.len()).map(|_| self.fresh_block()).collect();
-            ctx.set_terminator_and_switch(AirTerminator::Br(arm_blocks[0]), arm_blocks[0]);
             for (i, arm) in arms.iter().enumerate() {
-                let next = if i + 1 < arm_blocks.len() { arm_blocks[i + 1] } else { merge_block };
-                if let Pattern::Identifier(name) = &arm.pattern {
-                    if name != "_" {
+                let body_block = self.fresh_block();
+                let next_test_block = if i + 1 < arms.len() { self.fresh_block() } else { merge_block };
+
+                match &arm.pattern {
+                    Pattern::Literal(lit) => {
+                        let lit_val = match lit {
+                            LiteralKind::Int(n) => AirValue::ConstInt(*n),
+                            LiteralKind::Bool(b) => AirValue::ConstBool(*b),
+                            LiteralKind::String(s) => AirValue::ConstString(s.clone()),
+                            _ => AirValue::ConstInt(0),
+                        };
+                        let cmp_reg = self.fresh_reg();
+                        ctx.current.push(AirInstruction::Binary {
+                            target: cmp_reg,
+                            op: arca_ast::BinaryOp::Equal,
+                            left: match_val.clone(),
+                            right: lit_val,
+                        });
+                        ctx.set_terminator_and_switch(
+                            AirTerminator::CondBr {
+                                cond: AirValue::Register(cmp_reg),
+                                then_block: body_block,
+                                else_block: next_test_block,
+                            },
+                            body_block,
+                        );
+                    }
+                    Pattern::Identifier(name) if name != "_" => {
                         let ptr_reg = self.fresh_reg();
                         ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
                         ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: match_val.clone() });
                         var_map.insert(name.clone(), ptr_reg);
+                        ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);
+                    }
+                    _ => {
+                        ctx.set_terminator_and_switch(AirTerminator::Br(body_block), body_block);
                     }
                 }
+
                 let arm_val = self.lower_expr(&arm.body, ctx, var_map);
                 ctx.current.push(AirInstruction::Store { ptr: result_slot, val: arm_val });
-                ctx.set_terminator_and_switch(AirTerminator::Br(next), next);
+                ctx.set_terminator_and_switch(AirTerminator::Br(merge_block), next_test_block);
             }
         }
         let loaded = self.fresh_reg();

@@ -1,0 +1,11 @@
+// Test: match expression
+// Expected output:
+// 100
+fn main() {
+  let x = 1
+  let res = match x {
+    1 => 100,
+    _ => 200,
+  }
+  println(res)
+}
