@@ -1,0 +1,8 @@
+// Test: string parse_int
+// Expected output:
+// 123
+fn main() {
+  let s = "123"
+  let n = s.parse_int()
+  println(n)
+}

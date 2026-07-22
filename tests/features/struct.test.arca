@@ -1,0 +1,14 @@
+// Test: struct definition and field access
+// Expected output:
+// 1
+// 24
+struct User {
+  id: i32,
+  age: i32
+}
+
+fn main() {
+  let u = User { id: 1, age: 24 }
+  println(u.id)
+  println(u.age)
+}

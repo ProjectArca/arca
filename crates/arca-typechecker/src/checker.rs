@@ -112,20 +112,25 @@ impl TypeChecker {
 
         // Check struct methods
         for hir_struct in hir.structs.values() {
+            self.env.current_struct = Some(hir_struct.name.clone());
             let st_ty = &self.env.structs.get(&hir_struct.name).cloned();
             for mfn in hir_struct.methods.values() {
                 self.env.push_scope();
 
-                // Bind struct fields in method scope
-                if let Some(Type::Struct { fields, .. }) = st_ty {
-                    for (fname, fty) in fields {
-                        self.env.insert_var(fname.clone(), fty.clone());
+                // Bind self and struct fields in method scope
+                if let Some(st) = st_ty {
+                    self.env.insert_var("self".to_string(), st.clone());
+                    if let Type::Struct { fields, .. } = st {
+                        for (fname, fty) in fields {
+                            self.env.insert_var(fname.clone(), fty.clone());
+                        }
                     }
                 }
 
                 self.check_fn_body(mfn);
                 self.env.pop_scope();
             }
+            self.env.current_struct = None;
         }
 
         // Check top-level functions

@@ -1,0 +1,12 @@
+// Test: if else expression
+// Expected output:
+// 20
+fn main() {
+  let x = 10
+  let y = if x > 5 {
+    20
+  } else {
+    30
+  }
+  println(y)
+}

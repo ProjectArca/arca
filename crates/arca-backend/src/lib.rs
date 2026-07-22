@@ -93,9 +93,16 @@ impl CodeGenerator {
         match instr {
             AirInstruction::Alloca { ty, .. } => self.air_type_to_c(ty).to_string(),
             AirInstruction::Load { .. } => "int64_t".to_string(),
-            AirInstruction::Binary { op, .. } => match op {
+            AirInstruction::Binary { op, left, right, .. } => match op {
                 BinaryOp::Equal | BinaryOp::NotEqual | BinaryOp::Less | BinaryOp::LessEqual
                 | BinaryOp::Greater | BinaryOp::GreaterEqual | BinaryOp::And | BinaryOp::Or => "bool".to_string(),
+                BinaryOp::Add => {
+                    if is_string_value(left, &self.var_types) || is_string_value(right, &self.var_types) {
+                        "const char*".to_string()
+                    } else {
+                        "int64_t".to_string()
+                    }
+                }
                 _ => "int64_t".to_string(),
             }
             AirInstruction::Call { fn_name, .. } => {
@@ -129,7 +136,25 @@ impl CodeGenerator {
             AirInstruction::StructInit { struct_name, .. } => {
                 if struct_name.is_empty() { "int64_t".to_string() } else { struct_name.clone() }
             }
-            AirInstruction::FieldLoad { .. } => "const char*".to_string(),
+            AirInstruction::FieldLoad { object, field, .. } => {
+                let resolved_obj = match self.resolve(&AirValue::Register(*object)) {
+                    AirValue::Register(r) => r,
+                    _ => *object,
+                };
+                if let Some((_, fields)) = self.struct_inits.get(&resolved_obj) {
+                    if let Some((_, val)) = fields.iter().find(|(f, _)| f == field) {
+                        match val {
+                            AirValue::ConstString(_) => "const char*".to_string(),
+                            AirValue::Register(r) => self.var_types.get(r).cloned().unwrap_or_else(|| "int64_t".to_string()),
+                            _ => "int64_t".to_string(),
+                        }
+                    } else {
+                        "int64_t".to_string()
+                    }
+                } else {
+                    "int64_t".to_string()
+                }
+            }
             AirInstruction::Ref { .. } => "void*".to_string(),
             AirInstruction::Deref { .. } => "int64_t".to_string(),
             _ => "int64_t".to_string(),
@@ -180,14 +205,24 @@ impl CodeGenerator {
         }
 
         // Collect struct definitions from all StructInit instructions
-        let mut struct_defs: HashMap<String, Vec<String>> = HashMap::new();
+        let mut struct_defs: HashMap<String, Vec<(String, String)>> = HashMap::new();
         for func in module.functions.values() {
             for block in &func.blocks {
                 for instr in &block.instructions {
                     if let AirInstruction::StructInit { struct_name, fields, .. } = instr {
                         if !struct_name.is_empty() && !struct_defs.contains_key(struct_name) {
-                            let field_names: Vec<String> = fields.iter().map(|(n, _)| n.clone()).collect();
-                            struct_defs.insert(struct_name.clone(), field_names);
+                            let field_types: Vec<(String, String)> = fields.iter().map(|(n, v)| {
+                                let fty = match v {
+                                    AirValue::ConstString(_) => "const char*".to_string(),
+                                    AirValue::ConstFloat(_) => "double".to_string(),
+                                    AirValue::Register(r) => {
+                                        self.var_types.get(r).cloned().unwrap_or_else(|| "int64_t".to_string())
+                                    }
+                                    _ => "int64_t".to_string(),
+                                };
+                                (n.clone(), fty)
+                            }).collect();
+                            struct_defs.insert(struct_name.clone(), field_types);
                         }
                     }
                 }
@@ -195,10 +230,10 @@ impl CodeGenerator {
         }
 
         // Emit struct type definitions
-        for (name, field_names) in &struct_defs {
-            self.emit(&format!("typedef struct {{ /* {} */", name));
-            for fn_ in field_names {
-                self.emit(&format!("int64_t {}; ", fn_));
+        for (name, fields) in &struct_defs {
+            self.emit(&format!("typedef struct {{ /* {} */ ", name));
+            for (fn_, fty) in fields {
+                self.emit(&format!("{} {}; ", fty, fn_));
             }
             self.emit(&format!("}} {};\n\n", name));
         }
@@ -394,7 +429,13 @@ impl CodeGenerator {
             AirInstruction::Alloca { .. } => {}
             AirInstruction::Store { ptr, val } => {
                 let resolved = self.resolve(val);
-                let pn = self.var_names.get(ptr).cloned().unwrap_or_default();
+                let pn = self.reg_name(*ptr);
+                // Skip store if val is a StructInit or ptr is copy-propagated
+                if let AirValue::Register(r) = &resolved {
+                    if self.struct_inits.contains_key(r) {
+                        return;
+                    }
+                }
                 self.emit_indent();
                 self.emit(&pn);
                 self.emit(" = ");
@@ -408,12 +449,12 @@ impl CodeGenerator {
             AirInstruction::Load { target, ptr, .. } => {
                 // Copy-propagated loads are skipped entirely
                 if self.copy_sources.contains_key(target) { return; }
-                let tn = self.var_names.get(target).cloned().unwrap_or_default();
-                let sn = self.var_names.get(ptr).cloned().unwrap_or_default();
+                let tn = self.reg_name(*target);
+                let sn = self.reg_name(*ptr);
                 self.emit_ln(&format!("{} = {};", tn, sn));
             }
             AirInstruction::Binary { target, op, left, right } => {
-                let tn = self.var_names.get(target).cloned().unwrap_or_default();
+                let tn = self.reg_name(*target);
                 let os = match op {
                     BinaryOp::Add => " + ", BinaryOp::Sub => " - ", BinaryOp::Mul => " * ",
                     BinaryOp::Div => " / ", BinaryOp::Rem => " % ",
@@ -450,7 +491,7 @@ impl CodeGenerator {
                         self.var_types.insert(*target, "const char*".to_string());
                     } else {
                         self.emit_indent(); self.emit(&tn); self.emit(" = ");
-                        self.emit_air_value(left); self.emit(" + "); self.emit_air_value(right); self.emit(";\n");
+                        self.emit_air_value(left); self.emit(os); self.emit_air_value(right); self.emit(";\n");
                     }
                 } else {
                     self.emit_indent(); self.emit(&tn); self.emit(" = ");
@@ -459,7 +500,7 @@ impl CodeGenerator {
             }
             AirInstruction::Call { target, fn_name, args } => self.emit_air_call(target, fn_name, args),
             AirInstruction::StructInit { target, struct_name, fields } => {
-                let tn = self.var_names.get(target).cloned().unwrap_or_default();
+                let tn = self.reg_name(*target);
                 if struct_name.is_empty() {
                     // Anonymous struct: skip emission — used by FieldLoad instructions
                     // Just declare a zero-initialized placeholder
@@ -474,10 +515,14 @@ impl CodeGenerator {
                 }
             }
             AirInstruction::FieldLoad { target, object, field } => {
-                let tn = self.var_names.get(target).cloned().unwrap_or_default();
-                let on = self.var_names.get(object).cloned().unwrap_or_default();
+                let tn = self.reg_name(*target);
+                let resolved_obj = match self.resolve(&AirValue::Register(*object)) {
+                    AirValue::Register(r) => r,
+                    _ => *object,
+                };
+                let on = self.reg_name(resolved_obj);
                 // If the object was created by a StructInit, use struct type for field access
-                if let Some((sname, _)) = self.struct_inits.get(object) {
+                if let Some((sname, _)) = self.struct_inits.get(&resolved_obj) {
                     if !sname.is_empty() {
                         self.emit_ln(&format!("{} = (({}*)&{})->{};", tn, sname, on, field));
                     } else {

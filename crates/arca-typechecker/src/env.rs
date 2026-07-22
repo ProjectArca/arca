@@ -21,6 +21,7 @@ pub struct TypeEnv {
     scopes: Vec<Scope>,
     pub structs: HashMap<String, Type>,
     pub functions: HashMap<String, FnType>,
+    pub current_struct: Option<String>,
 }
 
 impl TypeEnv {
@@ -29,6 +30,7 @@ impl TypeEnv {
             scopes: vec![Scope::new()],
             structs: HashMap::new(),
             functions: HashMap::new(),
+            current_struct: None,
         };
         env.register_primitives();
         env
@@ -158,7 +160,17 @@ impl TypeEnv {
             "string" => Type::Primitive(PrimitiveType::String),
             "char" => Type::Primitive(PrimitiveType::Char),
             "void" => Type::Primitive(PrimitiveType::Void),
-            "Self" => Type::Unknown,
+            "Self" => {
+                if let Some(sname) = &self.current_struct {
+                    if let Some(st) = self.structs.get(sname) {
+                        st.clone()
+                    } else {
+                        Type::Unknown
+                    }
+                } else {
+                    Type::Unknown
+                }
+            }
             "c_void_ptr" => Type::Primitive(PrimitiveType::Void),
             custom => {
                 if let Some(st) = self.structs.get(custom) {
