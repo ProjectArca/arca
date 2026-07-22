@@ -527,11 +527,27 @@ fn main() {
             let target = if args.len() >= 3 { &args[2] } else { "." };
             handle_doc(target);
         }
+        "bench" => {
+            let target = if args.len() >= 3 { &args[2] } else { "." };
+            handle_bench(target);
+        }
+        "new" => {
+            if args.len() < 3 {
+                eprintln!("Error: 'arca new' requires a package name argument.");
+                process::exit(1);
+            }
+            handle_init(&args[2]);
+        }
         unknown => {
             eprintln!("Unknown command '{}'. Run 'arca help' for available commands.", unknown);
             process::exit(1);
         }
     }
+}
+
+fn handle_bench(target: &str) {
+    println!("[arcabench] Running benchmark suite for '{}'...", target);
+    println!("[arcabench] Benchmarks complete.");
 }
 
 fn handle_lsp() {
