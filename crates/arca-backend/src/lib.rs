@@ -94,7 +94,6 @@ impl CodeGenerator {
             AirInstruction::Alloca { ty, .. } => self.air_type_to_c(ty).to_string(),
             AirInstruction::Load { .. } => "int64_t".to_string(),
             AirInstruction::Binary { op, .. } => match op {
-                BinaryOp::Add => "const char*".to_string(),
                 BinaryOp::Equal | BinaryOp::NotEqual | BinaryOp::Less | BinaryOp::LessEqual
                 | BinaryOp::Greater | BinaryOp::GreaterEqual | BinaryOp::And | BinaryOp::Or => "bool".to_string(),
                 _ => "int64_t".to_string(),

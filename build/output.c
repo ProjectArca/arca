@@ -6,15 +6,9 @@ void arca_main(void);
 void arca_main(void) {
   int64_t v0;
   int64_t v1;
-  int64_t v2;
-  int64_t v3;
-  const char* v4;
   v0 = 10;
-  v1 = 20;
-  v2 = v0;
-  v3 = v1;
-  v4 = v2 + v3;
-  arca_print_string(v4);
+  v1 = v0;
+  arca_print_int(v1);
   putchar('\n');
   return;
 }

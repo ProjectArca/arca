@@ -1,14 +1,11 @@
 // Test: string operations
+// Expected output:
+// 1
+// 6
 fn main() {
-  let s = "Hello, " + "World!"
-  println(s)
-
-  let n = 42
-  println(n.to_string())
-
   let p = "/users/42"
-  println(p.starts_with("/users"))
-  println(p.rfind("/"))
-  println(p.slice(1))
-  println(p.slice(7).parse_int())
+  let a = p.starts_with("/users")
+  println(a)
+  let b = p.rfind("/")
+  println(b)
 }

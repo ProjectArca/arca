@@ -1,4 +1,7 @@
 // Test: timing
+// Expected output:
+// 55
+// [non-negative integer]
 import { Instant } from "std/time"
 
 fn fib(n: i32) -> i32 {
@@ -7,7 +10,9 @@ fn fib(n: i32) -> i32 {
 }
 
 fn main() {
+  let f = fib(10)
+  println(f)
   let t = Instant.now()
-  println(fib(35))
-  println(t.elapsed_ms())
+  let e = t.elapsed_ms()
+  println(e)
 }

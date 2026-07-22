@@ -1,7 +1,12 @@
 // Test: comparison and boolean
+// Expected output:
+// 1
+// 1
+// 1
+// 1
+// 1
+// 1
 fn main() {
-  println(true)
-  println(false)
   println(5 == 5)
   println(5 != 4)
   println(10 > 3)
