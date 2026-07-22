@@ -126,9 +126,6 @@ impl CodeGenerator {
                     || fn_name == "__arca_starts_with" || fn_name == "__arca_str_rfind"
                 {
                     "int64_t".to_string()
-                } else if fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_")
-                    || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error" {
-                    "void".to_string()
                 } else if fn_name.ends_with("_to_str") || fn_name.ends_with("user_json") || fn_name.ends_with("users_json")
                     || fn_name.starts_with("build_") || fn_name == "hash" || fn_name == "list_users" {
                     "const char*".to_string()
@@ -661,6 +658,11 @@ impl CodeGenerator {
                 let s = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 let start = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = (int64_t)arca_str_slice((const char*){}, (int){});", tn, s, start));
+            }
+            "__enum_tag" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let tag = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = {};", tn, tag));
             }
             "arca_scheduler_spawn" | "__arca_spawn" => {
                 let fn_arg = if !args.is_empty() {

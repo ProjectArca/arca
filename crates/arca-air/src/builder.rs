@@ -279,6 +279,20 @@ impl AirBuilder {
                 for a in args { arg_vals.push(self.lower_expr(a, ctx, var_map)); }
                 let (callee_name, method_obj) = match &**callee {
                     HirExpr::VarRef(n) => (n.clone(), None),
+                    HirExpr::Literal(LiteralKind::Int(tag)) => {
+                        // Enum variant construction: tag + args = payload variant
+                        let mut found = String::new();
+                        for (ename, vmap) in &self.enum_map {
+                            for (vname, &vt) in vmap {
+                                if vt == *tag && !arg_vals.is_empty() {
+                                    found = format!("{}.{}", ename, vname);
+                                    break;
+                                }
+                            }
+                            if !found.is_empty() { break; }
+                        }
+                        if !found.is_empty() { (found, None) } else { ("unknown_callee".to_string(), None) }
+                    }
                     HirExpr::Member { object, property, .. } => {
                         let obj_val = Some(self.lower_expr(object, ctx, var_map));
                         let fn_name = match &**object {
@@ -297,9 +311,15 @@ impl AirBuilder {
                 };
                 // Normalize built-in method calls to known runtime function names
                 let (normalized_name, final_args) = self.normalize_call(&callee_name, method_obj, &arg_vals);
-                let target = self.fresh_reg();
-                ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: normalized_name, args: final_args });
-                AirValue::Register(target)
+                if normalized_name == "println" || normalized_name == "print" {
+                    let target = self.fresh_reg();
+                    ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: normalized_name, args: final_args });
+                    AirValue::ConstInt(0)
+                } else {
+                    let target = self.fresh_reg();
+                    ctx.current.push(AirInstruction::Call { target: Some(target), fn_name: normalized_name, args: final_args });
+                    AirValue::Register(target)
+                }
             }
             HirExpr::StructInit { struct_name, fields } => {
                 let mut field_vals = Vec::new();
@@ -590,19 +610,41 @@ impl AirBuilder {
                             body_block,
                         );
                     }
-                    Pattern::Variant { enum_name, variant, .. } => {
+                    Pattern::Variant { enum_name, variant, inner } => {
                         let tag = if let Some(ename) = enum_name {
                             self.enum_map.get(ename).and_then(|vmap| vmap.get(variant)).copied()
                         } else {
                             self.enum_map.values().find_map(|vmap| vmap.get(variant).copied())
                         }.unwrap_or(0);
+                        let has_payload = !inner.is_empty();
                         let cmp_reg = self.fresh_reg();
-                        ctx.current.push(AirInstruction::Binary {
-                            target: cmp_reg,
-                            op: arca_ast::BinaryOp::Equal,
-                            left: match_val.clone(),
-                            right: AirValue::ConstInt(tag),
-                        });
+                        if has_payload {
+                            // Payload variants use pointer comparison (0 = None, non-zero = Some)
+                            if tag == 0 {
+                                // Some/Ok: non-zero pointer means matches
+                                ctx.current.push(AirInstruction::Binary {
+                                    target: cmp_reg,
+                                    op: arca_ast::BinaryOp::NotEqual,
+                                    left: match_val.clone(),
+                                    right: AirValue::ConstInt(0),
+                                });
+                            } else {
+                                // Non-Some with payload: should not happen in 2-variant payload enums
+                                ctx.current.push(AirInstruction::Binary {
+                                    target: cmp_reg,
+                                    op: arca_ast::BinaryOp::Equal,
+                                    left: match_val.clone(),
+                                    right: AirValue::ConstInt(0),
+                                });
+                            }
+                        } else {
+                            ctx.current.push(AirInstruction::Binary {
+                                target: cmp_reg,
+                                op: arca_ast::BinaryOp::Equal,
+                                left: match_val.clone(),
+                                right: AirValue::ConstInt(tag),
+                            });
+                        }
                         ctx.set_terminator_and_switch(
                             AirTerminator::CondBr {
                                 cond: AirValue::Register(cmp_reg),
@@ -611,6 +653,23 @@ impl AirBuilder {
                             },
                             body_block,
                         );
+                        // Extract payload from result struct for inner patterns
+                        for pat in inner {
+                            if let Pattern::Identifier(pname) = pat {
+                                if pname != "_" {
+                                    let unwrap_target = self.fresh_reg();
+                                    ctx.current.push(AirInstruction::Call {
+                                        target: Some(unwrap_target),
+                                        fn_name: "arca_result_unwrap".to_string(),
+                                        args: vec![match_val.clone()],
+                                    });
+                                    let ptr_reg = self.fresh_reg();
+                                    ctx.current.push(AirInstruction::Alloca { target: ptr_reg, ty: Type::Primitive(PrimitiveType::I64) });
+                                    ctx.current.push(AirInstruction::Store { ptr: ptr_reg, val: AirValue::Register(unwrap_target) });
+                                    var_map.insert(pname.clone(), ptr_reg);
+                                }
+                            }
+                        }
                     }
                     Pattern::Identifier(name) if name != "_" => {
                         let enum_tag = self.enum_map.values().find_map(|vmap| vmap.get(name).copied());
@@ -714,6 +773,20 @@ impl AirBuilder {
         }
         if callee_name == "Some" {
             return ("arca_option_some".to_string(), args.to_vec());
+        }
+        // Enum variant construction: EnumName.Variant(payload)
+        if let Some(dot) = callee_name.rfind('.') {
+            let enum_name = &callee_name[..dot];
+            let variant = &callee_name[dot + 1..];
+            if let Some(vmap) = self.enum_map.get(enum_name) {
+                if let Some(&tag) = vmap.get(variant) {
+                    if !args.is_empty() {
+                        return ("arca_result_ok".to_string(), args.to_vec());
+                    } else {
+                        return ("__enum_tag".to_string(), vec![AirValue::ConstInt(tag)]);
+                    }
+                }
+            }
         }
         if callee_name.ends_with("elapsed_ms") || callee_name.ends_with("elapsed_ns") {
             let mut new_args = Vec::new();

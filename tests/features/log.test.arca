@@ -1,0 +1,8 @@
+// Test: std/log module
+// Expected output:
+// hello
+import { info } from "std/log"
+
+fn main() {
+  info("hello")
+}

@@ -1,0 +1,9 @@
+// Test: std/compress module
+// Expected output:
+// zstd_compressed_bytes
+import { compress } from "std/compress"
+
+fn main() {
+  let r = compress("hello")
+  println(r)
+}

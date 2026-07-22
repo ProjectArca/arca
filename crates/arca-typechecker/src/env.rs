@@ -120,6 +120,17 @@ impl TypeEnv {
         self.functions.insert("__arca_clear_last_error".into(), void_to_void.clone());
 
         // std/os module
+        let string_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("compress".into(), string_fn.clone());
+        self.functions.insert("sha256".into(), string_fn.clone());
+        let info_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("info".into(), info_fn);
         let os_arch = FnType {
             params: Vec::new(),
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),

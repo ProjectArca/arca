@@ -1,0 +1,11 @@
+// Test: match with enum payload
+// Expected output:
+// 42
+enum Opt { Some(i32), None }
+fn main() {
+  let val = Opt.Some(42)
+  match val {
+    Opt.Some(v) => println(v)
+    Opt.None => println(0)
+  }
+}
