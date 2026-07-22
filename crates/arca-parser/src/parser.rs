@@ -960,7 +960,7 @@ impl<'a> Parser<'a> {
                             };
                             params.push(ParamDef {
                                 name: pn,
-                                type_ann: type_ann.unwrap_or(TypeAnnotation::Named("void".into())),
+                                type_ann: type_ann.unwrap_or(TypeAnnotation::Named("i64".into())),
                                 span: pspan,
                             });
                             if self.current_token.kind == TokenKind::Comma {

@@ -1,0 +1,9 @@
+// Test: HTTP server (compilation only, server runs indefinitely)
+// Expected output:
+// Server running on http://localhost:3000
+import { serve } from "std/http"
+
+fn main() {
+  println("Server running on http://localhost:3000")
+  serve(3000)
+}

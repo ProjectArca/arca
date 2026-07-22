@@ -119,6 +119,18 @@ impl TypeEnv {
         };
         self.functions.insert("__arca_clear_last_error".into(), void_to_void.clone());
 
+        // std/os module
+        let os_arch = FnType {
+            params: Vec::new(),
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("arch".into(), os_arch.clone());
+        self.functions.insert("cpu_count".into(), time_fn.clone());
+        self.functions.insert("env".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);

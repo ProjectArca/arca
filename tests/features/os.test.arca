@@ -1,0 +1,15 @@
+// Test: std/os module
+// Expected output:
+// arm64
+// 8
+// 0
+import { arch, cpu_count, env } from "std/os"
+
+fn main() {
+  let a = arch()
+  println(a)
+  let c = cpu_count()
+  println(c)
+  let e = env("PATH")
+  println(e)
+}
