@@ -261,6 +261,16 @@ impl TypeEnv {
         };
         self.functions.insert("path_join".into(), path_join_fn);
 
+        // std/process
+        let exit_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("exit".into(), exit_fn);
+
+        // std/json
+        self.functions.insert("json_stringify".into(), string_fn.clone());
+
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);
         self.insert_var("log".into(), Type::Unknown);

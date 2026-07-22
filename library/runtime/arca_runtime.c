@@ -249,3 +249,22 @@ const char* arca_path_join(const char* a, const char* b) {
     snprintf(buf, sizeof(buf), "%s%s%s", a, has_slash ? "" : "/", b);
     return buf;
 }
+
+void arca_exit(int64_t code) {
+    exit((int)code);
+}
+
+const char* arca_json_stringify(const char* s) {
+    if (!s) return "\"\"";
+    static char buf[8192]; *buf = 0;
+    char* w = buf; *w++ = '"';
+    while (*s && (size_t)(w - buf) < sizeof(buf) - 4) {
+        if (*s == '"' || *s == '\\') { *w++ = '\\'; *w++ = *s; }
+        else if (*s == '\n') { *w++ = '\\'; *w++ = 'n'; }
+        else if (*s == '\t') { *w++ = '\\'; *w++ = 't'; }
+        else { *w++ = *s; }
+        s++;
+    }
+    *w++ = '"'; *w = 0;
+    return buf;
+}

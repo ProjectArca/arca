@@ -1,0 +1,7 @@
+// Test: std/json — json_stringify
+// Expected output:
+// "hello"
+fn main() {
+  let j = json_stringify("hello")
+  println(j)
+}

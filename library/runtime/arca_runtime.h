@@ -97,6 +97,12 @@ const char* arca_path_filename(const char* path);
 const char* arca_path_parent(const char* path);
 const char* arca_path_join(const char* a, const char* b);
 
+// std/process
+void arca_exit(int64_t code);
+
+// std/json
+const char* arca_json_stringify(const char* s);
+
 // Concurrency Scheduler Helpers
 void arca_scheduler_init(int threads);
 void arca_scheduler_spawn(void (*func)(void*), void* arg);

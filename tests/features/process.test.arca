@@ -1,0 +1,7 @@
+// Test: std/process — exit (compile test, process exits)
+// Expected output:
+// 0
+fn main() {
+  println(0)
+  exit(0)
+}
