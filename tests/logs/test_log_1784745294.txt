@@ -1,0 +1,175 @@
+Arca Test Execution & Runtime Stdout Log
+Timestamp: Wed Jul 22 18:34:54 UTC 2026
+Unix Timestamp: 1784745294
+=========================================
+-----------------------------------------
+Test Name: arithmetic.test.arca
+File: tests/features/arithmetic.test.arca
+Duration: 1s
+Runtime Stdout:
+build/output.c:11:8: error: call to undeclared function 'arca_path_path_extension'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   11 |   v0 = arca_path_path_extension((const char*)"/tmp/file.txt");
+      |        ^
+build/output.c:11:8: note: did you mean 'arca_path_extension'?
+library/runtime/arca_runtime.h:113:13: note: 'arca_path_extension' declared here
+  113 | const char* arca_path_extension(const char* path);
+      |             ^
+build/output.c:14:8: error: call to undeclared function 'arca_path_path_filename'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   14 |   v1 = arca_path_path_filename((const char*)"/tmp/file.txt");
+      |        ^
+build/output.c:14:8: note: did you mean 'arca_path_filename'?
+library/runtime/arca_runtime.h:114:13: note: 'arca_path_filename' declared here
+  114 | const char* arca_path_filename(const char* path);
+      |             ^
+build/output.c:17:8: error: call to undeclared function 'arca_path_path_parent'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   17 |   v2 = arca_path_path_parent((const char*)"/tmp/file.txt");
+      |        ^
+build/output.c:17:8: note: did you mean 'arca_path_parent'?
+library/runtime/arca_runtime.h:115:13: note: 'arca_path_parent' declared here
+  115 | const char* arca_path_parent(const char* path);
+      |             ^
+build/output.c:20:6: error: incompatible pointer to integer conversion assigning to 'int64_t' (aka 'long long') from 'const char *' [-Wint-conversion]
+   20 |   v3 = arca_path_join((const char*)"/tmp", (const char*)"notes.txt");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4 errors generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: borrow.test.arca
+File: tests/features/borrow.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/borrow.test.arca
+6
+Result: PASS
+-----------------------------------------
+Test Name: channel.test.arca
+File: tests/features/channel.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/channel.test.arca
+0
+-1
+Result: PASS
+-----------------------------------------
+Test Name: comparison.test.arca
+File: tests/features/comparison.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/comparison.test.arca
+50
+Result: PASS
+-----------------------------------------
+Test Name: defer.test.arca
+File: tests/features/defer.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/defer.test.arca
+55
+Result: PASS
+-----------------------------------------
+Test Name: enum.test.arca
+File: tests/features/enum.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/enum.test.arca
+10
+20
+Result: PASS
+-----------------------------------------
+Test Name: env.test.arca
+File: tests/features/env.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/env.test.arca
+/Users/hy4-mac-002
+Result: PASS
+-----------------------------------------
+Test Name: env_full.test.arca
+File: tests/features/env_full.test.arca
+Duration: 1s
+Runtime Stdout:
+build/output.c:15:6: error: incompatible integer to pointer conversion assigning to 'const char *' from 'int64_t' (aka 'long long') [-Wint-conversion]
+   15 |   v3 = (int64_t)arca_current_dir();
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: extend.test.arca
+File: tests/features/extend.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/extend.test.arca
+0
+Result: PASS
+-----------------------------------------
+Test Name: for_loop.test.arca
+File: tests/features/for_loop.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/for_loop.test.arca
+1
+99
+Result: PASS
+-----------------------------------------
+Test Name: foreach.test.arca
+File: tests/features/foreach.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/foreach.test.arca
+6
+Result: PASS
+-----------------------------------------
+Test Name: fs.test.arca
+File: tests/features/fs.test.arca
+Duration: 27s
+Runtime Stdout:
+build/output.c:11:6: error: incompatible pointer to integer conversion assigning to 'int64_t' (aka 'long long') from 'const char *' [-Wint-conversion]
+   11 |   v0 = (const char*)arca_path_extension((const char*)"/tmp/file.txt");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+build/output.c:14:6: error: incompatible pointer to integer conversion assigning to 'int64_t' (aka 'long long') from 'const char *' [-Wint-conversion]
+   14 |   v1 = (const char*)arca_path_filename((const char*)"/tmp/file.txt");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+build/output.c:17:6: error: incompatible pointer to integer conversion assigning to 'int64_t' (aka 'long long') from 'const char *' [-Wint-conversion]
+   17 |   v2 = (const char*)arca_path_parent((const char*)"/tmp/file.txt");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+build/output.c:20:6: error: incompatible pointer to integer conversion assigning to 'int64_t' (aka 'long long') from 'const char *' [-Wint-conversion]
+   20 |   v3 = (const char*)arca_path_join((const char*)"/tmp", (const char*)"notes.txt");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4 errors generated.
+[arca] C compilation failed with code: exit status: 1
+Result: FAIL
+-----------------------------------------
+Test Name: fs_full.test.arca
+File: tests/features/fs_full.test.arca
+Duration: 3s
+Runtime Stdout:
+[arca] Running: tests/features/fs_full.test.arca
+/usr/bin
+Result: PASS
+-----------------------------------------
+Test Name: functions.test.arca
+File: tests/features/functions.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/functions.test.arca
+456
+Result: PASS
+-----------------------------------------
+Test Name: if_else.test.arca
+File: tests/features/if_else.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/if_else.test.arca
+trying
+caught
+Result: PASS
+-----------------------------------------
+Test Name: impl.test.arca
+File: tests/features/impl.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/features/impl.test.arca
+[arca] Failed to run program: No such file or directory (os error 2)
+Result: PASS
