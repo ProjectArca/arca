@@ -1,0 +1,24 @@
+// Test: Phase 6 AI Standard Library
+// Expected output:
+// 0
+// csv
+// bpe
+// {"role":"assistant","content":"[AI Response to: Hello Arca AI]"}
+// {"answer":"[RAG Answer for: What is Arca?]","sources":["doc_1"]}
+import { Tensor, Dataset, Tokenizer, OpenAI, VectorStore, RAGEngine } from "std/ai"
+
+fn main() {
+  let t = Tensor { shape: "1x10", data_ptr: 0 }
+  println(t.data_ptr)
+  let d = Dataset { format: "csv", path: "data.csv" }
+  println(d.format)
+  let tok = Tokenizer { kind: "bpe" }
+  println(tok.kind)
+  let ai = OpenAI { api_key: "sk-test", model: "gpt-4o" }
+  let resp = ai.chat("Hello Arca AI")
+  println(resp)
+  let store = VectorStore.connect("memory", "local")
+  let rag = RAGEngine.new(store, "openai", "gpt-4o")
+  let ans = rag.query("What is Arca?")
+  println(ans)
+}

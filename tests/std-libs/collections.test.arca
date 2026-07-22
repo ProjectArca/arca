@@ -1,0 +1,27 @@
+// Test: Phase 3 Collections
+// Expected output:
+// 0
+// 0
+// 0
+// 0
+// 0
+// 0
+// 0
+import { Vec, HashMap, HashSet, Queue, Deque, BinaryHeap, LinkedList } from "std/collections"
+
+fn main() {
+  let v = Vec { handle: 0 }
+  println(v.handle)
+  let m = HashMap { handle: 0 }
+  println(m.handle)
+  let s = HashSet { handle: 0 }
+  println(s.handle)
+  let q = Queue { handle: 0 }
+  println(q.handle)
+  let d = Deque { handle: 0 }
+  println(d.handle)
+  let h = BinaryHeap { handle: 0 }
+  println(h.handle)
+  let l = LinkedList { handle: 0 }
+  println(l.handle)
+}

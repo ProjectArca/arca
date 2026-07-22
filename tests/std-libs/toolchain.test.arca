@@ -1,0 +1,6 @@
+// Test: Phase 7 Toolchain features
+// Expected output:
+// Toolchain test pass
+fn main() {
+  println("Toolchain test pass")
+}

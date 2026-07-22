@@ -1,0 +1,7 @@
+// Test: Phase 8 Optimization pass
+// Expected output:
+// 610
+fn main() {
+  let a = 10 + 20 * 30
+  println(a)
+}

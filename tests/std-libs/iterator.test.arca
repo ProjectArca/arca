@@ -1,0 +1,11 @@
+// Test: Phase 4 Iterator
+// Expected output:
+// 0
+import { Iterator } from "std/iterator"
+
+fn main() {
+  let it = Iterator { handle: 10 }
+  let it2 = it.filter(1).map(2).take(5).skip(1)
+  let res = it2.collect()
+  println(res)
+}

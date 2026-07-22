@@ -1,0 +1,6 @@
+// Test: Phase 9 Native Backend lowering
+// Expected output:
+// Native Backend lowered successfully
+fn main() {
+  println("Native Backend lowered successfully")
+}

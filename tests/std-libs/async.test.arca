@@ -1,0 +1,13 @@
+// Test: Phase 5 Async Runtime
+// Expected output:
+// 0
+// 1
+import { Future, Task, spawn } from "std/async"
+
+fn main() {
+  let f = Future { handle: 100 }
+  let val = f.await()
+  println(val)
+  let t = spawn(1, 0)
+  println(t.id)
+}
