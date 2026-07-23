@@ -1,0 +1,90 @@
+AST Tree for 'tests/parse/simple.arca':
+Program {
+    declarations: [
+        Fn(
+            FnDecl {
+                name: "main",
+                params: [],
+                return_type: None,
+                throws_type: None,
+                body: BlockExpr {
+                    statements: [],
+                    final_expr: Some(
+                        Call {
+                            callee: Identifier {
+                                name: "println",
+                                span: Span {
+                                    start: 48,
+                                    end: 55,
+                                    start_loc: Location {
+                                        line: 3,
+                                        column: 3,
+                                    },
+                                    end_loc: Location {
+                                        line: 3,
+                                        column: 10,
+                                    },
+                                },
+                            },
+                            args: [
+                                Literal {
+                                    value: Int(
+                                        42,
+                                    ),
+                                    span: Span {
+                                        start: 56,
+                                        end: 58,
+                                        start_loc: Location {
+                                            line: 3,
+                                            column: 11,
+                                        },
+                                        end_loc: Location {
+                                            line: 3,
+                                            column: 13,
+                                        },
+                                    },
+                                },
+                            ],
+                            span: Span {
+                                start: 48,
+                                end: 59,
+                                start_loc: Location {
+                                    line: 3,
+                                    column: 3,
+                                },
+                                end_loc: Location {
+                                    line: 3,
+                                    column: 14,
+                                },
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 44,
+                        end: 61,
+                        start_loc: Location {
+                            line: 2,
+                            column: 11,
+                        },
+                        end_loc: Location {
+                            line: 4,
+                            column: 2,
+                        },
+                    },
+                },
+                span: Span {
+                    start: 34,
+                    end: 61,
+                    start_loc: Location {
+                        line: 2,
+                        column: 1,
+                    },
+                    end_loc: Location {
+                        line: 4,
+                        column: 2,
+                    },
+                },
+            },
+        ),
+    ],
+}

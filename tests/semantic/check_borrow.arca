@@ -1,0 +1,6 @@
+// Semantic test: borrow checking — should pass
+fn main() {
+  let x = 10
+  let y = borrow(x)
+  println(y)
+}

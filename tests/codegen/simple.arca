@@ -1,0 +1,4 @@
+// Codegen test: AIR and C generation
+fn main() {
+  println(1 + 2)
+}

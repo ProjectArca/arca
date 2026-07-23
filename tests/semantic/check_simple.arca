@@ -1,0 +1,5 @@
+// Semantic test: basic typecheck — should pass
+fn main() {
+  let x: i64 = 42
+  println(x)
+}

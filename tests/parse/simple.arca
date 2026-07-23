@@ -1,0 +1,4 @@
+// Parse test: simple expressions
+fn main() {
+  println(42)
+}

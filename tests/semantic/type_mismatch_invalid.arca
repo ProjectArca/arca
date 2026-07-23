@@ -1,0 +1,5 @@
+// Semantic test: type mismatch — should fail
+fn main() {
+  let x: i64 = "hello"
+  println(x)
+}

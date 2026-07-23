@@ -1,0 +1,27 @@
+// Benchmark: Prime counter
+// Expected output:
+// 4
+fn is_prime(n: i64) -> i64 {
+  if n == 2 { return 1 }
+  if n == 3 { return 1 }
+  if n == 5 { return 1 }
+  if n == 7 { return 1 }
+  if n % 2 == 0 { return 0 }
+  if n % 3 == 0 { return 0 }
+  if n % 5 == 0 { return 0 }
+  if n % 7 == 0 { return 0 }
+  0
+}
+
+fn main() {
+  let count = 0
+  if is_prime(2) == 1 { count = count + 1 }
+  if is_prime(3) == 1 { count = count + 1 }
+  if is_prime(4) == 1 { count = count + 1 }
+  if is_prime(5) == 1 { count = count + 1 }
+  if is_prime(6) == 1 { count = count + 1 }
+  if is_prime(7) == 1 { count = count + 1 }
+  if is_prime(8) == 1 { count = count + 1 }
+  if is_prime(9) == 1 { count = count + 1 }
+  println(count)
+}
