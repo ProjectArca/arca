@@ -17,49 +17,7 @@ use std::time::{Duration, Instant};
 
 const ARCA_VERSION: &str = "0.1.0-alpha";
 
-struct Color;
-impl Color {
-    const RESET: &'static str = "\x1b[0m";
-    const BOLD: &'static str = "\x1b[1m";
-    const GREEN: &'static str = "\x1b[32m";
-    const RED: &'static str = "\x1b[31m";
-    const YELLOW: &'static str = "\x1b[33m";
-    const CYAN: &'static str = "\x1b[36m";
-    const DIM: &'static str = "\x1b[2m";
-    const WHITE: &'static str = "\x1b[37m";
-    const BG_GREEN: &'static str = "\x1b[42m";
-    const BG_RED: &'static str = "\x1b[41m";
-}
 
-struct ProgressBar {
-    total: usize,
-    current: usize,
-    width: usize,
-}
-impl ProgressBar {
-    fn new(total: usize) -> Self {
-        Self { total, current: 0, width: 30 }
-    }
-    fn tick(&mut self) {
-        self.current += 1;
-        self.draw();
-    }
-    fn draw(&self) {
-        if self.total == 0 { return; }
-        let pct = self.current as f32 / self.total as f32;
-        let filled = (pct * self.width as f32) as usize;
-        let empty = self.width - filled;
-        print!("\r{}[{}] {}/{} {:>3}%{}",
-            Color::CYAN,
-            "=".repeat(filled) + &"-".repeat(empty),
-            self.current, self.total,
-            (pct * 100.0) as usize,
-            Color::RESET
-        );
-        if self.current == self.total { println!(); }
-        std::io::Write::flush(&mut std::io::stdout()).ok();
-    }
-}
 
 fn write_junit_xml(path: &str, tests: &[(String, bool, Duration)], suites: &[(String, usize, usize)]) {
     let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#);
@@ -842,7 +800,7 @@ fn handle_lint(target: &str) {
     println!("[arcalint] Running semantic linter pass on '{}'...", target);
     
     let mut warnings = 0u32;
-    let mut errors = 0u32;
+    let errors = 0u32;
     
     // Scan arca files for common issues
     let lint_dir = Path::new(target);
@@ -944,6 +902,7 @@ fn fmt_dur(us: u128) -> String {
     else { let s = us / 1_000_000; let d = (us % 1_000_000) / 100_000; format!("{}.{}s", s, d) }
 }
 
+#[allow(unused_assignments)]
 fn handle_test(target: &str, filter: &str, color: bool, _watch: bool, coverage: bool, junit: &str) {
     use rayon::prelude::*;
 
@@ -979,9 +938,7 @@ fn handle_test(target: &str, filter: &str, color: bool, _watch: bool, coverage: 
     let total_start = Instant::now();
     let mut all_results: Vec<(String, bool, Duration)> = Vec::new();
     let mut suite_stats: Vec<(String, usize, usize)> = Vec::new();
-    let mut p_pass = 0usize; let mut p_fail = 0usize;
-    let mut s_pass = 0usize; let mut s_fail = 0usize;
-    let mut c_pass = 0usize; let mut c_fail = 0usize;
+let (mut p_pass, mut p_fail, mut s_pass, mut s_fail, mut c_pass, mut c_fail) = (0usize, 0usize, 0usize, 0usize, 0usize, 0usize);
 
     // Layer 1: Parse tests
     {

@@ -82,7 +82,7 @@ impl Diagnostic {
         self
     }
 
-    fn render_span_to_string(span: &Span, source: Option<&str>, is_primary: bool, use_color: bool) -> String {
+    fn render_span_to_string(span: &Span, source: Option<&str>, _is_primary: bool, use_color: bool) -> String {
         let mut out = String::new();
         if let Some(src) = source {
             let lines: Vec<&str> = src.lines().collect();
