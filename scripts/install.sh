@@ -9,6 +9,7 @@ set -e
 
 INSTALL_DIR="${HOME}/.arca"
 BIN_DIR="${INSTALL_DIR}/bin"
+ARCA_VERSION="0.3.2"
 FORCE_UPDATE=false
 LOCAL_ONLY=false
 
