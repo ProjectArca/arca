@@ -954,6 +954,9 @@ impl AirBuilder {
         if is_method("to_throw") {
             return ("__arca_assert_throw".to_string(), with_obj(args, &method_obj));
         }
+        if is_method("to_match_snapshot") {
+            return ("__arca_match_snapshot".to_string(), with_obj(args, &method_obj));
+        }
 
         // ===== Vec namespace API (for raw handles) =====
 

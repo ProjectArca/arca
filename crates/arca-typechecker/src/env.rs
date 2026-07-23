@@ -614,6 +614,10 @@ impl TypeEnv {
                     params: vec![],
                     return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
                 }),
+                ("to_match_snapshot".into(), FnType {
+                    params: vec![],
+                    return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+                }),
             ].into_iter().collect(),
         });
         self.functions.insert("expect".into(), FnType {
@@ -625,6 +629,10 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
         });
         self.functions.insert("__arca_assert_throw".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("__arca_match_snapshot".into(), FnType {
             params: vec![Type::Primitive(PrimitiveType::I64)],
             return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
         });

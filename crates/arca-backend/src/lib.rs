@@ -469,7 +469,7 @@ impl CodeGenerator {
                             || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error"
                             || fn_name == "arca_future_complete"
                             || fn_name == "info" || fn_name == "warn" || fn_name == "error" || fn_name == "debug"
-                            || fn_name == "__arca_assert_eq" || fn_name == "__arca_assert_throw";
+                            || fn_name == "__arca_assert_eq" || fn_name == "__arca_assert_throw" || fn_name == "__arca_match_snapshot";
                         if is_void { None } else { *target }
                     }
                     AirInstruction::StructInit { target, struct_name, fields } => {
