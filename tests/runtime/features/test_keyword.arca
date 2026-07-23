@@ -1,0 +1,16 @@
+// Roadmap 3: test keyword and assertion API
+fn main() {
+  println(0)
+}
+
+test "addition works" {
+  expect(1 + 2).to_be(3)
+}
+
+test "comparison" {
+  expect(10).to_be(10)
+}
+
+test "expression" {
+  expect(2 * 3 + 1).to_be(7)
+}

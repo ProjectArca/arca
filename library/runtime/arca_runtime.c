@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 
 void arca_print_int(int64_t v) {
@@ -278,8 +279,38 @@ void __arca_assert_throw(int64_t fn_ptr) {
     printf("  ✓ PASS (exception caught)\n");
 }
 void __arca_match_snapshot(int64_t actual) {
-    // Simplified: just print the value and pass
-    printf("  ✓ (snapshot: %lld)\n", (long long)actual);
+    const char* actual_str = (const char*)actual;
+    const char* key = getenv("__arca_snapshot_key");
+    if (!key || *key == 0) {
+        printf("  ✓ (snapshot: %s)\n", actual_str ? actual_str : "null");
+        return;
+    }
+
+    char path[512];
+    snprintf(path, sizeof(path), "__snapshots__/%s.snap", key);
+
+    mkdir("__snapshots__", 0755);
+
+    char expected[65536] = {0};
+    FILE* f = fopen(path, "r");
+    if (f) {
+        fread(expected, 1, sizeof(expected) - 1, f);
+        expected[sizeof(expected) - 1] = 0;
+        fclose(f);
+    }
+
+    const char* actual_cmp = actual_str ? actual_str : "";
+    if (strcmp(expected, actual_cmp) != 0) {
+        printf("  ✗ FAIL (snapshot mismatch for %s)\n", key);
+        printf("  expected: %s\n", expected[0] ? expected : "(empty)");
+        printf("  actual:   %s\n", actual_cmp[0] ? actual_cmp : "(empty)");
+        if (getenv("__arca_update_snapshots")) {
+            f = fopen(path, "w");
+            if (f) { fputs(actual_cmp, f); fclose(f); }
+        }
+        _exit(1);
+    }
+    printf("  ✓ (snapshot match)\n");
 }
 const char* __arca_str_at(const char* s, int64_t i) {
     static char buf[2];

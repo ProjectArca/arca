@@ -21,3 +21,6 @@ arca-rt = { path = "../arca-rt" }
 arca-fmt = { path = "../arca-fmt" }
 arca-backend = { path = "../arca-backend" }
 serde_json = "1.0"
+rayon = "1.10"
+notify = "7.0"
+atty = "0.2"

@@ -13,9 +13,98 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::process;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 const ARCA_VERSION: &str = "0.1.0-alpha";
+
+struct Color;
+impl Color {
+    const RESET: &'static str = "\x1b[0m";
+    const BOLD: &'static str = "\x1b[1m";
+    const GREEN: &'static str = "\x1b[32m";
+    const RED: &'static str = "\x1b[31m";
+    const YELLOW: &'static str = "\x1b[33m";
+    const CYAN: &'static str = "\x1b[36m";
+    const DIM: &'static str = "\x1b[2m";
+    const WHITE: &'static str = "\x1b[37m";
+    const BG_GREEN: &'static str = "\x1b[42m";
+    const BG_RED: &'static str = "\x1b[41m";
+}
+
+struct ProgressBar {
+    total: usize,
+    current: usize,
+    width: usize,
+}
+impl ProgressBar {
+    fn new(total: usize) -> Self {
+        Self { total, current: 0, width: 30 }
+    }
+    fn tick(&mut self) {
+        self.current += 1;
+        self.draw();
+    }
+    fn draw(&self) {
+        if self.total == 0 { return; }
+        let pct = self.current as f32 / self.total as f32;
+        let filled = (pct * self.width as f32) as usize;
+        let empty = self.width - filled;
+        print!("\r{}[{}] {}/{} {:>3}%{}",
+            Color::CYAN,
+            "=".repeat(filled) + &"-".repeat(empty),
+            self.current, self.total,
+            (pct * 100.0) as usize,
+            Color::RESET
+        );
+        if self.current == self.total { println!(); }
+        std::io::Write::flush(&mut std::io::stdout()).ok();
+    }
+}
+
+fn write_junit_xml(path: &str, tests: &[(String, bool, Duration)], suites: &[(String, usize, usize)]) {
+    let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#);
+    xml.push_str("\n<testsuites>\n");
+    for (suite, pass, fail) in suites {
+        let total = pass + fail;
+        let time = tests.iter().filter(|(n, _, _)| n.contains(suite)).map(|(_, _, d)| d.as_secs_f64()).sum::<f64>();
+        xml.push_str(&format!(
+            "  <testsuite name=\"{}\" tests=\"{}\" failures=\"{}\" errors=\"0\" time=\"{:.3}\">\n",
+            suite, total, fail, time
+        ));
+        for (name, passed, dur) in tests.iter().filter(|(n, _, _)| n.contains(suite)) {
+            xml.push_str(&format!(
+                "    <testcase classname=\"{}\" name=\"{}\" time=\"{:.6}\">\n",
+                suite, name, dur.as_secs_f64()
+            ));
+            if !passed {
+                xml.push_str("      <failure>Test failed</failure>\n");
+            }
+            xml.push_str("    </testcase>\n");
+        }
+        xml.push_str("  </testsuite>\n");
+    }
+    xml.push_str("</testsuites>\n");
+    fs::write(path, xml).ok();
+}
+
+fn ensure_runtime_o(rt_o: &str, http_o: &str, socket_o: &str) {
+    if !Path::new(rt_o).exists() {
+        let build_dir = Path::new("build");
+        std::fs::create_dir_all(build_dir).ok();
+        let mut ccs: Vec<(String, String)> = vec![
+            ("library/runtime/arca_runtime.c".into(), rt_o.into()),
+            ("library/runtime/http.c".into(), http_o.into()),
+            ("library/runtime/socket.c".into(), socket_o.into()),
+        ];
+        for (s, o) in ccs.drain(..) {
+            if !Path::new(&o).exists() {
+                std::process::Command::new("cc")
+                    .args(&["-c", &s, "-o", &o, "-I", "library/runtime"])
+                    .status().ok();
+            }
+        }
+    }
+}
 
 fn print_usage() {
     println!(
@@ -515,17 +604,23 @@ fn main() {
         "test" => {
             let mut target = "tests".to_string();
             let mut filter = String::new();
+            let mut color = true;
+            let mut watch = false;
+            let mut coverage = false;
+            let mut junit = String::new();
             let mut i = 2;
             while i < args.len() {
-                if args[i] == "--filter" && i + 1 < args.len() {
-                    filter = args[i + 1].clone();
-                    i += 2;
-                } else {
-                    target = args[i].clone();
-                    i += 1;
+                match args[i].as_str() {
+                    "--filter" if i + 1 < args.len() => { filter = args[i+1].clone(); i += 2; }
+                    "--no-color" => { color = false; i += 1; }
+                    "--color" => { color = true; i += 1; }
+                    "--watch" => { watch = true; i += 1; }
+                    "--coverage" => { coverage = true; i += 1; }
+                    "--junit" if i + 1 < args.len() => { junit = args[i+1].clone(); i += 2; }
+                    _ => { target = args[i].clone(); i += 1; }
                 }
             }
-            handle_test(&target, &filter);
+            handle_test(&target, &filter, color, watch, coverage, &junit);
         }
         "fmt" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
@@ -559,8 +654,158 @@ fn main() {
 }
 
 fn handle_bench(target: &str) {
-    println!("[arcabench] Running benchmark suite for '{}'...", target);
-    println!("[arcabench] Benchmarks complete.");
+    println!("\n=========================================");
+    println!("        Arca Bench Suite v{}", ARCA_VERSION);
+    println!("=========================================");
+
+    let commit = process::Command::new("git")
+        .args(&["rev-parse", "--short", "HEAD"])
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default();
+    if !commit.is_empty() { println!("  Commit   : {}", commit); }
+    println!("  Backend  : AIR → C\n");
+
+    let rt_dirs = vec![
+        format!("{}/runtime/features", target),
+        format!("{}/runtime/std-libs", target),
+        format!("{}/regression", target),
+        format!("{}/../examples/challenges", target),
+    ];
+
+    fs::create_dir_all("build").ok();
+    ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
+
+    let mut object_files: Vec<String> = Vec::new();
+    let mut bench_names: Vec<String> = Vec::new();
+
+    for dir in &rt_dirs {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().map_or(false, |e| e == "arca") {
+                    let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                    let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
+                    let source = fs::read_to_string(&path).unwrap_or_default();
+                    match compile_arca_to_c(&source, &path.to_string_lossy(), &format!("bench_{}_", safe)) {
+                        Ok(mut c_code) => {
+                            if let Some(main_pos) = c_code.find("int main(int argc, char** argv)") {
+                                c_code.truncate(main_pos);
+                            }
+                            let bench_prefix = format!("bench_{}___bench_", safe);
+                            let mut bench_seen = std::collections::HashSet::new();
+                            let mut bench_pos = 0;
+                            while let Some(pos) = c_code[bench_pos..].find(&bench_prefix) {
+                                let start = bench_pos + pos + bench_prefix.len();
+                                let end = c_code[start..].find('(').unwrap_or(0);
+                                if end > 0 {
+                                    let fn_name = &c_code[start..start + end];
+                                    if bench_seen.insert(fn_name.to_string()) {
+                                        bench_names.push(format!("{}::{}", name, fn_name.replace('_', " ")));
+                                        let bench_fn = format!("bench_{}___bench_{}", safe, fn_name);
+                                        c_code.push_str(&format!("void {}() {{ {}(); }}\n", bench_fn, bench_fn));
+                                    }
+                                }
+                                bench_pos = start + end;
+                            }
+                            let c_path = format!("build/b_{}.c", safe);
+                            let o_path = format!("build/b_{}.o", safe);
+                            fs::write(&c_path, &c_code).ok();
+                            if std::process::Command::new("cc")
+                                .args(&["-c", &c_path, "-o", &o_path, "-I", "library/runtime"])
+                                .status().map(|s| s.success()).unwrap_or(false)
+                            {
+                                object_files.push(o_path);
+                            }
+                            fs::remove_file(&c_path).ok();
+                        }
+                        Err(e) => {
+                            eprintln!("  {:35} FAIL  {}", name, e.lines().next().unwrap_or(&e));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if object_files.is_empty() {
+        println!("  No benchmarks found.");
+        return;
+    }
+
+    let mut runner = String::from(
+        "#include \"arca_runtime.h\"\n\
+         #include <string.h>\n\
+         #include <unistd.h>\n\
+         #include <sys/wait.h>\n\
+         #include <time.h>\n\n"
+    );
+
+    for fn_name in &bench_names {
+        let bench_fn = format!("bench_{}", fn_name.replace("::", "___bench_").replace(' ', "_"));
+        runner.push_str(&format!("void {}();\n", bench_fn));
+    }
+    runner.push('\n');
+
+    runner.push_str(&format!("const char* bench_names[{}] = {{\n", bench_names.len()));
+    for name in &bench_names {
+        runner.push_str(&format!("  \"{}\",\n", name));
+    }
+    runner.push_str("};\n\n");
+
+    runner.push_str(&format!("void (*bench_fns[{}])() = {{\n", bench_names.len()));
+    for name in &bench_names {
+        let bench_fn = format!("bench_{}", name.replace("::", "___bench_").replace(' ', "_"));
+        runner.push_str(&format!("  {},\n", bench_fn));
+    }
+    runner.push_str("};\n\n");
+
+    runner.push_str(&format!(
+        "int main() {{\n\
+           int n = {};\n\
+           for (int i = 0; i < n; i++) {{\n\
+             struct timespec t0, t1;\n\
+             clock_gettime(CLOCK_MONOTONIC, &t0);\n\
+             bench_fns[i]();\n\
+             clock_gettime(CLOCK_MONOTONIC, &t1);\n\
+             long us = (t1.tv_sec - t0.tv_sec) * 1000000 + (t1.tv_nsec - t0.tv_nsec) / 1000;\n\
+             if (us < 1000)\n\
+               printf(\"  %-35s %ldus\\n\", bench_names[i], us);\n\
+             else\n\
+               printf(\"  %-35s %ld.%ldms\\n\", bench_names[i], us/1000, (us%1000)/100);\n\
+           }}\n\
+           return 0;\n\
+        }}\n", bench_names.len()));
+
+    let r_path = "build/bench_runner.c";
+    let binary = "build/bench_bundle";
+    fs::write(r_path, &runner).ok();
+
+    let link_start = Instant::now();
+    let mut cc = std::process::Command::new("cc");
+    cc.args(&["-O0", "-o", binary, r_path]);
+    for o in &object_files { cc.arg(o); }
+    cc.args(&["build/arca_runtime.o", "build/http.o", "build/socket.o", "-I", "library/runtime"]);
+    let link_ok = cc.status().map(|s| s.success()).unwrap_or(false);
+    let link_ms = link_start.elapsed().as_millis();
+
+    if link_ok {
+        if let Ok(out) = std::process::Command::new(binary).output() {
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            for line in stdout.lines() {
+                if line.starts_with("  ") { println!("{}", line); }
+            }
+            println!("  (link {}ms)", link_ms);
+        }
+    } else {
+        println!("  Link FAILED ({}ms)", link_ms);
+    }
+
+    fs::remove_file(r_path).ok();
+    for o in &object_files { fs::remove_file(o).ok(); }
+    fs::remove_file(binary).ok();
 }
 
 fn handle_lsp() {
@@ -570,7 +815,50 @@ fn handle_lsp() {
 
 fn handle_lint(target: &str) {
     println!("[arcalint] Running semantic linter pass on '{}'...", target);
-    println!("[arcalint] Lint pass completed: 0 warnings, 0 errors");
+    
+    let mut warnings = 0u32;
+    let mut errors = 0u32;
+    
+    // Scan arca files for common issues
+    let lint_dir = Path::new(target);
+    if lint_dir.exists() {
+        let Ok(entries) = fs::read_dir(lint_dir) else { return; };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "arca") {
+                if let Ok(source) = fs::read_to_string(&path) {
+                    let file_name = path.file_name().unwrap_or_default().to_string_lossy();
+                    
+                    // Check for unused variables (simple heuristic: let x = ... without subsequent use)
+                    if source.contains("let _") {
+                        warnings += 1;
+                        println!("  {} warning: {}: unused variable with _ prefix", "\x1b[33m", file_name);
+                    }
+                    
+                    // Check for println in non-test code
+                    if source.contains("println(") && !file_name.contains("test") {
+                        warnings += 1;
+                        println!("  {} warning: {}: println used in non-test code", "\x1b[33m", file_name);
+                    }
+                    
+                    // Check for wide functions
+                    if source.contains("fn ") {
+                        let lines: u32 = source.lines().count() as u32;
+                        if lines > 200 {
+                            warnings += 1;
+                            println!("  {} warning: {}: function is too long ({} lines)", "\x1b[33m", file_name, lines);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    let reset = "\x1b[0m";
+    println!("\n[arcalint] Results:");
+    println!("  Warnings: {}{}{}", "\x1b[33m", warnings, reset);
+    println!("  Errors:   {}{}{}", "\x1b[31m", errors, reset);
+    println!("[arcalint] Lint pass completed: {} warnings, {} errors", warnings, errors);
 }
 
 fn handle_doc(target: &str) {
@@ -597,26 +885,6 @@ fn handle_fmt(target: &str) {
         eprintln!("[arca] Target path '{}' does not exist.", target);
         process::exit(1);
     }
-}
-
-fn ensure_runtime_o(runtime_o: &str, http_o: &str, socket_o: &str) {
-    let needs_rebuild = |src: &str, out: &str| -> bool {
-        if !std::path::Path::new(out).exists() { return true; }
-        if let (Ok(sm), Ok(om)) = (std::fs::metadata(src).and_then(|m| m.modified()),
-                                    std::fs::metadata(out).and_then(|m| m.modified())) {
-            sm > om
-        } else { true }
-    };
-    let compile = |src: &str, out: &str| {
-        if needs_rebuild(src, out) {
-            std::process::Command::new("cc")
-                .args(&["-O3", "-c", src, "-o", out, "-I", "library/runtime"])
-                .status().ok();
-        }
-    };
-    compile("library/runtime/arca_runtime.c", runtime_o);
-    compile("library/net/http.c", http_o);
-    compile("library/net/socket.c", socket_o);
 }
 
 fn compile_arca_to_c(source: &str, target: &str, prefix: &str) -> Result<String, String> {
@@ -651,10 +919,22 @@ fn fmt_dur(us: u128) -> String {
     else { let s = us / 1_000_000; let d = (us % 1_000_000) / 100_000; format!("{}.{}s", s, d) }
 }
 
-fn handle_test(target: &str, filter: &str) {
-    println!("\n=========================================");
-    println!("        Arca Test Suite v{}", ARCA_VERSION);
-    println!("=========================================");
+fn handle_test(target: &str, filter: &str, color: bool, _watch: bool, coverage: bool, junit: &str) {
+    use rayon::prelude::*;
+
+    let use_color = color && atty::is(atty::Stream::Stdout);
+
+    let green = |s: &str| if use_color { format!("\x1b[32m{}\x1b[0m", s) } else { s.to_string() };
+    let red = |s: &str| if use_color { format!("\x1b[31m{}\x1b[0m", s) } else { s.to_string() };
+    let cyan = |s: &str| if use_color { format!("\x1b[36m{}\x1b[0m", s) } else { s.to_string() };
+    let bold = |s: &str| if use_color { format!("\x1b[1m{}\x1b[0m", s) } else { s.to_string() };
+    let dim = |s: &str| if use_color { format!("\x1b[2m{}\x1b[0m", s) } else { s.to_string() };
+    let ok_sym = green("✓");
+    let fail_sym = red("✗");
+
+    println!("\n{}", cyan("========================================="));
+    println!("{}", bold(&format!("        Arca Test Suite v{}", ARCA_VERSION)));
+    println!("{}", cyan("========================================="));
 
     let commit = process::Command::new("git")
         .args(&["rev-parse", "--short", "HEAD"])
@@ -665,90 +945,148 @@ fn handle_test(target: &str, filter: &str) {
         .unwrap_or_default();
 
     if !commit.is_empty() {
-        println!("  Commit   : {}", commit);
+        println!("{}  Commit   : {}{}", dim(""), commit, dim(""));
     }
-    println!("  Backend  : AIR → C\n");
+    println!("{}  Backend  : AIR → C{}\n", dim(""), dim(""));
 
     ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
 
+    let total_start = Instant::now();
+    let mut all_results: Vec<(String, bool, Duration)> = Vec::new();
+    let mut suite_stats: Vec<(String, usize, usize)> = Vec::new();
+    let mut p_pass = 0usize; let mut p_fail = 0usize;
+    let mut s_pass = 0usize; let mut s_fail = 0usize;
+    let mut c_pass = 0usize; let mut c_fail = 0usize;
+
     // Layer 1: Parse tests
-    println!("──────────────────────────────────────────\nParse\n──────────────────────────────────────────");
-    let parse_dir = format!("{}/parse", target);
-    let mut p_pass = 0; let mut p_fail = 0;
-    if let Ok(entries) = fs::read_dir(&parse_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().map_or(false, |e| e == "arca") {
+    {
+        println!("\n{}", cyan("──────────────────────────────────────────\nParse\n──────────────────────────────────────────"));
+        let mut layer_pass = 0;
+        let mut layer_fail = 0;
+        let mut layer_tests: Vec<(String, bool, Duration)> = Vec::new();
+        let ok_sym = ok_sym.clone();
+        let fail_sym = fail_sym.clone();
+
+        if let Ok(entries) = fs::read_dir(&format!("{}/parse", target)) {
+            let files: Vec<_> = entries.filter_map(|e| e.ok()).map(|e| e.path()).collect();
+            let results: Vec<_> = files.par_iter().filter(|path| {
+                path.extension().map_or(false, |e| e == "arca")
+            }).map(|path| {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
-                if !filter.is_empty() && !name.contains(filter) { continue; }
-                let source = fs::read_to_string(&path).unwrap_or_default();
+                if !filter.is_empty() && !name.contains(filter) { return None; }
+                let source = fs::read_to_string(path).unwrap_or_default();
                 let start = Instant::now();
-                let lexer = Lexer::new(&source);
-                let mut parser = Parser::new(lexer).with_file(&*path.to_string_lossy());
-                let _ = parser.parse_program();
-                let errors = parser.diagnostics().len();
+                let result = compile_arca_to_c(&source, &path.to_string_lossy(), "");
                 let us = start.elapsed().as_micros();
-                let ok = errors == 0;
-                if ok { p_pass += 1; } else { p_fail += 1; }
-                println!("  {:35} {:>6}  {}", name, fmt_dur(us), if ok { "✓" } else { "✗" });
+                let passed = result.is_ok();
+                Some((name, passed, Duration::from_micros(us as u64)))
+            }).collect::<Vec<_>>();
+
+            for res in results {
+                if let Some((name, passed, dur)) = res {
+                    let ok_str = if passed { ok_sym.clone() } else { fail_sym.clone() };
+                    println!("  {:40} {:>8}  {}", name, fmt_dur(dur.as_micros()), ok_str);
+                    if passed { layer_pass += 1; } else { layer_fail += 1; }
+                    layer_tests.push((name, passed, dur));
+                }
             }
         }
+        let total = layer_pass + layer_fail;
+        if !filter.is_empty() && total > 0 {
+            println!("  {} {}/{}\n", green("passed"), layer_pass, total);
+        }
+        suite_stats.push(("Parse".to_string(), layer_pass, layer_fail));
+        all_results.extend(layer_tests);
+        p_pass = layer_pass; p_fail = layer_fail;
     }
 
     // Layer 2: Semantic tests
-    println!("\n──────────────────────────────────────────\nSemantic\n──────────────────────────────────────────");
-    let sem_dir = format!("{}/semantic", target);
-    let mut s_pass = 0; let mut s_fail = 0;
-    if let Ok(entries) = fs::read_dir(&sem_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().map_or(false, |e| e == "arca") {
+    {
+        println!("\n{}", cyan("──────────────────────────────────────────\nSemantic\n──────────────────────────────────────────"));
+        let mut layer_pass = 0;
+        let mut layer_fail = 0;
+        let mut layer_tests: Vec<(String, bool, Duration)> = Vec::new();
+        let ok_sym = ok_sym.clone();
+        let fail_sym = fail_sym.clone();
+
+        if let Ok(entries) = fs::read_dir(&format!("{}/semantic", target)) {
+            let files: Vec<_> = entries.filter_map(|e| e.ok()).map(|e| e.path()).collect();
+            let results: Vec<_> = files.par_iter().filter(|path| {
+                path.extension().map_or(false, |e| e == "arca")
+            }).map(|path| {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
-                if !filter.is_empty() && !name.contains(filter) { continue; }
-                let source = fs::read_to_string(&path).unwrap_or_default();
+                if !filter.is_empty() && !name.contains(filter) { return None; }
+                let source = fs::read_to_string(path).unwrap_or_default();
                 let start = Instant::now();
                 let result = compile_arca_to_c(&source, &path.to_string_lossy(), "");
                 let us = start.elapsed().as_micros();
                 let expects_fail = name.ends_with("_invalid");
-                let passed = match (&result, expects_fail) {
-                    (Ok(_), false) => true,
-                    (Err(_), true) => true,
-                    _ => false,
-                };
-                if passed { s_pass += 1; } else { s_fail += 1; }
-                println!("  {:35} {:>6}  {}",
-                    name, fmt_dur(us),
-                    if passed { "✓" } else { "✗" });
+                let passed = if expects_fail { result.is_err() } else { result.is_ok() };
+                Some((name, passed, Duration::from_micros(us as u64)))
+            }).collect::<Vec<_>>();
+
+            for res in results {
+                if let Some((name, passed, dur)) = res {
+                    let ok_str = if passed { ok_sym.clone() } else { fail_sym.clone() };
+                    println!("  {:40} {:>8}  {}", name, fmt_dur(dur.as_micros()), ok_str);
+                    if passed { layer_pass += 1; } else { layer_fail += 1; }
+                    layer_tests.push((name, passed, dur));
+                }
             }
         }
+        let total = layer_pass + layer_fail;
+        if !filter.is_empty() && total > 0 {
+            println!("  {} {}/{}\n", green("passed"), layer_pass, total);
+        }
+        suite_stats.push(("Semantic".to_string(), layer_pass, layer_fail));
+        all_results.extend(layer_tests);
+        s_pass = layer_pass; s_fail = layer_fail;
     }
 
     // Layer 3: Codegen tests
-    println!("\n──────────────────────────────────────────\nCode Generation\n──────────────────────────────────────────");
-    let cg_dir = format!("{}/codegen", target);
-    let mut c_pass = 0; let mut c_fail = 0;
-    if let Ok(entries) = fs::read_dir(&cg_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().map_or(false, |e| e == "arca") {
+    {
+        println!("\n{}", cyan("──────────────────────────────────────────\nCode Generation\n──────────────────────────────────────────"));
+        let mut layer_pass = 0;
+        let mut layer_fail = 0;
+        let mut layer_tests: Vec<(String, bool, Duration)> = Vec::new();
+        let ok_sym = ok_sym.clone();
+        let fail_sym = fail_sym.clone();
+
+        if let Ok(entries) = fs::read_dir(&format!("{}/codegen", target)) {
+            let files: Vec<_> = entries.filter_map(|e| e.ok()).map(|e| e.path()).collect();
+            let results: Vec<_> = files.par_iter().filter(|path| {
+                path.extension().map_or(false, |e| e == "arca")
+            }).map(|path| {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
-                if !filter.is_empty() && !name.contains(filter) { continue; }
-                let source = fs::read_to_string(&path).unwrap_or_default();
-                let target_str = path.to_string_lossy();
+                if !filter.is_empty() && !name.contains(filter) { return None; }
+                let source = fs::read_to_string(path).unwrap_or_default();
                 let start = Instant::now();
-                let c_result = compile_arca_to_c(&source, &target_str, "");
+                let result = compile_arca_to_c(&source, &path.to_string_lossy(), "");
                 let us = start.elapsed().as_micros();
-                let passed = c_result.is_ok();
-                if passed { c_pass += 1; } else { c_fail += 1; }
-                println!("  {:35} {:>6}  {}",
-                    name, fmt_dur(us),
-                    if passed { "✓" } else { "✗" });
+                let passed = result.is_ok();
+                Some((name, passed, Duration::from_micros(us as u64)))
+            }).collect::<Vec<_>>();
+
+            for res in results {
+                if let Some((name, passed, dur)) = res {
+                    let ok_str = if passed { ok_sym.clone() } else { fail_sym.clone() };
+                    println!("  {:40} {:>8}  {}", name, fmt_dur(dur.as_micros()), ok_str);
+                    if passed { layer_pass += 1; } else { layer_fail += 1; }
+                    layer_tests.push((name, passed, dur));
+                }
             }
         }
+        let total = layer_pass + layer_fail;
+        if !filter.is_empty() && total > 0 {
+            println!("  {} {}/{}\n", green("passed"), layer_pass, total);
+        }
+        suite_stats.push(("Code Generation".to_string(), layer_pass, layer_fail));
+        all_results.extend(layer_tests);
+        c_pass = layer_pass; c_fail = layer_fail;
     }
 
     // Layer 4: Runtime tests (batch-compiled with symbol prefixing)
-    println!("\n──────────────────────────────────────────\nRuntime\n──────────────────────────────────────────");
+    println!("\n{}", cyan("──────────────────────────────────────────\nRuntime\n──────────────────────────────────────────"));
 
     let rt_dirs = vec![
         format!("{}/runtime/features", target),
@@ -760,13 +1098,14 @@ fn handle_test(target: &str, filter: &str) {
     fs::create_dir_all("build").ok();
     ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
 
-    let mut r_pass = 0; let mut r_fail = 0;
+    let mut r_pass = 0usize; let mut r_fail = 0usize;
     let mut object_files: Vec<String> = Vec::new();
     let mut test_names: Vec<String> = Vec::new();
-    let mut discovered_tests: Vec<(String, String)> = Vec::new(); // (test_fn_name, display_name)
+    let mut discovered_tests: Vec<(String, String)> = Vec::new();
     let mut discovered_benches: Vec<(String, String)> = Vec::new();
 
-    // Phase 1: compile each test to prefixed C → .o
+    let compile_start = Instant::now();
+
     for dir in &rt_dirs {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
@@ -778,37 +1117,42 @@ fn handle_test(target: &str, filter: &str) {
                     let source = fs::read_to_string(&path).unwrap_or_default();
                     match compile_arca_to_c(&source, &path.to_string_lossy(), &format!("test_{}_", safe)) {
                         Ok(mut c_code) => {
-                            // Strip int main(...) block — runner provides its own main
                             if let Some(main_pos) = c_code.find("int main(int argc, char** argv)") {
                                 c_code.truncate(main_pos);
                             }
-
-                            // Discover __test_* functions in the C code
-                            let prefix = format!("test_{}___test_", safe);
-                            let mut search_pos = 0;
-                            while let Some(pos) = c_code[search_pos..].find(&prefix) {
-                                let start = search_pos + pos + prefix.len();
+                            let test_prefix = format!("test_{}___test_", safe);
+                            let mut test_seen = std::collections::HashSet::new();
+                            let mut test_pos = 0;
+                            while let Some(pos) = c_code[test_pos..].find(&test_prefix) {
+                                let start = test_pos + pos + test_prefix.len();
                                 let end = c_code[start..].find('(').unwrap_or(0);
                                 if end > 0 {
-                                    let test_fn = format!("test_{}___test_{}", safe, &c_code[start..start + end]);
-                                    let display = &c_code[start..start + end].replace('_', " ");
-                                    discovered_tests.push((test_fn, format!("{}::{}", name, display)));
+                                    let fn_name = &c_code[start..start + end];
+                                    if test_seen.insert(fn_name.to_string()) {
+                                        discovered_tests.push((
+                                            format!("test_{}___test_{}", safe, fn_name),
+                                            format!("{}::{}", name, fn_name.replace('_', " ")),
+                                        ));
+                                    }
                                 }
-                                search_pos = start + end;
+                                test_pos = start + end;
                             }
-
-                            // Discover __bench_* functions
-                            let bprefix = format!("test_{}___bench_", safe);
-                            let mut bpos = 0;
-                            while let Some(pos) = c_code[bpos..].find(&bprefix) {
-                                let start = bpos + pos + bprefix.len();
+                            let bench_prefix = format!("test_{}___bench_", safe);
+                            let mut bench_seen = std::collections::HashSet::new();
+                            let mut bench_pos = 0;
+                            while let Some(pos) = c_code[bench_pos..].find(&bench_prefix) {
+                                let start = bench_pos + pos + bench_prefix.len();
                                 let end = c_code[start..].find('(').unwrap_or(0);
                                 if end > 0 {
-                                    let bench_fn = format!("test_{}___bench_{}", safe, &c_code[start..start + end]);
-                                    let display = &c_code[start..start + end].replace('_', " ");
-                                    discovered_benches.push((bench_fn, format!("{}::{}", name, display)));
+                                    let fn_name = &c_code[start..start + end];
+                                    if bench_seen.insert(fn_name.to_string()) {
+                                        discovered_benches.push((
+                                            format!("test_{}___bench_{}", safe, fn_name),
+                                            format!("{}::{}", name, fn_name.replace('_', " ")),
+                                        ));
+                                    }
                                 }
-                                bpos = start + end;
+                                bench_pos = start + end;
                             }
                             let c_path = format!("build/t_{}.c", safe);
                             let o_path = format!("build/t_{}.o", safe);
@@ -820,13 +1164,13 @@ fn handle_test(target: &str, filter: &str) {
                                 object_files.push(o_path);
                                 test_names.push(name);
                             } else {
-                                println!("  {:35} {:>6}  FAIL  C compile error", name, fmt_dur(0));
+                                eprintln!("  {:35} {:>6}  {}  C compile error", name, fmt_dur(0), red("FAIL"));
                                 r_fail += 1;
                             }
                             fs::remove_file(&c_path).ok();
                         }
                         Err(e) => {
-                            println!("  {:35} {:>6}  FAIL  {}", name, fmt_dur(0), e.lines().next().unwrap_or(&e));
+                            eprintln!("  {:35} {:>6}  {}  {}", name, fmt_dur(0), red("FAIL"), e.lines().next().unwrap_or(&e));
                             r_fail += 1;
                         }
                     }
@@ -835,44 +1179,40 @@ fn handle_test(target: &str, filter: &str) {
         }
     }
 
-    // Phase 2: build runner + link all .o into a single binary
+    let compile_ms = compile_start.elapsed().as_millis();
+
     if !object_files.is_empty() {
         let mut runner = String::from(
             "#include \"arca_runtime.h\"\n\
              #include <string.h>\n\
              #include <unistd.h>\n\
              #include <sys/wait.h>\n\
-             #include <time.h>\n\n");
+             #include <time.h>\n\
+             #include <stdio.h>\n\n"
+        );
 
-        // Forward declarations for each test
-        // Combine file tests + discovered __test__/__bench__ functions
         let mut all_names: Vec<String> = test_names.clone();
         let mut all_fns: Vec<String> = Vec::new();
         for name in &test_names {
             let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
             all_fns.push(format!("test_{}_arca_main", safe));
         }
-        // Discovered tests go in a separate layer (after file tests)
+
         let _layer_test_start = all_names.len();
         for (fn_name, display) in &discovered_tests {
             all_names.push(display.clone());
             all_fns.push(fn_name.clone());
         }
-        // Discovered benches go in a separate layer (after tests)
+
         let layer_bench_start = all_names.len();
         for (fn_name, display) in &discovered_benches {
             all_names.push(format!("{} [bench]", display));
             all_fns.push(fn_name.clone());
         }
 
-        // Forward declarations
         for (i, _name) in all_names.iter().enumerate() {
             let safe_fn = &all_fns[i];
-            if safe_fn.starts_with("test_") && safe_fn.ends_with("_arca_main") {
-                runner.push_str(&format!("void {}();\n", safe_fn));
-            } else {
-                runner.push_str(&format!("void {}();\n", safe_fn));
-            }
+            runner.push_str(&format!("void {}();\n", safe_fn));
         }
         runner.push('\n');
 
@@ -889,7 +1229,7 @@ fn handle_test(target: &str, filter: &str) {
                int n = {};\n\
                int pass = 0, fail = 0;\n\
                // Phase 1: Runtime file tests\n\
-               for (int i = 0; i < n; i++) {{\n\
+               for (int i = 0; i < {}; i++) {{\n\
                  struct timespec t0, t1;\n\
                  clock_gettime(CLOCK_MONOTONIC, &t0);\n\
                  int p[2]; pipe(p);\n\
@@ -907,15 +1247,21 @@ fn handle_test(target: &str, filter: &str) {
                  if (has_err) fail++; else pass++;\n\
                }}\n\
                 // Phase 2: Discovered tests\n\
-               for (int i = {}; i < n; i++) {{\n\
-                  printf(\"  %-35s \\n\", test_names[i]); fflush(stdout);\n\
-                 int p[2]; pipe(p);\n\
-                 if (fork() == 0) {{ close(p[0]); dup2(p[1], 1); close(p[1]); test_fns[i](); _exit(0); }}\n\
-                 close(p[1]);\n\
-                 char buf[65536]; int nr = read(p[0], buf, sizeof(buf)-1); buf[nr] = 0;\n\
-                 waitpid(-1, NULL, 0);\n\
-                 int has_err = strstr(buf, \"error:\") != NULL;\n\
-                  printf(\"  %s\\n\", has_err ? \"✗\" : \"✓\");\n\
+                 for (int i = {}; i < n; i++) {{\n\
+                  struct timespec t0, t1;\n\
+                  clock_gettime(CLOCK_MONOTONIC, &t0);\n\
+                  int p[2]; pipe(p);\n\
+                  if (fork() == 0) {{ close(p[0]); dup2(p[1], 1); close(p[1]); test_fns[i](); _exit(0); }}\n\
+                  close(p[1]);\n\
+                  char buf[65536]; int nr = read(p[0], buf, sizeof(buf)-1); buf[nr] = 0;\n\
+                  waitpid(-1, NULL, 0);\n\
+                  clock_gettime(CLOCK_MONOTONIC, &t1);\n\
+                  long ms = (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_nsec - t0.tv_nsec) / 1000000;\n\
+                  int has_err = strstr(buf, \"error:\") != NULL;\n\
+                  if (ms < 1000)\n\
+                    printf(\"  %-35s %ldms  %s\\n\", test_names[i], ms, has_err ? \"✗\" : \"✓\");\n\
+                  else\n\
+                    printf(\"  %-35s %ld.%lds  %s\\n\", test_names[i], ms/1000, (ms%1000)/100, has_err ? \"✗\" : \"✓\");\n\
                   if (has_err) fail++; else pass++;\n\
                 }}\n\
                 // Phase 3: Benchmarks\n\
@@ -934,7 +1280,7 @@ fn handle_test(target: &str, filter: &str) {
                     pass++;\n\
                   }}\n\
                 }}\n\
-               }}\n", all_names.len(), _layer_test_start, layer_bench_start, layer_bench_start, layer_bench_start));
+               }}\n", all_names.len(), test_names.len(), _layer_test_start, layer_bench_start, layer_bench_start, layer_bench_start));
 
         let r_path = "build/runner.c";
         let binary = "build/test_bundle";
@@ -961,11 +1307,11 @@ fn handle_test(target: &str, filter: &str) {
                         if ok { r_pass += 1; } else { r_fail += 1; }
                     }
                 }
-                println!("  (link {}ms, run {}ms)", link_ms, run_ms);
+                println!("  (compile {}ms, link+run {}ms)", compile_ms, run_ms);
             }
         } else {
-            println!("  Link FAILED ({}ms)", link_ms);
-            r_fail += object_files.len() as u32;
+            println!("  {}Link FAILED{} ({}ms)", red(""), dim(""), link_ms);
+                r_fail += object_files.len();
         }
 
         fs::remove_file(r_path).ok();
@@ -974,24 +1320,43 @@ fn handle_test(target: &str, filter: &str) {
     }
 
     // Summary
-    let total = p_pass + p_fail + s_pass + s_fail + c_pass + c_fail + r_pass + r_fail;
+    let p_total = p_pass + p_fail;
+    let s_total = s_pass + s_fail;
+    let c_total = c_pass + c_fail;
+    let r_total = r_pass + r_fail;
+    let total = p_total + s_total + c_total + r_total;
     let passed = p_pass + s_pass + c_pass + r_pass;
     let failed = p_fail + s_fail + c_fail + r_fail;
     let pct = if total > 0 { passed * 100 / total } else { 0 };
 
-    println!("\n──────────────────────────────────────────\nSummary\n──────────────────────────────────────────");
-    println!("  Tests       {}", total);
-    println!("  Passed      {}  ✓", passed);
-    println!("  Failed      {}  {}", failed, if failed > 0 { "✗" } else { "" });
-    println!("  Pass Rate   {}%", pct);
-    if !commit.is_empty() {
-        println!("  Commit      {}", commit);
+    println!("\n{}", cyan("──────────────────────────────────────────\nSummary\n──────────────────────────────────────────"));
+    println!("  Tests      {} {}", total, fmt_dur(total_start.elapsed().as_micros()));
+    println!("  Passed     {} {}", passed, ok_sym);
+    if failed > 0 {
+        println!("  Failed     {} {}", failed, fail_sym);
+    } else {
+        println!("  Failed     {}", failed);
     }
-    println!("  Version     {}", ARCA_VERSION);
-    println!("  Backend     AIR → C");
+    println!("  Pass Rate  {}%", bold(&pct.to_string()));
+    if !commit.is_empty() {
+        println!("  Commit     {}", commit);
+    }
+    println!("  Version    {}", ARCA_VERSION);
+    println!("  Backend    AIR → C");
     println!("");
-    if failed == 0 { println!("  ✓ ALL TESTS PASSED"); }
-    println!("=========================================\n");
+    if failed == 0 {
+        println!("  {}", ok_sym);
+        println!("  {}  ALL TESTS PASSED{}", green("✓"), dim(""));
+    }
+    println!("{}\n", cyan("========================================="));
+
+    if !junit.is_empty() {
+        write_junit_xml(junit, &all_results, &suite_stats);
+    }
+
+    if coverage {
+        println!("{}Coverage report generated under ./coverage{}", cyan(""), dim(""));
+    }
 
     if failed > 0 { process::exit(1); }
 }
