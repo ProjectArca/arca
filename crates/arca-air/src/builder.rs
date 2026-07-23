@@ -910,6 +910,25 @@ impl AirBuilder {
         if is_method("value") { return ("arca_json_parse".to_string(), with_obj(args, &method_obj)); }
         if is_method("pretty") { return ("json_stringify".to_string(), with_obj(args, &method_obj)); }
 
+        // ===== Namespaced API mappings (File, Path, Result) =====
+        if callee_name == "File.read" { return ("file_read".to_string(), args.to_vec()); }
+        if callee_name == "File.write" { return ("file_write".to_string(), args.to_vec()); }
+        if callee_name == "File.copy" { return ("file_copy".to_string(), args.to_vec()); }
+        if callee_name == "File.exists" { return ("file_exists".to_string(), args.to_vec()); }
+        if callee_name == "File.remove" { return ("file_remove".to_string(), args.to_vec()); }
+        if callee_name == "File.mkdir" { return ("file_mkdir".to_string(), args.to_vec()); }
+        if callee_name == "File.rename" { return ("file_rename".to_string(), args.to_vec()); }
+        if callee_name == "File.append" { return ("file_append".to_string(), args.to_vec()); }
+
+        if callee_name == "Path.join" { return ("path_join".to_string(), args.to_vec()); }
+        if callee_name == "Path.parent" { return ("path_parent".to_string(), args.to_vec()); }
+        if callee_name == "Path.filename" { return ("path_filename".to_string(), args.to_vec()); }
+        if callee_name == "Path.extension" { return ("path_extension".to_string(), args.to_vec()); }
+
+        if callee_name == "Result.ok" { return ("arca_result_ok".to_string(), args.to_vec()); }
+        if callee_name == "Result.err" { return ("arca_result_err".to_string(), args.to_vec()); }
+        if callee_name == "Result.is_ok" { return ("arca_result_is_ok".to_string(), args.to_vec()); }
+
         if callee_name == "Channel.new" {
             return ("arca_channel_create".to_string(), args.to_vec());
         }

@@ -1,0 +1,10 @@
+// Namespace API tests
+fn main() {
+  println(File.exists("/tmp"))
+  println(Path.parent("/a/b/c"))
+  println(Path.filename("/a/b/c.txt"))
+  println(Path.extension("/a/b/c.txt"))
+  println(Path.join("/a", "b"))
+  println(Result.ok(42))
+  println(Result.is_ok(Result.ok(42)))
+}

@@ -188,6 +188,38 @@ impl TypeEnv {
         self.functions.insert("file_mkdir".into(), string_to_i32.clone());
         self.functions.insert("file_exists".into(), string_to_i32.clone());
 
+        // Namespaced API: File.*
+        let string_string_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("File.read".into(), string_fn.clone());
+        self.functions.insert("File.write".into(), string_string_to_i32.clone());
+        self.functions.insert("File.copy".into(), string_string_to_i32.clone());
+        self.functions.insert("File.exists".into(), string_to_i32.clone());
+        self.functions.insert("File.remove".into(), string_to_i32.clone());
+        self.functions.insert("File.mkdir".into(), string_to_i32.clone());
+        self.functions.insert("File.rename".into(), string_string_to_i32.clone());
+        self.functions.insert("File.append".into(), string_string_to_i32.clone());
+
+        // Namespaced API: Path.*
+        self.functions.insert("Path.join".into(), string_string_fn.clone());
+        self.functions.insert("Path.parent".into(), string_fn.clone());
+        self.functions.insert("Path.filename".into(), string_fn.clone());
+        self.functions.insert("Path.extension".into(), string_fn.clone());
+
+        // Namespaced API: Result.*
+        let i64_to_i64 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("Result.ok".into(), i64_to_i64.clone());
+        self.functions.insert("Result.err".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("Result.is_ok".into(), i64_to_i64.clone());
+
         // std/encoding
         let int_fn = FnType {
             params: vec![Type::Primitive(PrimitiveType::I32)],
@@ -527,6 +559,8 @@ impl TypeEnv {
         self.insert_var("WebSocket".into(), Type::Unknown);
         self.insert_var("SSE".into(), Type::Unknown);
         self.insert_var("Json".into(), Type::Unknown);
+        self.insert_var("Path".into(), Type::Unknown);
+        self.insert_var("Result".into(), Type::Unknown);
         self.insert_var("OpenAI".into(), Type::Unknown);
         self.insert_var("Anthropic".into(), Type::Unknown);
         self.insert_var("CustomAIProvider".into(), Type::Unknown);
