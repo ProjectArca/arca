@@ -13,6 +13,7 @@ pub struct CodeGenerator {
     #[allow(dead_code)]
     backend: BackendKind,
     target: TargetArch,
+    prefix: String,
     var_names: HashMap<RegisterId, String>,
     var_types: HashMap<RegisterId, String>,
     copy_sources: HashMap<RegisterId, AirValue>,
@@ -30,12 +31,18 @@ impl CodeGenerator {
     pub fn new(backend: BackendKind, target: TargetArch) -> Self {
         Self {
             backend, target,
+            prefix: String::new(),
             var_names: HashMap::new(), var_types: HashMap::new(),
             copy_sources: HashMap::new(), struct_inits: HashMap::new(),
             module_fns: HashMap::new(),
             next_v: 0, next_block_label: 0,
             output: String::new(),             indent: 0, return_type_is_void: false, return_type_is_string: false,
         }
+    }
+
+    pub fn with_prefix(mut self, prefix: &str) -> Self {
+        self.prefix = prefix.to_string();
+        self
     }
 
     fn fresh_v(&mut self) -> String {
@@ -91,26 +98,30 @@ impl CodeGenerator {
         "0".to_string()
     }
 
-    fn air_type_to_c<'a>(&self, ty: &'a Type) -> &'a str {
+    fn p(&self, name: &str) -> String {
+        if self.prefix.is_empty() { name.to_string() } else { format!("{}{}", self.prefix, name) }
+    }
+
+    fn type_to_c(&self, ty: &Type) -> String {
         match ty {
             Type::Primitive(p) => match p {
-                PrimitiveType::I8 => "int8_t", PrimitiveType::I16 => "int16_t",
-                PrimitiveType::I32 => "int32_t", PrimitiveType::I64 => "int64_t",
-                PrimitiveType::U8 => "uint8_t", PrimitiveType::U16 => "uint16_t",
-                PrimitiveType::U32 => "uint32_t", PrimitiveType::U64 => "uint64_t",
-                PrimitiveType::F32 => "float", PrimitiveType::F64 => "double",
-                PrimitiveType::Bool => "bool", PrimitiveType::String => "const char*",
-                PrimitiveType::Char => "char", PrimitiveType::Void => "void",
+                PrimitiveType::I8 => "int8_t".into(), PrimitiveType::I16 => "int16_t".into(),
+                PrimitiveType::I32 => "int32_t".into(), PrimitiveType::I64 => "int64_t".into(),
+                PrimitiveType::U8 => "uint8_t".into(), PrimitiveType::U16 => "uint16_t".into(),
+                PrimitiveType::U32 => "uint32_t".into(), PrimitiveType::U64 => "uint64_t".into(),
+                PrimitiveType::F32 => "float".into(), PrimitiveType::F64 => "double".into(),
+                PrimitiveType::Bool => "bool".into(), PrimitiveType::String => "const char*".into(),
+                PrimitiveType::Char => "char".into(), PrimitiveType::Void => "void".into(),
             },
-            Type::Struct { name, .. } => name.as_str(),
-            Type::Reference { .. } => "void*",
-            _ => "int64_t",
+            Type::Struct { name, .. } => self.p(name),
+            Type::Reference { .. } => "void*".into(),
+            _ => "int64_t".into(),
         }
     }
 
     fn type_for_instr(&self, instr: &AirInstruction) -> String {
         match instr {
-            AirInstruction::Alloca { ty, .. } => self.air_type_to_c(ty).to_string(),
+            AirInstruction::Alloca { ty, .. } => self.type_to_c(ty),
             AirInstruction::Load { .. } => "int64_t".to_string(),
             AirInstruction::Binary { op, left, right, .. } => match op {
                 BinaryOp::Equal | BinaryOp::NotEqual | BinaryOp::Less | BinaryOp::LessEqual
@@ -134,6 +145,7 @@ impl CodeGenerator {
                             PrimitiveType::Bool => "bool".to_string(),
                             _ => "int64_t".to_string(),
                         },
+                        Type::Struct { name, .. } => self.p(name),
                         _ => "int64_t".to_string(),
                     }
                 } else if fn_name.starts_with("arca_std_") || fn_name == "arca_time_ns"
@@ -165,7 +177,7 @@ impl CodeGenerator {
                 }
             }
             AirInstruction::StructInit { struct_name, .. } => {
-                if struct_name.is_empty() { "int64_t".to_string() } else { struct_name.clone() }
+                if struct_name.is_empty() { "int64_t".to_string() } else { self.p(struct_name) }
             }
             AirInstruction::FieldLoad { object, field, .. } => {
                 let resolved_obj = match self.resolve(&AirValue::Register(*object)) {
@@ -262,26 +274,28 @@ impl CodeGenerator {
 
         // Emit struct type definitions
         for (name, fields) in &struct_defs {
-            self.emit(&format!("typedef struct {{ /* {} */ ", name));
+            self.emit(&format!("typedef struct {{ /* {} */ ", self.p(name)));
             for (fn_, fty) in fields {
                 self.emit(&format!("{} {}; ", fty, fn_));
             }
-            self.emit(&format!("}} {};\n\n", name));
+            self.emit(&format!("}} {};\n\n", self.p(name)));
         }
 
         // Forward declarations for defined functions
         let defined_fns: HashSet<String> = module.functions.keys().cloned().collect();
         for (name, func) in &module.functions {
             let safe = name.replace('.', "_");
-            if name == "main" { let _ = safe; }
-            let safe_name = if name == "main" { "arca_main" } else { &safe };
-            let ret = self.air_type_to_c(&func.return_type);
+            // Skip prefix for internal __arca_* functions
+            let safe_name = if name == "main" { self.p("arca_main") }
+                          else if name.starts_with("__") { safe.clone() }
+                          else { self.p(&safe) };
+            let ret = self.type_to_c(&func.return_type);
             let mut d = format!("{} {}(", ret, safe_name);
             if func.params.is_empty() { d.push_str("void"); }
             else {
                 for (i, (_, pt)) in func.params.iter().enumerate() {
                     if i > 0 { d.push_str(", "); }
-                    d.push_str(self.air_type_to_c(pt));
+                    d.push_str(&self.type_to_c(pt));
                 }
             }
             d.push_str(");\n");
@@ -333,7 +347,7 @@ impl CodeGenerator {
         }
 
         if module.functions.contains_key("main") {
-            self.emit("int main(int argc, char** argv) {\n  arca_main();\n  return 0;\n}\n");
+            self.emit(&format!("int main(int argc, char** argv) {{\n  {}();\n  return 0;\n}}\n", self.p("arca_main")));
         }
 
         self.output.clone()
@@ -347,8 +361,10 @@ impl CodeGenerator {
         self.return_type_is_string = matches!(&func.return_type, Type::Primitive(PrimitiveType::String));
 
         let safe_name = name.replace('.', "_");
-        let safe_name = if name == "main" { "arca_main" } else { &safe_name };
-        let ret_c = self.air_type_to_c(&func.return_type);
+        let safe_name = if name == "main" { self.p("arca_main") }
+                      else if name.starts_with("__") { safe_name }
+                      else { self.p(&safe_name) };
+        let ret_c = self.type_to_c(&func.return_type);
 
         // Build param register → C name mapping
         let mut param_reg_names: HashMap<RegisterId, String> = HashMap::new();
@@ -365,7 +381,7 @@ impl CodeGenerator {
         else {
             for (i, (pname, pty)) in func.params.iter().enumerate() {
                 if i > 0 { sig.push_str(", "); }
-                sig.push_str(self.air_type_to_c(pty)); sig.push(' ');
+                sig.push_str(&self.type_to_c(pty)); sig.push(' ');
                 sig.push_str(&pname.replace('.', "_"));
             }
         }
@@ -380,7 +396,7 @@ impl CodeGenerator {
         for (i, (_pname, pty)) in func.params.iter().enumerate() {
             if i < func.param_registers.len() {
                 let reg = func.param_registers[i];
-                let ct = self.air_type_to_c(pty).to_string();
+                let ct = self.type_to_c(pty);
                 self.var_types.insert(reg, ct);
             }
         }
@@ -557,7 +573,7 @@ impl CodeGenerator {
                     // Just declare a zero-initialized placeholder
                     self.emit_ln(&format!("{} = 0;", tn));
                 } else {
-                    self.emit_indent(); self.emit(&format!("{} = ({}){{", tn, struct_name));
+                    self.emit_indent(); self.emit(&format!("{} = ({}){{", tn, self.p(struct_name)));
                     for (i, (fn_, fv)) in fields.iter().enumerate() {
                         if i > 0 { self.emit(", "); }
                         self.emit(&format!(".{}=", fn_)); self.emit_air_value(fv);
@@ -576,7 +592,7 @@ impl CodeGenerator {
                 // If the object was created by a StructInit, use struct type for field access
                 if let Some((sname, _)) = self.struct_inits.get(&resolved_obj) {
                     if !sname.is_empty() {
-                        self.emit_ln(&format!("{} = (({}*)&{})->{};", tn, sname, on, field));
+                        self.emit_ln(&format!("{} = (({}*)&{})->{};", tn, self.p(sname), on, field));
                     } else {
                         self.emit_ln(&format!("{} = *((int64_t*)((char*)&{} + offsetof_placeholder_{}));", tn, on, field));
                     }
@@ -1120,8 +1136,11 @@ impl CodeGenerator {
             }
             _ => {
                 let safe_name = fn_name.replace('.', "_");
+                let call_name = if fn_name.starts_with("__") { safe_name.clone() }
+                    else if self.module_fns.contains_key(fn_name) { self.p(&safe_name) }
+                    else { safe_name.clone() };
                 let pre = target.and_then(|t| self.var_names.get(&t).cloned()).map(|n| format!("{} = ", n)).unwrap_or_default();
-                self.emit_indent(); self.emit(&pre); self.emit(&safe_name); self.emit("(");
+                self.emit_indent(); self.emit(&pre); self.emit(&call_name); self.emit("(");
                 for (i, arg) in args.iter().enumerate() { if i > 0 { self.emit(", "); } self.emit_air_value(arg); }
                 self.emit(");\n");
             }

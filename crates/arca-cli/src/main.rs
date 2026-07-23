@@ -467,12 +467,47 @@ fn main() {
                 eprintln!("Error: failed to read '{}': {}", target, e);
                 process::exit(1);
             });
-            match compile_and_run(&source, target) {
-                Ok(out) => {
-                    print!("{}", out);
+            let c_code = match compile_arca_to_c(&source, target, "") {
+                Ok(c) => c,
+                Err(e) => { eprintln!("{}", e); process::exit(1); }
+            };
+            let pid = process::id();
+            let c_path = format!("build/output_{}.c", pid);
+            let bin_path = format!("build/output_{}", pid);
+            let gen_o = format!("{}_gen.o", c_path);
+            fs::create_dir_all("build").ok();
+            fs::write(&c_path, &c_code).ok();
+            ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+
+            std::process::Command::new("cc")
+                .args(&["-c", &c_path, "-o", &gen_o, "-I", "library/runtime"])
+                .status().ok();
+            let status = std::process::Command::new("cc")
+                .args(&["-o", &bin_path, &gen_o, "build/arca_runtime.o", "build/http.o"])
+                .status();
+            match status {
+                Ok(s) if s.success() => {
+                    println!("[arca] Running: {}", target);
+                    let run_status = std::process::Command::new(&bin_path).status();
+                    fs::remove_file(&c_path).ok();
+                    fs::remove_file(&gen_o).ok();
+                    fs::remove_file(&bin_path).ok();
+                    match run_status {
+                        Ok(rs) if rs.success() => {}
+                        Ok(rs) => eprintln!("[arca] Program exited with code: {}", rs),
+                        Err(e) => eprintln!("[arca] Failed to run program: {}", e),
+                    }
+                }
+                Ok(s) => {
+                    fs::remove_file(&c_path).ok();
+                    fs::remove_file(&gen_o).ok();
+                    eprintln!("[arca] C compilation failed with code: {}", s);
+                    process::exit(1);
                 }
                 Err(e) => {
-                    eprintln!("{}", e);
+                    fs::remove_file(&c_path).ok();
+                    fs::remove_file(&gen_o).ok();
+                    eprintln!("[arca] Failed to invoke C compiler 'cc': {}", e);
                     process::exit(1);
                 }
             }
@@ -565,7 +600,7 @@ fn ensure_runtime_o(runtime_o: &str, http_o: &str) {
     compile("library/net/http.c", http_o);
 }
 
-fn compile_arca_to_c(source: &str, target: &str) -> Result<String, String> {
+fn compile_arca_to_c(source: &str, target: &str, prefix: &str) -> Result<String, String> {
     let lexer = Lexer::new(source);
     let mut parser = Parser::new(lexer).with_file(target);
     let program = parser.parse_program();
@@ -587,53 +622,8 @@ fn compile_arca_to_c(source: &str, target: &str) -> Result<String, String> {
     }
     let mut air_builder = AirBuilder::new();
     let air_module = air_builder.build_module(&hir);
-    let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+    let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64).with_prefix(prefix);
     Ok(cg.generate_c_from_air(&air_module))
-}
-
-fn compile_and_run(source: &str, target: &str) -> Result<String, String> {
-    let c_code = compile_arca_to_c(source, target)?;
-    let pid = process::id();
-    let c_path = format!("build/output_{}.c", pid);
-    let bin_path = format!("build/output_{}", pid);
-    let gen_o = format!("{}_gen.o", c_path);
-    fs::create_dir_all("build").ok();
-    fs::write(&c_path, &c_code).ok();
-    ensure_runtime_o("build/arca_runtime.o", "build/http.o");
-
-    std::process::Command::new("cc")
-        .args(&["-c", &c_path, "-o", &gen_o, "-I", "library/runtime"])
-        .status().ok();
-    let status = std::process::Command::new("cc")
-        .args(&["-o", &bin_path, &gen_o, "build/arca_runtime.o", "build/http.o"])
-        .status();
-
-    match status {
-        Ok(s) if s.success() => {
-            let output = std::process::Command::new(&bin_path).output();
-            fs::remove_file(&c_path).ok();
-            fs::remove_file(&gen_o).ok();
-            fs::remove_file(&bin_path).ok();
-            match output {
-                Ok(out) => {
-                    let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                    let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                    Ok(if stderr.is_empty() { stdout } else { format!("{}{}", stdout, stderr) })
-                }
-                Err(e) => Err(format!("Failed to run program: {}", e)),
-            }
-        }
-        Ok(s) => {
-            fs::remove_file(&c_path).ok();
-            fs::remove_file(&gen_o).ok();
-            Err(format!("C compilation failed with code: {}", s))
-        }
-        Err(e) => {
-            fs::remove_file(&c_path).ok();
-            fs::remove_file(&gen_o).ok();
-            Err(format!("Failed to invoke C compiler 'cc': {}", e))
-        }
-    }
 }
 
 fn fmt_dur(us: u128) -> String {
@@ -691,7 +681,7 @@ fn handle_test(target: &str) {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
                 let source = fs::read_to_string(&path).unwrap_or_default();
                 let start = Instant::now();
-                let result = compile_arca_to_c(&source, &path.to_string_lossy());
+                let result = compile_arca_to_c(&source, &path.to_string_lossy(), "");
                 let us = start.elapsed().as_micros();
                 let expects_fail = name.ends_with("_invalid");
                 let passed = match (&result, expects_fail) {
@@ -719,7 +709,7 @@ fn handle_test(target: &str) {
                 let source = fs::read_to_string(&path).unwrap_or_default();
                 let target_str = path.to_string_lossy();
                 let start = Instant::now();
-                let c_result = compile_arca_to_c(&source, &target_str);
+                let c_result = compile_arca_to_c(&source, &target_str, "");
                 let us = start.elapsed().as_micros();
                 let passed = c_result.is_ok();
                 if passed { c_pass += 1; } else { c_fail += 1; }
@@ -730,7 +720,7 @@ fn handle_test(target: &str) {
         }
     }
 
-    // Layer 4: Runtime tests (per-test compile+link+run in single Rust process)
+    // Layer 4: Runtime tests (batch-compiled with symbol prefixing)
     println!("\n── Runtime Layer ────────────────────────────");
 
     let rt_dirs = vec![
@@ -743,25 +733,128 @@ fn handle_test(target: &str) {
     ensure_runtime_o("build/arca_runtime.o", "build/http.o");
 
     let mut r_pass = 0; let mut r_fail = 0;
+    let mut object_files: Vec<String> = Vec::new();
+    let mut test_names: Vec<String> = Vec::new();
 
+    // Phase 1: compile each test to prefixed C → .o
     for dir in &rt_dirs {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.extension().map_or(false, |e| e == "arca") {
                     let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                    let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
                     let source = fs::read_to_string(&path).unwrap_or_default();
-                    let start = Instant::now();
-                    let result = compile_and_run(&source, &path.to_string_lossy());
-                    let us = start.elapsed().as_micros();
-                    let passed = result.as_ref().map(|o| !o.contains("error:")).unwrap_or(false);
-                    if passed { r_pass += 1; } else { r_fail += 1; }
-                    println!("  {:35} {:>6}  {}",
-                        name, fmt_dur(us),
-                        if passed { "PASS" } else { "FAIL" });
+                    match compile_arca_to_c(&source, &path.to_string_lossy(), &format!("test_{}_", safe)) {
+                        Ok(mut c_code) => {
+                            // Strip int main(...) block — runner provides its own main
+                            if let Some(main_pos) = c_code.find("int main(int argc, char** argv)") {
+                                c_code.truncate(main_pos);
+                            }
+                            let c_path = format!("build/t_{}.c", safe);
+                            let o_path = format!("build/t_{}.o", safe);
+                            fs::write(&c_path, &c_code).ok();
+                            if std::process::Command::new("cc")
+                                .args(&["-c", &c_path, "-o", &o_path, "-I", "library/runtime"])
+                                .status().map(|s| s.success()).unwrap_or(false)
+                            {
+                                object_files.push(o_path);
+                                test_names.push(name);
+                            } else {
+                                println!("  {:35} {:>6}  FAIL  C compile error", name, fmt_dur(0));
+                                r_fail += 1;
+                            }
+                            fs::remove_file(&c_path).ok();
+                        }
+                        Err(e) => {
+                            println!("  {:35} {:>6}  FAIL  {}", name, fmt_dur(0), e.lines().next().unwrap_or(&e));
+                            r_fail += 1;
+                        }
+                    }
                 }
             }
         }
+    }
+
+    // Phase 2: build runner + link all .o into a single binary
+    if !object_files.is_empty() {
+        let mut runner = String::from(
+            "#include \"arca_runtime.h\"\n\
+             #include <string.h>\n\
+             #include <unistd.h>\n\
+             #include <sys/wait.h>\n\n");
+
+        // Forward declarations for each test
+        for name in &test_names {
+            let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
+            runner.push_str(&format!("void test_{}_arca_main(void);\n", safe));
+        }
+        runner.push('\n');
+
+        runner.push_str(&format!("const char* test_names[{}] = {{\n", test_names.len()));
+        for name in &test_names { runner.push_str(&format!("  \"{}\",\n", name)); }
+        runner.push_str("};\n\n");
+
+        runner.push_str(&format!("void (*test_fns[{}])() = {{\n", test_names.len()));
+        for name in &test_names {
+            let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
+            runner.push_str(&format!("  test_{}_arca_main,\n", safe));
+        }
+        runner.push_str("};\n\n");
+
+        runner.push_str(&format!(
+            "int main() {{\n\
+               int n = {};\n\
+               int pass = 0, fail = 0;\n\
+               for (int i = 0; i < n; i++) {{\n\
+                 printf(\"  %-35s \", test_names[i]); fflush(stdout);\n\
+                 int p[2]; pipe(p);\n\
+                 if (fork() == 0) {{ close(p[0]); dup2(p[1], 1); close(p[1]); test_fns[i](); _exit(0); }}\n\
+                 close(p[1]);\n\
+                 char buf[65536]; int nr = read(p[0], buf, sizeof(buf)-1); buf[nr] = 0;\n\
+                 waitpid(-1, NULL, 0);\n\
+                 printf(\"%s\\n\", strstr(buf, \"error:\") ? \"  FAIL\" : \"  PASS\");\n\
+                 if (strstr(buf, \"error:\")) fail++; else pass++;\n\
+               }}\n\
+               printf(\"---\\nRuntime layer: %d passed, %d failed out of %d tests\\n\", pass, fail, n);\n\
+               return fail > 0;\n\
+             }}\n", test_names.len()));
+
+        let r_path = "build/runner.c";
+        let binary = "build/test_bundle";
+        fs::write(r_path, &runner).ok();
+
+        // Single link step — no duplicate symbols thanks to prefixing
+        let link_start = Instant::now();
+        let mut cc = std::process::Command::new("cc");
+        cc.args(&["-O0", "-o", binary, r_path]);
+        for o in &object_files { cc.arg(o); }
+        cc.args(&["build/arca_runtime.o", "build/http.o", "-I", "library/runtime"]);
+        let link_ok = cc.status().map(|s| s.success()).unwrap_or(false);
+        let link_ms = link_start.elapsed().as_millis();
+
+        if link_ok {
+            let run_start = Instant::now();
+            if let Ok(out) = std::process::Command::new(binary).output() {
+                let run_ms = run_start.elapsed().as_millis();
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                for line in stdout.lines() {
+                    if line.starts_with("  ") && (line.ends_with("PASS") || line.ends_with("FAIL")) {
+                        let ok = line.ends_with("PASS");
+                        println!("{}", line);
+                        if ok { r_pass += 1; } else { r_fail += 1; }
+                    }
+                }
+                println!("  (link {}ms, run {}ms)", link_ms, run_ms);
+            }
+        } else {
+            println!("  Link FAILED ({}ms)", link_ms);
+            r_fail += object_files.len() as u32;
+        }
+
+        fs::remove_file(r_path).ok();
+        for o in &object_files { fs::remove_file(o).ok(); }
+        fs::remove_file(binary).ok();
     }
 
     // Summary
