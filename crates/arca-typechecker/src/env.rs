@@ -188,6 +188,23 @@ impl TypeEnv {
         self.functions.insert("file_mkdir".into(), string_to_i32.clone());
         self.functions.insert("file_exists".into(), string_to_i32.clone());
 
+        // std/encoding
+        let int_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I32)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        };
+        self.functions.insert("hex_encode".into(), string_fn.clone());
+        self.functions.insert("urlencode".into(), string_fn.clone());
+        self.functions.insert("urldecode".into(), string_fn.clone());
+
+        // std/net
+        self.functions.insert("tcp_listen".into(), int_fn.clone());
+        self.functions.insert("tcp_accept".into(), int_fn.clone());
+        self.functions.insert("tcp_recv".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I32)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+
         // std/json method wrappers
         self.functions.insert("Json.value".into(), string_string_to_string.clone());
         self.functions.insert("Json.pretty".into(), string_fn.clone());

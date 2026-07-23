@@ -199,6 +199,7 @@ impl CodeGenerator {
                     || fn_name.ends_with(".post") || fn_name.ends_with(".get") || fn_name.ends_with(".put") || fn_name.ends_with(".delete")
                     || fn_name == "current_dir"
                     || fn_name == "file_read"
+                    || fn_name == "hex_encode" || fn_name == "urlencode" || fn_name == "urldecode" || fn_name == "tcp_recv"
                     || fn_name == "path_normalize"
                 {
                     "const char*".to_string()
@@ -365,6 +366,8 @@ impl CodeGenerator {
                             && fn_name != "file_read" && fn_name != "file_write" && fn_name != "file_append"
                             && fn_name != "file_copy" && fn_name != "file_rename"
                             && fn_name != "file_remove" && fn_name != "file_mkdir" && fn_name != "file_exists"
+                            && fn_name != "hex_encode" && fn_name != "urlencode" && fn_name != "urldecode"
+                            && fn_name != "tcp_listen" && fn_name != "tcp_accept" && fn_name != "tcp_recv"
                         {
                             extern_fns.insert(safe);
                         }

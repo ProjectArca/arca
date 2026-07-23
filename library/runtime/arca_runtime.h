@@ -132,6 +132,16 @@ int32_t file_rename(const char* old, const char* new_);
 int32_t file_remove(const char* path);
 int32_t file_mkdir(const char* path);
 
+// std/encoding
+const char* hex_encode(const char* data);
+const char* urlencode(const char* data);
+const char* urldecode(const char* data);
+
+// std/net high-level wrappers
+int32_t tcp_listen(int32_t port);
+int32_t tcp_accept(int32_t fd);
+const char* tcp_recv(int32_t fd);
+
 // std/path
 const char* arca_path_extension(const char* path);
 const char* arca_path_filename(const char* path);

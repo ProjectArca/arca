@@ -477,13 +477,13 @@ fn main() {
             let gen_o = format!("{}_gen.o", c_path);
             fs::create_dir_all("build").ok();
             fs::write(&c_path, &c_code).ok();
-            ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+            ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
 
             std::process::Command::new("cc")
                 .args(&["-c", &c_path, "-o", &gen_o, "-I", "library/runtime"])
                 .status().ok();
             let status = std::process::Command::new("cc")
-                .args(&["-o", &bin_path, &gen_o, "build/arca_runtime.o", "build/http.o"])
+                .args(&["-o", &bin_path, &gen_o, "build/arca_runtime.o", "build/http.o", "build/socket.o"])
                 .status();
             match status {
                 Ok(s) if s.success() => {
@@ -588,9 +588,16 @@ fn handle_fmt(target: &str) {
     }
 }
 
-fn ensure_runtime_o(runtime_o: &str, http_o: &str) {
+fn ensure_runtime_o(runtime_o: &str, http_o: &str, socket_o: &str) {
+    let needs_rebuild = |src: &str, out: &str| -> bool {
+        if !std::path::Path::new(out).exists() { return true; }
+        if let (Ok(sm), Ok(om)) = (std::fs::metadata(src).and_then(|m| m.modified()),
+                                    std::fs::metadata(out).and_then(|m| m.modified())) {
+            sm > om
+        } else { true }
+    };
     let compile = |src: &str, out: &str| {
-        if !std::path::Path::new(out).exists() {
+        if needs_rebuild(src, out) {
             std::process::Command::new("cc")
                 .args(&["-O3", "-c", src, "-o", out, "-I", "library/runtime"])
                 .status().ok();
@@ -598,6 +605,7 @@ fn ensure_runtime_o(runtime_o: &str, http_o: &str) {
     };
     compile("library/runtime/arca_runtime.c", runtime_o);
     compile("library/net/http.c", http_o);
+    compile("library/net/socket.c", socket_o);
 }
 
 fn compile_arca_to_c(source: &str, target: &str, prefix: &str) -> Result<String, String> {
@@ -645,7 +653,7 @@ fn handle_test(target: &str) {
         .map(|s| s.trim().to_string())
         .unwrap_or_default();
 
-    ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+    ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
 
     // Layer 1: Parse tests
     println!("── Parse Layer ───────────────────────────────");
@@ -731,7 +739,7 @@ fn handle_test(target: &str) {
     ];
 
     fs::create_dir_all("build").ok();
-    ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+    ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
 
     let mut r_pass = 0; let mut r_fail = 0;
     let mut object_files: Vec<String> = Vec::new();
@@ -838,7 +846,7 @@ fn handle_test(target: &str) {
         let mut cc = std::process::Command::new("cc");
         cc.args(&["-O0", "-o", binary, r_path]);
         for o in &object_files { cc.arg(o); }
-        cc.args(&["build/arca_runtime.o", "build/http.o", "-I", "library/runtime"]);
+        cc.args(&["build/arca_runtime.o", "build/http.o", "build/socket.o", "-I", "library/runtime"]);
         let link_ok = cc.status().map(|s| s.success()).unwrap_or(false);
         let link_ms = link_start.elapsed().as_millis();
 

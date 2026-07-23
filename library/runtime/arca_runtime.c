@@ -5,6 +5,8 @@
 #include <time.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 void arca_print_int(int64_t v) {
     printf("%lld", (long long)v);
@@ -197,6 +199,69 @@ int32_t file_rename(const char* old, const char* new_) { return rename(old, new_
 int32_t file_remove(const char* path) { return remove(path) == 0 ? 0 : -1; }
 int32_t file_mkdir(const char* path) { return mkdir(path, 0755) == 0 ? 0 : -1; }
 
+// std/encoding wrappers
+const char* hex_encode(const char* data) {
+    static char buf[8192];
+    if (!data) return "";
+    buf[0] = 0;
+    for (int i = 0; data[i] && (int)(i * 2) < (int)sizeof(buf) - 3; i++)
+        sprintf(buf + i * 2, "%02x", (unsigned char)data[i]);
+    return buf;
+}
+const char* urlencode(const char* data) {
+    static char buf[8192];
+    if (!data) return "";
+    int pos = 0;
+    for (int i = 0; data[i] && pos < (int)sizeof(buf) - 4; i++) {
+        unsigned char c = (unsigned char)data[i];
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.')
+            buf[pos++] = (char)c;
+        else { sprintf(buf + pos, "%%%02X", c); pos += 3; }
+    }
+    buf[pos] = 0;
+    return buf;
+}
+const char* urldecode(const char* data) {
+    static char buf[8192];
+    if (!data) return "";
+    int pos = 0;
+    for (int i = 0; data[i] && pos < (int)sizeof(buf) - 1; i++) {
+        if (data[i] == '%' && data[i+1] && data[i+2]) {
+            unsigned int c; sscanf(data + i + 1, "%2x", &c);
+            buf[pos++] = (char)c; i += 2;
+        } else { buf[pos++] = data[i]; }
+    }
+    buf[pos] = 0;
+    return buf;
+}
+
+// std/net high-level wrappers
+int32_t tcp_listen(int32_t port) {
+    int fd = arca_net_socket(2, 1, 0); // AF_INET, SOCK_STREAM
+    if (fd < 0) return -1;
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = 2;
+    addr.sin_port = arca_net_htons((int16_t)port);
+    addr.sin_addr.s_addr = 0;
+    int opt = 1;
+    arca_net_setsockopt(fd, 1, 2, &opt, sizeof(opt)); // SOL_SOCKET, SO_REUSEADDR
+    if (arca_net_bind(fd, &addr, sizeof(addr)) < 0) return -1;
+    if (arca_net_listen(fd, 5) < 0) return -1;
+    return fd;
+}
+int32_t tcp_accept(int32_t fd) {
+    struct sockaddr_in client;
+    socklen_t len = sizeof(client);
+    return arca_net_accept(fd, &client, &len);
+}
+const char* tcp_recv(int32_t fd) {
+    static char buf[65536];
+    int n = arca_net_read(fd, buf, sizeof(buf) - 1);
+    if (n <= 0) { buf[0] = 0; return buf; }
+    buf[n] = 0;
+    return buf;
+}
 int64_t __arca_str_is_empty(const char* s) { return !s || *s == 0 ? 1 : 0; }
 const char* __arca_str_at(const char* s, int64_t i) {
     static char buf[2];
