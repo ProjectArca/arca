@@ -853,12 +853,17 @@ fn handle_test(target: &str, filter: &str) {
             all_fns.push(format!("test_{}_arca_main", safe));
         }
         // Discovered tests go in a separate layer (after file tests)
-        let layer_test_start = all_names.len();
+        let _layer_test_start = all_names.len();
         for (fn_name, display) in &discovered_tests {
             all_names.push(display.clone());
             all_fns.push(fn_name.clone());
         }
-        // TODO: bench in a separate section with timing
+        // Discovered benches go in a separate layer (after tests)
+        let layer_bench_start = all_names.len();
+        for (fn_name, display) in &discovered_benches {
+            all_names.push(format!("{} [bench]", display));
+            all_fns.push(fn_name.clone());
+        }
 
         // Forward declarations
         for (i, _name) in all_names.iter().enumerate() {
@@ -913,7 +918,23 @@ fn handle_test(target: &str, filter: &str) {
                   printf(\"  %s\\n\", has_err ? \"✗\" : \"✓\");\n\
                   if (has_err) fail++; else pass++;\n\
                 }}\n\
-               }}\n", all_names.len(), layer_test_start));
+                // Phase 3: Benchmarks\n\
+                if ({} > {}) {{\n\
+                  printf(\"\\n--- Benchmarks ---\\n\");\n\
+                  for (int i = {}; i < n; i++) {{\n\
+                    struct timespec t0, t1;\n\
+                    clock_gettime(CLOCK_MONOTONIC, &t0);\n\
+                    test_fns[i]();\n\
+                    clock_gettime(CLOCK_MONOTONIC, &t1);\n\
+                    long us = (t1.tv_sec - t0.tv_sec) * 1000000 + (t1.tv_nsec - t0.tv_nsec) / 1000;\n\
+                    if (us < 1000)\n\
+                      printf(\"  %-35s %ldus\\n\", test_names[i], us);\n\
+                    else\n\
+                      printf(\"  %-35s %ld.%ldms\\n\", test_names[i], us/1000, (us%1000)/100);\n\
+                    pass++;\n\
+                  }}\n\
+                }}\n\
+               }}\n", all_names.len(), _layer_test_start, layer_bench_start, layer_bench_start, layer_bench_start));
 
         let r_path = "build/runner.c";
         let binary = "build/test_bundle";
