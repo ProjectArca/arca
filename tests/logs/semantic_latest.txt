@@ -1,5 +1,5 @@
 Arca Semantic Test Log
-Timestamp: Thu Jul 23 00:57:55 UTC 2026
-check_borrow: 7ms PASS
-check_simple: 10ms PASS
-type_mismatch_invalid: 7ms PASS
+Timestamp: Thu Jul 23 01:04:13 UTC 2026
+check_borrow: 9ms PASS
+check_simple: 8ms PASS
+type_mismatch_invalid: 8ms PASS

@@ -1,5 +1,5 @@
 Arca Codegen Test Log
-Timestamp: Thu Jul 23 00:57:55 UTC 2026
-branching: AIR=8ms C=7ms PASS
-calls: AIR=6ms C=8ms PASS
-simple: AIR=7ms C=7ms PASS
+Timestamp: Thu Jul 23 01:04:13 UTC 2026
+branching: AIR=17ms C=8ms PASS
+calls: AIR=7ms C=8ms PASS
+simple: AIR=6ms C=10ms PASS

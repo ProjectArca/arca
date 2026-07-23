@@ -1,5 +1,5 @@
 Arca Runtime Test Log
-Timestamp: Thu Jul 23 00:57:56 UTC 2026
+Timestamp: Thu Jul 23 01:04:13 UTC 2026
 =========================================
 -----------------------------------------
 Test #1: arithmetic.arca
@@ -72,7 +72,7 @@ File: tests/runtime/features/env_full.arca
 Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/runtime/features/env_full.arca
-0
+8350746992
 /Users/hy4-mac-002/hasdev/research/project-arca
 Result: PASS
 -----------------------------------------
@@ -124,7 +124,7 @@ Runtime Stdout:
 [arca] Running: tests/runtime/features/fs_full.arca
 -1
 -1
-4899634919602389440
+4899634919602389504
 Result: PASS
 -----------------------------------------
 Test #15: functions.arca
@@ -442,7 +442,7 @@ Result: PASS
 -----------------------------------------
 Test #51: crypto.arca
 File: tests/runtime/std-libs/crypto.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/runtime/std-libs/crypto.arca
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855

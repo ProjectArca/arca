@@ -1,5 +1,5 @@
 Arca Parse Test Log
-Timestamp: Thu Jul 23 00:57:55 UTC 2026
-simple: 222ms PASS
+Timestamp: Thu Jul 23 01:04:13 UTC 2026
+simple: 183ms PASS
 struct_literal: 7ms PASS
-variables: 8ms PASS
+variables: 7ms PASS
