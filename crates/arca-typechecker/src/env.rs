@@ -302,7 +302,9 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),
         };
         self.functions.insert("arca_str_split".into(), string_string_i32_fn.clone());
-        self.functions.insert("split".into(), string_string_i32_fn);
+        self.functions.insert("split".into(), string_string_i32_fn.clone());
+        self.functions.insert("__arca_str_find".into(), string_string_i32_fn.clone());
+        self.functions.insert("__arca_str_count".into(), string_string_i32_fn);
         self.functions.insert("arca_str_replace".into(), string_3_fn.clone());
         self.functions.insert("replace".into(), string_3_fn);
         self.functions.insert("arca_str_format".into(), string_2_fn.clone());
@@ -356,6 +358,84 @@ impl TypeEnv {
         self.functions.insert("arca_vec_push".into(), FnType {
             params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
             return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+
+        // ===== PATCH 1: std/string methods =====
+        let _void_fn = FnType { params: vec![], return_type: Box::new(Type::Primitive(PrimitiveType::Void)) };
+        let string_void_to_i64 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        let string_i64_to_string = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("arca_str_len".into(), string_void_to_i64.clone());
+        self.functions.insert("__arca_str_is_empty".into(), string_void_to_i64.clone());
+        self.functions.insert("__arca_str_at".into(), string_i64_to_string.clone());
+        self.functions.insert("__arca_str_lines".into(), string_fn.clone());
+        self.functions.insert("__arca_str_lower".into(), string_fn.clone());
+        self.functions.insert("__arca_str_upper".into(), string_fn.clone());
+        self.functions.insert("__arca_str_repeat".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+        self.functions.insert("__arca_hostname".into(), string_fn.clone());
+        self.functions.insert("__arca_username".into(), string_fn.clone());
+
+        // ===== PATCH 2: std/collections method wrappers =====
+        // These are method-style calls that get dispatched in the backend
+        let i64_to_void = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("vec_push_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("vec_get_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("vec_pop_m".into(), i64_to_i64.clone());
+        self.functions.insert("vec_insert_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("vec_remove_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("vec_clear_m".into(), i64_to_void.clone());
+        self.functions.insert("map_set_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("map_has_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("set_insert_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+
+        // ===== PATCH 8: std/http method wrappers =====
+        self.functions.insert("router_post_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+        self.functions.insert("router_get_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+        self.functions.insert("router_put_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+        self.functions.insert("router_delete_m".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
         });
 
         // Standard library module bindings

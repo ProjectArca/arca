@@ -742,6 +742,12 @@ impl AirBuilder {
         let is_method = |name: &str| -> bool {
             callee_name == name || callee_name.ends_with(&format!(".{}", name))
         };
+        let with_obj = |args2: &[AirValue], obj_ref: &Option<AirValue>| -> Vec<AirValue> {
+            let mut v = Vec::new();
+            if let Some(ref obj) = *obj_ref { v.push(obj.clone()); }
+            v.extend_from_slice(args2);
+            v
+        };
 
         if is_method("to_string") {
             let mut new_args = Vec::new();
@@ -791,6 +797,115 @@ impl AirBuilder {
             new_args.extend_from_slice(args);
             return ("__arca_ends_with".to_string(), new_args);
         }
+
+        // ===== PATCH 1: std/string methods =====
+        if is_method("len") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("arca_str_len".to_string(), new_args);
+        }
+        if is_method("is_empty") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_is_empty".to_string(), new_args);
+        }
+        if is_method("at") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_at".to_string(), new_args);
+        }
+        if is_method("to_i32") || is_method("to_i64") {
+            // same as parse_int
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_parse_int".to_string(), new_args);
+        }
+        if is_method("split") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_split".to_string(), new_args);
+        }
+        if is_method("lines") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_lines".to_string(), new_args);
+        }
+        if is_method("find") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_find".to_string(), new_args);
+        }
+        if is_method("lower") || is_method("to_lower") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_lower".to_string(), new_args);
+        }
+        if is_method("upper") || is_method("to_upper") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_upper".to_string(), new_args);
+        }
+        if is_method("repeat") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_repeat".to_string(), new_args);
+        }
+        if is_method("count") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_str_count".to_string(), new_args);
+        }
+
+        // ===== PATCH 2: std/collections methods =====
+        // Vec methods: vec.val -> arca_vec_func(vec.handle, ...)
+        // But the method_obj is the Vec STRUCT, not the handle.
+        // These are handled in the backend's emit_air_call by extracting the handle.
+        if is_method("push") { return ("vec_push_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("pop") { return ("vec_pop_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("get") { return ("vec_get_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("insert") { return ("vec_insert_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("remove") { return ("vec_remove_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("clear") { return ("vec_clear_m".to_string(), with_obj(args, &method_obj)); }
+        // Map methods
+        if is_method("set") { return ("map_set_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("has") { return ("map_has_m".to_string(), with_obj(args, &method_obj)); }
+        // Set methods
+        if is_method("insert") { return ("set_insert_m".to_string(), with_obj(args, &method_obj)); }
+
+        // ===== PATCH 7: std/json methods =====
+        if is_method("parse") { return ("arca_json_parse".to_string(), with_obj(args, &method_obj)); }
+        if is_method("stringify") { return ("json_stringify".to_string(), with_obj(args, &method_obj)); }
+
+        // ===== PATCH 8: std/http methods =====
+        // Router methods
+        if is_method("post") { return ("router_post_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("get") && !callee_name.contains("env_get")
+            { return ("router_get_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("put") && !callee_name.contains("env_get")
+            { return ("router_put_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("delete") { return ("router_delete_m".to_string(), with_obj(args, &method_obj)); }
+
+        // ===== PATCH 10-13: std/time, std/process, std/env, std/os methods =====
+        if is_method("now") { return ("arca_time_ns".to_string(), vec![]); }
+        if is_method("pid") { return ("arca_process_pid".to_string(), with_obj(args, &method_obj)); }
+        if is_method("cwd") { return ("current_dir".to_string(), with_obj(args, &method_obj)); }
+        if is_method("home") { return ("arca_env_get".to_string(), vec![AirValue::ConstString("HOME".to_string())]); }
+        if is_method("arch") { return ("arch".to_string(), with_obj(args, &method_obj)); }
+        if is_method("cpu_count") { return ("cpu_count".to_string(), with_obj(args, &method_obj)); }
+        if is_method("hostname") { return ("__arca_hostname".to_string(), with_obj(args, &method_obj)); }
+        if is_method("username") { return ("__arca_username".to_string(), with_obj(args, &method_obj)); }
+
         if callee_name == "Channel.new" {
             return ("arca_channel_create".to_string(), args.to_vec());
         }

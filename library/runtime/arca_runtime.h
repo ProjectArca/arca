@@ -79,6 +79,18 @@ const char* arca_str_split(const char* s, const char* delim, int index);
 const char* arca_str_replace(const char* s, const char* from, const char* to);
 const char* arca_str_format(const char* fmt, const char* arg);
 
+// Patch 1: std/string method implementations
+int64_t __arca_str_is_empty(const char* s);
+const char* __arca_str_at(const char* s, int64_t i);
+const char* __arca_str_lower(const char* s);
+const char* __arca_str_upper(const char* s);
+const char* __arca_str_repeat(const char* s, int64_t n);
+const char* __arca_str_lines(const char* s);
+int32_t __arca_str_find(const char* s, const char* sub);
+int32_t __arca_str_count(const char* s, const char* sub);
+const char* __arca_hostname(void);
+const char* __arca_username(void);
+
 // std/time
 void arca_sleep_ms(int64_t ms);
 int64_t arca_duration_ms(int64_t ms);

@@ -98,6 +98,30 @@ impl CodeGenerator {
         "0".to_string()
     }
 
+    fn emit_struct_method(&mut self, rt_fn: &str, argc: usize, _callee: &str, target: &Option<RegisterId>, args: &[AirValue]) {
+        let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+        let handle = self.extract_handle_or_value(args, 0);
+        let mut call = format!("{} {}(", if tn.is_empty() { String::new() } else { format!("{} = ", tn) }, rt_fn);
+        call.push_str(&handle);
+        for i in 1..argc {
+            if i < args.len() {
+                call.push_str(&format!(", {}", self.emit_air_value_str(&args[i])));
+            } else {
+                call.push_str(", 0");
+            }
+        }
+        call.push_str(");\n");
+        self.emit(&call);
+    }
+
+    fn emit_route_method(&mut self, method: &str, _callee: &str, target: &Option<RegisterId>, args: &[AirValue]) {
+        let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+        let handle = self.extract_handle_or_value(args, 0);
+        let path = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "\"\"".to_string() };
+        self.emit_ln(&format!("{} = (const char*)arca_str_format(\"{} {{}}/{{}}\", {}, {});",
+            tn, method, path, handle));
+    }
+
     fn p(&self, name: &str) -> String {
         if self.prefix.is_empty() { name.to_string() } else { format!("{}{}", self.prefix, name) }
     }
@@ -164,6 +188,10 @@ impl CodeGenerator {
                     || fn_name == "json_stringify" || fn_name == "compress" || fn_name == "sha256"
                     || fn_name == "arch"
                     || fn_name == "arca_str_slice"
+                    || fn_name == "__arca_str_at" || fn_name == "__arca_str_lower"
+                    || fn_name == "__arca_str_upper" || fn_name == "__arca_str_repeat"
+                    || fn_name == "__arca_str_lines"
+                    || fn_name == "__arca_hostname" || fn_name == "__arca_username"
                     || fn_name == "OpenAI.chat" || fn_name == "OpenAI_chat"
                     || fn_name == "RAGEngine.query" || fn_name == "RAGEngine_query"
                     || fn_name.ends_with(".chat") || fn_name.ends_with(".query")
@@ -935,6 +963,21 @@ impl CodeGenerator {
                 let start = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = (const char*)arca_str_slice((const char*){}, (int32_t){});", tn, s, start));
             }
+            // Collection method-style calls — extract handle from struct
+            "vec_push_m" => self.emit_struct_method("arca_vec_push", 2, &fn_name, target, args),
+            "vec_get_m" => self.emit_struct_method("arca_vec_get", 2, &fn_name, target, args),
+            "vec_pop_m" => self.emit_struct_method("arca_vec_pop", 1, &fn_name, target, args),
+            "vec_insert_m" => self.emit_struct_method("arca_vec_insert", 3, &fn_name, target, args),
+            "vec_remove_m" => self.emit_struct_method("arca_vec_remove", 2, &fn_name, target, args),
+            "vec_clear_m" => self.emit_struct_method("arca_vec_clear", 1, &fn_name, target, args),
+            "map_set_m" => self.emit_struct_method("arca_map_insert", 3, &fn_name, target, args),
+            "map_has_m" => self.emit_struct_method("arca_map_contains", 2, &fn_name, target, args),
+            "set_insert_m" => self.emit_struct_method("arca_set_add", 2, &fn_name, target, args),
+            // Router method-style calls — extract prefix from struct
+            "router_post_m" => self.emit_route_method("POST", &fn_name, target, args),
+            "router_get_m" => self.emit_route_method("GET", &fn_name, target, args),
+            "router_put_m" => self.emit_route_method("PUT", &fn_name, target, args),
+            "router_delete_m" => self.emit_route_method("DELETE", &fn_name, target, args),
             "arca_vec_push" | "arca_vec_free" => {
                 self.emit(fn_name); self.emit("(");
                 for (i, arg) in args.iter().enumerate() { if i > 0 { self.emit(", "); } self.emit_air_value(arg); }

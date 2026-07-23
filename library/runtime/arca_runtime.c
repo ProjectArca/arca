@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <ctype.h>
+#include <unistd.h>
 
 void arca_print_int(int64_t v) {
     printf("%lld", (long long)v);
@@ -153,6 +155,64 @@ int32_t arca_str_contains(const char* s, const char* sub) {
 int64_t arca_str_len(const char* s) {
     if (!s) return 0;
     return (int64_t)strlen(s);
+}
+
+int64_t __arca_str_is_empty(const char* s) { return !s || *s == 0 ? 1 : 0; }
+const char* __arca_str_at(const char* s, int64_t i) {
+    static char buf[2];
+    if (!s || i < 0 || i >= (int64_t)strlen(s)) { buf[0] = 0; return buf; }
+    buf[0] = s[i]; buf[1] = 0;
+    return buf;
+}
+const char* __arca_str_lower(const char* s) {
+    static char buf[4096];
+    if (!s) return "";
+    size_t i;
+    for (i = 0; s[i] && i < sizeof(buf) - 1; i++) buf[i] = (char)tolower((unsigned char)s[i]);
+    buf[i] = 0;
+    return buf;
+}
+const char* __arca_str_upper(const char* s) {
+    static char buf[4096];
+    if (!s) return "";
+    size_t i;
+    for (i = 0; s[i] && i < sizeof(buf) - 1; i++) buf[i] = (char)toupper((unsigned char)s[i]);
+    buf[i] = 0;
+    return buf;
+}
+const char* __arca_str_repeat(const char* s, int64_t n) {
+    static char buf[4096];
+    if (!s) return "";
+    buf[0] = 0;
+    size_t len = strlen(s);
+    int64_t pos = 0;
+    for (int64_t i = 0; i < n && pos < (int64_t)sizeof(buf) - (int64_t)len; i++) {
+        memcpy(buf + pos, s, len);
+        pos += (int64_t)len;
+    }
+    buf[pos] = 0;
+    return buf;
+}
+const char* __arca_str_lines(const char* s) { return s ? s : ""; }
+int32_t __arca_str_find(const char* s, const char* sub) {
+    if (!s || !sub) return -1;
+    const char* p = strstr(s, sub);
+    return p ? (int32_t)(p - s) : -1;
+}
+int32_t __arca_str_count(const char* s, const char* sub) {
+    if (!s || !sub || !*sub) return 0;
+    int32_t count = 0; const char* p = s;
+    while ((p = strstr(p, sub)) != NULL) { count++; p++; }
+    return count;
+}
+const char* __arca_hostname(void) {
+    static char buf[256];
+    if (gethostname(buf, sizeof(buf)) == 0) { buf[sizeof(buf)-1] = 0; return buf; }
+    return "unknown";
+}
+const char* __arca_username(void) {
+    const char* u = getenv("USER");
+    return u ? u : "unknown";
 }
 
 int32_t arca_ends_with(const char* s, const char* suffix) {

@@ -1,0 +1,14 @@
+// Patch 1: std/string methods
+fn main() {
+  let s = "hello world!!!"
+  println(s.len())
+  println(s.is_empty())
+  println(s.at(0))
+  println(s.find("world"))
+  let empty = ""
+  println(empty.is_empty())
+  println(s.lower())
+  println(s.upper())
+  println(s.repeat(3))
+  println(s.count("!"))
+}
