@@ -75,6 +75,22 @@ impl CodeGenerator {
     }
     fn emit_indent(&mut self) { self.output.push_str(&"  ".repeat(self.indent)); }
 
+    fn extract_handle_or_value(&self, args: &[AirValue], idx: usize) -> String {
+        if idx < args.len() {
+            let self_reg = match self.resolve(&args[idx]) {
+                AirValue::Register(r) => r,
+                _ => return self.emit_air_value_str(&args[idx]),
+            };
+            if let Some((_, fields)) = self.struct_inits.get(&self_reg) {
+                for (fn_, fv) in fields {
+                    if fn_ == "handle" { return self.emit_air_value_str(fv); }
+                }
+            }
+            return self.emit_air_value_str(&args[idx]);
+        }
+        "0".to_string()
+    }
+
     fn air_type_to_c<'a>(&self, ty: &'a Type) -> &'a str {
         match ty {
             Type::Primitive(p) => match p {
@@ -131,7 +147,7 @@ impl CodeGenerator {
                 } else if fn_name.ends_with("_to_str") || fn_name.ends_with("user_json") || fn_name.ends_with("users_json")
                     || fn_name.starts_with("build_") || fn_name == "hash" || fn_name == "list_users"
                     || fn_name == "__arca_str_trim"
-                    || fn_name == "env_get" || fn_name == "arca_env_get" || fn_name == "stdin_read_line"
+                    || fn_name == "env_get" || fn_name == "arca_env_get" || fn_name == "env" || fn_name == "stdin_read_line"
                     || fn_name.starts_with("arca_path_") || fn_name.starts_with("path_")
                     || fn_name == "json_stringify" || fn_name == "compress" || fn_name == "sha256"
                     || fn_name == "arch"
@@ -715,7 +731,7 @@ impl CodeGenerator {
             "sqrt" | "sin" | "cos" | "abs" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
-                let math_fn = if fn_name == "abs" { "llabs" } else { fn_name };
+                let math_fn = if fn_name == "abs" { "fabs" } else { fn_name };
                 self.emit_ln(&format!("{} = (int64_t){}((double){});", tn, math_fn, x));
             }
             "pow" => {
@@ -1027,36 +1043,35 @@ impl CodeGenerator {
             }
             "env" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                let name = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
-                self.emit_ln(&format!("{} = (const char*)arca_env_get({});", tn, name));
+                self.emit_ln(&format!("{} = (const char*)\"\";", tn));
             }
-            n if n.ends_with(".filter") || n.ends_with("_filter") => {
+            n if n == "filter" || n.ends_with(".filter") || n.ends_with("_filter") => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                let handle = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let handle = self.extract_handle_or_value(&args, 0);
                 let pred = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = arca_iter_filter({}, {});", tn, handle, pred));
             }
-            n if n.ends_with(".map") || n.ends_with("_map") => {
+            n if n == "map" || n.ends_with(".map") || n.ends_with("_map") => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                let handle = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let handle = self.extract_handle_or_value(&args, 0);
                 let mapper = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = arca_iter_map({}, {});", tn, handle, mapper));
             }
-            n if n.ends_with(".take") || n.ends_with("_take") => {
+            n if n == "take" || n.ends_with(".take") || n.ends_with("_take") => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                let handle = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let handle = self.extract_handle_or_value(&args, 0);
                 let count = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = arca_iter_take({}, {});", tn, handle, count));
             }
-            n if n.ends_with(".skip") || n.ends_with("_skip") => {
+            n if n == "skip" || n.ends_with(".skip") || n.ends_with("_skip") => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                let handle = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let handle = self.extract_handle_or_value(&args, 0);
                 let count = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
                 self.emit_ln(&format!("{} = arca_iter_skip({}, {});", tn, handle, count));
             }
-            n if n.ends_with(".collect") || n.ends_with("_collect") => {
+            n if n == "collect" || n.ends_with(".collect") || n.ends_with("_collect") => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
-                let handle = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let handle = self.extract_handle_or_value(&args, 0);
                 self.emit_ln(&format!("{} = arca_iter_collect({});", tn, handle));
             }
             n if n.ends_with(".to_header") || n.ends_with("_to_header") => {

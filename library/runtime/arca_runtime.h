@@ -237,6 +237,13 @@ void* arca_channel_create(size_t capacity);
 void arca_channel_send(void* channel, int64_t val);
 int64_t arca_channel_recv(void* channel);
 
+// Iterator Helpers
+int64_t arca_iter_filter(int64_t h, int64_t pred_fn);
+int64_t arca_iter_map(int64_t h, int64_t map_fn);
+int64_t arca_iter_take(int64_t h, int64_t count);
+int64_t arca_iter_skip(int64_t h, int64_t count);
+int64_t arca_iter_collect(int64_t h);
+
 // Error Handling Helpers
 void __arca_throw(int64_t err);
 int64_t __arca_get_last_error(void);

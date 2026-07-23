@@ -452,7 +452,7 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),
         });
 
-        // std/collections structs
+        // std/collections structs — all handle wrappers with no methods
         let handle_struct = |name: &str| -> Type {
             Type::Struct {
                 name: name.into(),
@@ -467,59 +467,139 @@ impl TypeEnv {
         self.structs.insert("Deque".into(), handle_struct("Deque"));
         self.structs.insert("BinaryHeap".into(), handle_struct("BinaryHeap"));
         self.structs.insert("LinkedList".into(), handle_struct("LinkedList"));
-        self.structs.insert("Iterator".into(), handle_struct("Iterator"));
-        self.structs.insert("Channel".into(), handle_struct("Channel"));
+
+        // Iterator struct with methods
+        let i64_ty = Type::Primitive(PrimitiveType::I64);
+        let string_ty = Type::Primitive(PrimitiveType::String);
+        let iterator_ty = Type::Struct {
+            name: "Iterator".into(),
+            fields: vec![("handle".into(), i64_ty.clone())].into_iter().collect(),
+            methods: vec![
+                ("filter".into(), FnType {
+                    params: vec![i64_ty.clone()],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("map".into(), FnType {
+                    params: vec![i64_ty.clone()],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("take".into(), FnType {
+                    params: vec![i64_ty.clone()],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("skip".into(), FnType {
+                    params: vec![i64_ty.clone()],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("collect".into(), FnType {
+                    params: vec![],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+            ].into_iter().collect(),
+        };
+        self.structs.insert("Iterator".into(), iterator_ty);
+
+        // Channel struct with methods
+        let channel_ty = Type::Struct {
+            name: "Channel".into(),
+            fields: vec![].into_iter().collect(),
+            methods: vec![
+                ("new".into(), FnType {
+                    params: vec![i64_ty.clone()],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("send".into(), FnType {
+                    params: vec![i64_ty.clone()],
+                    return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+                }),
+                ("recv".into(), FnType {
+                    params: vec![],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+            ].into_iter().collect(),
+        };
+        self.structs.insert("Channel".into(), channel_ty);
 
         // std/http structs
-        let request_struct = Type::Struct {
+        self.structs.insert("Request".into(), Type::Struct {
             name: "Request".into(),
             fields: vec![
-                ("method".into(), Type::Primitive(PrimitiveType::String)),
-                ("path".into(), Type::Primitive(PrimitiveType::String)),
-                ("url".into(), Type::Primitive(PrimitiveType::String)),
+                ("method".into(), string_ty.clone()),
+                ("path".into(), string_ty.clone()),
+                ("url".into(), string_ty.clone()),
             ].into_iter().collect(),
-            methods: HashMap::new(),
-        };
-        self.structs.insert("Request".into(), request_struct);
+            methods: vec![
+                ("param".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+                ("query".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+                ("header".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+            ].into_iter().collect(),
+        });
 
-        let response_struct = Type::Struct {
+        self.structs.insert("Response".into(), Type::Struct {
             name: "Response".into(),
             fields: vec![
                 ("status".into(), Type::Primitive(PrimitiveType::I32)),
-                ("content_type".into(), Type::Primitive(PrimitiveType::String)),
-                ("body".into(), Type::Primitive(PrimitiveType::String)),
+                ("content_type".into(), string_ty.clone()),
+                ("body".into(), string_ty.clone()),
             ].into_iter().collect(),
             methods: HashMap::new(),
-        };
-        self.structs.insert("Response".into(), response_struct);
+        });
 
-        let router_struct = Type::Struct {
+        self.structs.insert("Router".into(), Type::Struct {
             name: "Router".into(),
             fields: vec![
-                ("prefix".into(), Type::Primitive(PrimitiveType::String)),
+                ("prefix".into(), string_ty.clone()),
             ].into_iter().collect(),
-            methods: HashMap::new(),
-        };
-        self.structs.insert("Router".into(), router_struct);
+            methods: vec![
+                ("post".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+                ("get".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+                ("put".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+                ("delete".into(), FnType {
+                    params: vec![string_ty.clone()],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+            ].into_iter().collect(),
+        });
 
-        let cookie_struct = Type::Struct {
+        self.structs.insert("Cookie".into(), Type::Struct {
             name: "Cookie".into(),
             fields: vec![
-                ("name".into(), Type::Primitive(PrimitiveType::String)),
-                ("value".into(), Type::Primitive(PrimitiveType::String)),
+                ("name".into(), string_ty.clone()),
+                ("value".into(), string_ty.clone()),
             ].into_iter().collect(),
-            methods: HashMap::new(),
-        };
-        self.structs.insert("Cookie".into(), cookie_struct);
+            methods: vec![
+                ("to_header".into(), FnType {
+                    params: vec![],
+                    return_type: Box::new(string_ty.clone()),
+                }),
+            ].into_iter().collect(),
+        });
 
-        let middleware_struct = Type::Struct {
+        self.structs.insert("Middleware".into(), Type::Struct {
             name: "Middleware".into(),
             fields: vec![
-                ("name".into(), Type::Primitive(PrimitiveType::String)),
+                ("name".into(), string_ty.clone()),
             ].into_iter().collect(),
             methods: HashMap::new(),
-        };
-        self.structs.insert("Middleware".into(), middleware_struct);
+        });
 
         self.insert_var("VectorStore".into(), Type::Unknown);
         self.insert_var("RAGEngine".into(), Type::Unknown);

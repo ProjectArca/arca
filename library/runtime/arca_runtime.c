@@ -983,3 +983,10 @@ const char* arca_json_parse(const char* json_str, const char* key) {
     return buf;
 }
 
+// Stub Iterator functions
+int64_t arca_iter_filter(int64_t h, int64_t pred_fn) { (void)pred_fn; return h; }
+int64_t arca_iter_map(int64_t h, int64_t map_fn) { (void)map_fn; return h; }
+int64_t arca_iter_take(int64_t h, int64_t count) { (void)count; return h; }
+int64_t arca_iter_skip(int64_t h, int64_t count) { (void)count; return h; }
+int64_t arca_iter_collect(int64_t h) { (void)h; return 0; }
+

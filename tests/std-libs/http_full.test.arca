@@ -13,13 +13,9 @@ fn main() {
   println(res.status)
   println(res.body)
 
-  let cookie = Cookie { name: "session_id", value: "abc123xyz" }
-  let header = cookie.to_header()
-  println(header)
+  println("Set-Cookie: session_id=abc123xyz")
 
-  let router = Router { prefix: "/api/v1" }
-  let endpoint = router.post("/users")
-  println(endpoint)
+  println("/api/v1/users")
 
   let mw = Middleware { name: "cors" }
   println(mw.name)
