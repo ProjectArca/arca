@@ -78,6 +78,7 @@ impl<'a> Parser<'a> {
             TokenKind::Enum | TokenKind::ErrorKw => self.parse_enum_decl(),
             TokenKind::Capability => self.parse_capability_decl(),
             TokenKind::Fn => self.parse_fn_decl().map(Decl::Fn),
+            TokenKind::Test | TokenKind::Bench => self.parse_test_decl(),
             TokenKind::Extern => self.parse_extern_decl(),
             TokenKind::Import => self.parse_import_decl(),
             TokenKind::Let | TokenKind::Const => self.parse_top_var_decl(),
@@ -574,6 +575,45 @@ impl<'a> Parser<'a> {
                 end_span.end_loc,
             ),
         })
+    }
+
+    fn parse_test_decl(&mut self) -> Option<Decl> {
+        let start_span = self.current_token.span;
+        let prefix = if self.current_token.kind == TokenKind::Test { "__test_" } else { "__bench_" };
+        self.advance(); // test/bench
+
+        let raw_name = match &self.current_token.kind {
+            TokenKind::StringLiteral(s) => s.clone(),
+            _ => {
+                self.diagnostics.push(
+                    Diagnostic::error("Expected test name string literal")
+                        .with_span(self.current_token.span),
+                );
+                return None;
+            }
+        };
+        self.advance();
+
+        let safe = format!("{}{}", prefix, raw_name.replace(|c: char| !c.is_alphanumeric(), "_"));
+
+        let body = self.parse_block_expr().unwrap_or(BlockExpr {
+            statements: vec![], final_expr: None, span: self.current_token.span
+        });
+
+        let end_span = self.current_token.span;
+        Some(Decl::Fn(FnDecl {
+            name: safe,
+            params: Vec::new(),
+            return_type: None,
+            throws_type: None,
+            body,
+            span: Span::new(
+                start_span.start,
+                end_span.end,
+                start_span.start_loc,
+                end_span.end_loc,
+            ),
+        }))
     }
 
     fn parse_fn_params(&mut self) -> Vec<ParamDef> {

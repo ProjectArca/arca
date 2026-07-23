@@ -91,6 +91,10 @@ int32_t __arca_str_count(const char* s, const char* sub);
 const char* __arca_hostname(void);
 const char* __arca_username(void);
 
+// Roadmap 3: Assertion API
+void __arca_assert_eq(int64_t actual, int64_t expected);
+void __arca_assert_throw(int64_t fn_ptr);
+
 // std/time
 void arca_sleep_ms(int64_t ms);
 int64_t arca_duration_ms(int64_t ms);

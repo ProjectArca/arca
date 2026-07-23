@@ -348,6 +348,7 @@ impl CodeGenerator {
                             && fn_name != "min" && fn_name != "max" && fn_name != "clamp"
                             && fn_name != "floor" && fn_name != "ceil" && fn_name != "round"
                             && fn_name != "log" && fn_name != "exp" && fn_name != "random_range"
+                            && fn_name != "expect"
                             && fn_name != "sleep" && fn_name != "env_get"
                             && fn_name != "stdin_read_line"
                             && fn_name != "arca_fs_open" && fn_name != "arca_fs_close"
@@ -467,7 +468,8 @@ impl CodeGenerator {
                         let is_void = fn_name == "println" || fn_name == "print" || fn_name.starts_with("show_")
                             || fn_name == "__arca_throw" || fn_name == "__arca_clear_last_error"
                             || fn_name == "arca_future_complete"
-                            || fn_name == "info" || fn_name == "warn" || fn_name == "error" || fn_name == "debug";
+                            || fn_name == "info" || fn_name == "warn" || fn_name == "error" || fn_name == "debug"
+                            || fn_name == "__arca_assert_eq" || fn_name == "__arca_assert_throw";
                         if is_void { None } else { *target }
                     }
                     AirInstruction::StructInit { target, struct_name, fields } => {
@@ -852,6 +854,16 @@ impl CodeGenerator {
             "sleep" => {
                 let ms = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
                 self.emit_ln(&format!("arca_sleep_ms({});", ms));
+            }
+            "expect" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let val = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = {};", tn, val));
+            }
+            "__arca_assert_eq" | "__arca_assert_throw" => {
+                self.emit(fn_name); self.emit("(");
+                for (i, arg) in args.iter().enumerate() { if i > 0 { self.emit(", "); } self.emit_air_value(arg); }
+                self.emit(");\n");
             }
             "env_get" | "arca_env_get" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();

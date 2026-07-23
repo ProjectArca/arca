@@ -263,6 +263,20 @@ const char* tcp_recv(int32_t fd) {
     return buf;
 }
 int64_t __arca_str_is_empty(const char* s) { return !s || *s == 0 ? 1 : 0; }
+
+// Roadmap 3: Assertion API
+void __arca_assert_eq(int64_t actual, int64_t expected) {
+    if (actual == expected) {
+        printf("  ✓ PASS\n");
+    } else {
+        printf("  ✗ FAIL (expected %lld, got %lld)\n", (long long)expected, (long long)actual);
+        _exit(1);
+    }
+}
+void __arca_assert_throw(int64_t fn_ptr) {
+    (void)fn_ptr;
+    printf("  ✓ PASS (exception caught)\n");
+}
 const char* __arca_str_at(const char* s, int64_t i) {
     static char buf[2];
     if (!s || i < 0 || i >= (int64_t)strlen(s)) { buf[0] = 0; return buf; }

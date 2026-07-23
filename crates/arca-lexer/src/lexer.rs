@@ -326,6 +326,8 @@ impl<'a> Lexer<'a> {
             "try" => TokenKind::Try,
             "catch" => TokenKind::Catch,
             "group" => TokenKind::Group,
+            "test" => TokenKind::Test,
+            "bench" => TokenKind::Bench,
             _ => TokenKind::Identifier(text),
         }
     }

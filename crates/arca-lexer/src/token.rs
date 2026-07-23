@@ -46,6 +46,8 @@ pub enum TokenKind {
     Try,
     Catch,
     Group,
+    Test,
+    Bench,
 
     // Identifiers & Literals
     Identifier(String),
@@ -140,6 +142,8 @@ impl fmt::Display for TokenKind {
             TokenKind::Try => write!(f, "try"),
             TokenKind::Catch => write!(f, "catch"),
             TokenKind::Group => write!(f, "group"),
+            TokenKind::Test => write!(f, "test"),
+            TokenKind::Bench => write!(f, "bench"),
             TokenKind::Identifier(id) => write!(f, "Identifier({})", id),
             TokenKind::IntLiteral(n) => write!(f, "IntLiteral({})", n),
             TokenKind::FloatLiteral(fl) => write!(f, "FloatLiteral({})", fl),

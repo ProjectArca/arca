@@ -944,6 +944,17 @@ impl AirBuilder {
         if callee_name == "Option.is_some" { return ("arca_option_is_some".to_string(), args.to_vec()); }
         if callee_name == "Option.unwrap" { return ("arca_result_unwrap".to_string(), args.to_vec()); }
 
+        // ===== Assertion API (expect, to_be, to_equal, to_throw) =====
+        if is_method("to_be") || is_method("to_equal") {
+            let mut new_args = Vec::new();
+            if let Some(obj) = method_obj { new_args.push(obj); }
+            new_args.extend_from_slice(args);
+            return ("__arca_assert_eq".to_string(), new_args);
+        }
+        if is_method("to_throw") {
+            return ("__arca_assert_throw".to_string(), with_obj(args, &method_obj));
+        }
+
         // ===== Vec namespace API (for raw handles) =====
 
         if callee_name == "Channel.new" {

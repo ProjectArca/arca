@@ -597,7 +597,38 @@ impl TypeEnv {
         self.insert_var("Middleware".into(), Type::Unknown);
         self.insert_var("WebSocket".into(), Type::Unknown);
         self.insert_var("SSE".into(), Type::Unknown);
-        self.insert_var("Json".into(), Type::Unknown);
+        // ===== Assertion API (Roadmap 3) =====
+        self.structs.insert("Expect".into(), Type::Struct {
+            name: "Expect".into(),
+            fields: vec![("value".into(), Type::Primitive(PrimitiveType::I64))].into_iter().collect(),
+            methods: vec![
+                ("to_be".into(), FnType {
+                    params: vec![Type::Primitive(PrimitiveType::I64)],
+                    return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+                }),
+                ("to_equal".into(), FnType {
+                    params: vec![Type::Primitive(PrimitiveType::I64)],
+                    return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+                }),
+                ("to_throw".into(), FnType {
+                    params: vec![],
+                    return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+                }),
+            ].into_iter().collect(),
+        });
+        self.functions.insert("expect".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("__arca_assert_eq".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("__arca_assert_throw".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.insert_var("Expect".into(), Type::Unknown);
         self.insert_var("Path".into(), Type::Unknown);
         self.insert_var("Future".into(), Type::Unknown);
         self.insert_var("Vec".into(), Type::Unknown);
