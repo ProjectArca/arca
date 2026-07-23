@@ -229,6 +229,22 @@ impl TypeEnv {
         self.functions.insert("Option.is_some".into(), i64_to_i64.clone());
         self.functions.insert("Option.unwrap".into(), i64_to_i64.clone());
 
+        // Namespaced API: Future.*
+        let _i64_void_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        let i64_i64_void_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        };
+        self.functions.insert("Future.create".into(), FnType {
+            params: vec![],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("Future.complete".into(), i64_i64_void_fn.clone());
+        self.functions.insert("Future.wait".into(), i64_to_i64.clone());
+
         // Namespaced API: Vec.* (for raw Vec handle access)
         self.functions.insert("Vec.get".into(), FnType {
             params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
@@ -583,6 +599,7 @@ impl TypeEnv {
         self.insert_var("SSE".into(), Type::Unknown);
         self.insert_var("Json".into(), Type::Unknown);
         self.insert_var("Path".into(), Type::Unknown);
+        self.insert_var("Future".into(), Type::Unknown);
         self.insert_var("Vec".into(), Type::Unknown);
         self.insert_var("Result".into(), Type::Unknown);
         self.insert_var("Option".into(), Type::Unknown);

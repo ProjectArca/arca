@@ -1,11 +1,11 @@
-extern fn arca_future_create() -> i64
-extern fn arca_future_complete(fut: i64, val: i64)
-extern fn arca_future_await(fut: i64) -> i64
-
+// Test: async runtime primitives via Future namespace
+// Expected output:
+// 0
+// 1
 fn main() {
-  let handle = arca_future_create()
-  arca_future_complete(handle, 0)
-  let val = arca_future_await(handle)
+  let handle = Future.create()
+  Future.complete(handle, 0)
+  let val = Future.wait(handle)
   println(val)
   println(1)
 }

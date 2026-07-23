@@ -872,6 +872,11 @@ impl AirBuilder {
         if callee_name == "Vec.len" { return ("arca_vec_len".to_string(), args.to_vec()); }
         if callee_name == "Vec.push" { return ("arca_vec_push".to_string(), args.to_vec()); }
 
+        // ===== Future namespace API =====
+        if callee_name == "Future.create" { return ("arca_future_create".to_string(), args.to_vec()); }
+        if callee_name == "Future.complete" { return ("arca_future_complete".to_string(), args.to_vec()); }
+        if callee_name == "Future.wait" { return ("arca_future_await".to_string(), args.to_vec()); }
+
         // ===== PATCH 2: std/collections methods =====
         // Vec methods: vec.val -> arca_vec_func(vec.handle, ...)
         // But the method_obj is the Vec STRUCT, not the handle.
