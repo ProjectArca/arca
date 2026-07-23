@@ -4,8 +4,6 @@
 // 42
 fn main() {
   let r = Ok(42)
-  let ok = arca_result_is_ok(r)
-  println(ok)
-  let v = arca_result_unwrap(r)
-  println(v)
+  println(Result.is_ok(r))
+  println(Result.unwrap(r))
 }

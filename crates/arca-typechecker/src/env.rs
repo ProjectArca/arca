@@ -219,6 +219,11 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
         });
         self.functions.insert("Result.is_ok".into(), i64_to_i64.clone());
+        self.functions.insert("Result.unwrap".into(), i64_to_i64.clone());
+
+        // Namespaced API: Option.*
+        self.functions.insert("Option.is_some".into(), i64_to_i64.clone());
+        self.functions.insert("Option.unwrap".into(), i64_to_i64.clone());
 
         // std/encoding
         let int_fn = FnType {
@@ -561,6 +566,7 @@ impl TypeEnv {
         self.insert_var("Json".into(), Type::Unknown);
         self.insert_var("Path".into(), Type::Unknown);
         self.insert_var("Result".into(), Type::Unknown);
+        self.insert_var("Option".into(), Type::Unknown);
         self.insert_var("OpenAI".into(), Type::Unknown);
         self.insert_var("Anthropic".into(), Type::Unknown);
         self.insert_var("CustomAIProvider".into(), Type::Unknown);

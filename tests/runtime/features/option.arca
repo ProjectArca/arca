@@ -4,8 +4,6 @@
 // 99
 fn main() {
   let s = Some(99)
-  let ok = arca_option_is_some(s)
-  println(ok)
-  let v = arca_result_unwrap(s)
-  println(v)
+  println(Option.is_some(s))
+  println(Option.unwrap(s))
 }

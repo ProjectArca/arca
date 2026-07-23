@@ -928,6 +928,9 @@ impl AirBuilder {
         if callee_name == "Result.ok" { return ("arca_result_ok".to_string(), args.to_vec()); }
         if callee_name == "Result.err" { return ("arca_result_err".to_string(), args.to_vec()); }
         if callee_name == "Result.is_ok" { return ("arca_result_is_ok".to_string(), args.to_vec()); }
+        if callee_name == "Result.unwrap" { return ("arca_result_unwrap".to_string(), args.to_vec()); }
+        if callee_name == "Option.is_some" { return ("arca_option_is_some".to_string(), args.to_vec()); }
+        if callee_name == "Option.unwrap" { return ("arca_result_unwrap".to_string(), args.to_vec()); }
 
         if callee_name == "Channel.new" {
             return ("arca_channel_create".to_string(), args.to_vec());
