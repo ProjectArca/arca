@@ -513,8 +513,19 @@ fn main() {
             }
         }
         "test" => {
-            let target = if args.len() >= 3 { &args[2] } else { "tests" };
-            handle_test(target);
+            let mut target = "tests".to_string();
+            let mut filter = String::new();
+            let mut i = 2;
+            while i < args.len() {
+                if args[i] == "--filter" && i + 1 < args.len() {
+                    filter = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    target = args[i].clone();
+                    i += 1;
+                }
+            }
+            handle_test(&target, &filter);
         }
         "fmt" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
@@ -640,10 +651,10 @@ fn fmt_dur(us: u128) -> String {
     else { let s = us / 1_000_000; let d = (us % 1_000_000) / 100_000; format!("{}.{}s", s, d) }
 }
 
-fn handle_test(target: &str) {
+fn handle_test(target: &str, filter: &str) {
     println!("\n=========================================");
-    println!("  Arca Test Suite v{}", ARCA_VERSION);
-    println!("=========================================\n");
+    println!("        Arca Test Suite v{}", ARCA_VERSION);
+    println!("=========================================");
 
     let commit = process::Command::new("git")
         .args(&["rev-parse", "--short", "HEAD"])
@@ -653,10 +664,15 @@ fn handle_test(target: &str) {
         .map(|s| s.trim().to_string())
         .unwrap_or_default();
 
+    if !commit.is_empty() {
+        println!("  Commit   : {}", commit);
+    }
+    println!("  Backend  : AIR → C\n");
+
     ensure_runtime_o("build/arca_runtime.o", "build/http.o", "build/socket.o");
 
     // Layer 1: Parse tests
-    println!("── Parse Layer ───────────────────────────────");
+    println!("──────────────────────────────────────────\nParse\n──────────────────────────────────────────");
     let parse_dir = format!("{}/parse", target);
     let mut p_pass = 0; let mut p_fail = 0;
     if let Ok(entries) = fs::read_dir(&parse_dir) {
@@ -664,6 +680,7 @@ fn handle_test(target: &str) {
             let path = entry.path();
             if path.extension().map_or(false, |e| e == "arca") {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                if !filter.is_empty() && !name.contains(filter) { continue; }
                 let source = fs::read_to_string(&path).unwrap_or_default();
                 let start = Instant::now();
                 let lexer = Lexer::new(&source);
@@ -673,13 +690,13 @@ fn handle_test(target: &str) {
                 let us = start.elapsed().as_micros();
                 let ok = errors == 0;
                 if ok { p_pass += 1; } else { p_fail += 1; }
-                println!("  {:35} {:>6}  {}", name, fmt_dur(us), if ok { "PASS" } else { "FAIL" });
+                println!("  {:35} {:>6}  {}", name, fmt_dur(us), if ok { "✓" } else { "✗" });
             }
         }
     }
 
     // Layer 2: Semantic tests
-    println!("\n── Semantic Layer ────────────────────────────");
+    println!("\n──────────────────────────────────────────\nSemantic\n──────────────────────────────────────────");
     let sem_dir = format!("{}/semantic", target);
     let mut s_pass = 0; let mut s_fail = 0;
     if let Ok(entries) = fs::read_dir(&sem_dir) {
@@ -687,6 +704,7 @@ fn handle_test(target: &str) {
             let path = entry.path();
             if path.extension().map_or(false, |e| e == "arca") {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                if !filter.is_empty() && !name.contains(filter) { continue; }
                 let source = fs::read_to_string(&path).unwrap_or_default();
                 let start = Instant::now();
                 let result = compile_arca_to_c(&source, &path.to_string_lossy(), "");
@@ -700,13 +718,13 @@ fn handle_test(target: &str) {
                 if passed { s_pass += 1; } else { s_fail += 1; }
                 println!("  {:35} {:>6}  {}",
                     name, fmt_dur(us),
-                    if passed { "PASS" } else { "FAIL" });
+                    if passed { "✓" } else { "✗" });
             }
         }
     }
 
     // Layer 3: Codegen tests
-    println!("\n── Codegen Layer ────────────────────────────");
+    println!("\n──────────────────────────────────────────\nCode Generation\n──────────────────────────────────────────");
     let cg_dir = format!("{}/codegen", target);
     let mut c_pass = 0; let mut c_fail = 0;
     if let Ok(entries) = fs::read_dir(&cg_dir) {
@@ -714,6 +732,7 @@ fn handle_test(target: &str) {
             let path = entry.path();
             if path.extension().map_or(false, |e| e == "arca") {
                 let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                if !filter.is_empty() && !name.contains(filter) { continue; }
                 let source = fs::read_to_string(&path).unwrap_or_default();
                 let target_str = path.to_string_lossy();
                 let start = Instant::now();
@@ -723,13 +742,13 @@ fn handle_test(target: &str) {
                 if passed { c_pass += 1; } else { c_fail += 1; }
                 println!("  {:35} {:>6}  {}",
                     name, fmt_dur(us),
-                    if passed { "PASS" } else { "FAIL" });
+                    if passed { "✓" } else { "✗" });
             }
         }
     }
 
     // Layer 4: Runtime tests (batch-compiled with symbol prefixing)
-    println!("\n── Runtime Layer ────────────────────────────");
+    println!("\n──────────────────────────────────────────\nRuntime\n──────────────────────────────────────────");
 
     let rt_dirs = vec![
         format!("{}/runtime/features", target),
@@ -752,6 +771,7 @@ fn handle_test(target: &str) {
                 let path = entry.path();
                 if path.extension().map_or(false, |e| e == "arca") {
                     let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                    if !filter.is_empty() && !name.contains(filter) { continue; }
                     let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
                     let source = fs::read_to_string(&path).unwrap_or_default();
                     match compile_arca_to_c(&source, &path.to_string_lossy(), &format!("test_{}_", safe)) {
@@ -828,9 +848,9 @@ fn handle_test(target: &str) {
                  long ms = (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_nsec - t0.tv_nsec) / 1000000;\n\
                  int has_err = strstr(buf, \"error:\") != NULL;\n\
                  if (ms < 1000)\n\
-                   printf(\"  %-35s %ldms  %s\\n\", test_names[i], ms, has_err ? \"FAIL\" : \"PASS\");\n\
+                   printf(\"  %-35s %ldms  %s\\n\", test_names[i], ms, has_err ? \"✗\" : \"✓\");\n\
                  else\n\
-                   printf(\"  %-35s %ld.%lds  %s\\n\", test_names[i], ms/1000, (ms%1000)/100, has_err ? \"FAIL\" : \"PASS\");\n\
+                   printf(\"  %-35s %ld.%lds  %s\\n\", test_names[i], ms/1000, (ms%1000)/100, has_err ? \"✗\" : \"✓\");\n\
                  if (has_err) fail++; else pass++;\n\
                }}\n\
                printf(\"---\\nRuntime layer: %d passed, %d failed out of %d tests\\n\", pass, fail, n);\n\
@@ -856,8 +876,8 @@ fn handle_test(target: &str) {
                 let run_ms = run_start.elapsed().as_millis();
                 let stdout = String::from_utf8_lossy(&out.stdout);
                 for line in stdout.lines() {
-                    if line.starts_with("  ") && (line.ends_with("PASS") || line.ends_with("FAIL")) {
-                        let ok = line.ends_with("PASS");
+                    if line.starts_with("  ") && (line.ends_with("✓") || line.ends_with("✗")) {
+                        let ok = line.ends_with("✓");
                         println!("{}", line);
                         if ok { r_pass += 1; } else { r_fail += 1; }
                     }
@@ -880,19 +900,18 @@ fn handle_test(target: &str) {
     let failed = p_fail + s_fail + c_fail + r_fail;
     let pct = if total > 0 { passed * 100 / total } else { 0 };
 
-    println!("\n=========================================");
-    println!("  Results");
-    println!("-----------------------------------------");
-    println!("  Parse         {:>3}/{:>3}  passed", p_pass, p_pass + p_fail);
-    println!("  Semantic      {:>3}/{:>3}  passed", s_pass, s_pass + s_fail);
-    println!("  Codegen       {:>3}/{:>3}  passed", c_pass, c_pass + c_fail);
-    println!("  Runtime       {:>3}/{:>3}  passed", r_pass, r_pass + r_fail);
-    println!("-----------------------------------------");
-    println!("  Total         {:>3}/{:>3}  ({}%)", passed, total, pct);
+    println!("\n──────────────────────────────────────────\nSummary\n──────────────────────────────────────────");
+    println!("  Tests       {}", total);
+    println!("  Passed      {}  ✓", passed);
+    println!("  Failed      {}  {}", failed, if failed > 0 { "✗" } else { "" });
+    println!("  Pass Rate   {}%", pct);
     if !commit.is_empty() {
-        println!("  Commit        {}", commit);
+        println!("  Commit      {}", commit);
     }
-    println!("  Version       {}", ARCA_VERSION);
+    println!("  Version     {}", ARCA_VERSION);
+    println!("  Backend     AIR → C");
+    println!("");
+    if failed == 0 { println!("  ✓ ALL TESTS PASSED"); }
     println!("=========================================\n");
 
     if failed > 0 { process::exit(1); }
