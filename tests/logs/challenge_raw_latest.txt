@@ -1,0 +1,8 @@
+=========================================
+ Arca Challenges
+=========================================
+[challenge] expression_eval  1899ms  PASS
+[challenge] statistics  1952ms  PASS
+[challenge] todo_cli  2124ms  PASS
+---
+Challenges: 3 passed, 0 failed out of 3 tests

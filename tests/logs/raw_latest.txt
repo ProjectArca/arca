@@ -4,23 +4,23 @@
 =========================================
 
 ── Parse Layer ───────────────────────────────
-  struct_literal                       203µs  PASS
-  simple                                 6µs  PASS
-  variables                              7µs  PASS
+  struct_literal                       273µs  PASS
+  simple                                 8µs  PASS
+  variables                              9µs  PASS
 
 ── Semantic Layer ────────────────────────────
-  check_borrow                         568µs  PASS
-  type_mismatch_invalid                 97µs  PASS
-  check_simple                          91µs  PASS
+  check_borrow                         757µs  PASS
+  type_mismatch_invalid                163µs  PASS
+  check_simple                         154µs  PASS
 
 ── Codegen Layer ────────────────────────────
-  simple                                90µs  PASS
-  branching                            101µs  PASS
-  calls                                100µs  PASS
+  simple                               142µs  PASS
+  branching                            207µs  PASS
+  calls                                322µs  PASS
 
 ── Runtime Layer ────────────────────────────
-  none                                1ms  PASS
-  while_loop                          1ms  PASS
+  none                                0ms  PASS
+  while_loop                          0ms  PASS
   result                              0ms  PASS
   math                                0ms  PASS
   move                                0ms  PASS
@@ -45,7 +45,7 @@
   defer                               0ms  PASS
   fs                                  0ms  PASS
   option                              0ms  PASS
-  borrow                              1ms  PASS
+  borrow                              0ms  PASS
   match_payload                       0ms  PASS
   ref_ptr                             0ms  PASS
   path_full                           0ms  PASS
@@ -55,7 +55,7 @@
   string                              0ms  PASS
   throw                               0ms  PASS
   fs_full                             0ms  PASS
-  env_full                            0ms  PASS
+  env_full                            1ms  PASS
   if_else                             0ms  PASS
   arithmetic                          0ms  PASS
   method                              0ms  PASS
@@ -74,10 +74,13 @@
   compress                            0ms  PASS
   import                              0ms  PASS
   log                                 0ms  PASS
+  std_string_patch                    0ms  PASS
+  std_more_patches                    0ms  PASS
   opt                                 0ms  PASS
   async                               0ms  PASS
   http_full                           0ms  PASS
   backend                             0ms  PASS
+  std_fs_patch                        3ms  PASS
   toolchain                           0ms  PASS
   collections_structs                 0ms  PASS
   iterator_chain                      0ms  PASS
@@ -86,7 +89,10 @@
   compress_crypto                     0ms  PASS
   log_info                            0ms  PASS
   json_stringify                      0ms  PASS
-  (link 633ms, run 554ms)
+  expression_eval                     0ms  PASS
+  statistics                          0ms  PASS
+  todo_cli                            0ms  PASS
+  (link 410ms, run 652ms)
 
 =========================================
   Results
@@ -94,10 +100,10 @@
   Parse           3/  3  passed
   Semantic        3/  3  passed
   Codegen         3/  3  passed
-  Runtime        67/ 67  passed
+  Runtime        73/ 73  passed
 -----------------------------------------
-  Total          76/ 76  (100%)
-  Commit        f2db2d3
+  Total          82/ 82  (100%)
+  Commit        ce2089d
   Version       0.1.0-alpha
 =========================================
 
