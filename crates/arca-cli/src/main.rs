@@ -727,6 +727,7 @@ fn handle_test(target: &str) {
         format!("{}/runtime/features", target),
         format!("{}/runtime/std-libs", target),
         format!("{}/regression", target),
+        format!("{}/../examples/challenges", target),
     ];
 
     fs::create_dir_all("build").ok();
