@@ -1,10 +1,10 @@
 Arca Test Execution & Runtime Stdout Log
-Timestamp: Wed Jul 22 18:49:16 UTC 2026
+Timestamp: Wed Jul 22 23:58:08 UTC 2026
 =========================================
 -----------------------------------------
 Test #1: arithmetic.test.arca
 File: tests/features/arithmetic.test.arca
-Duration: 3s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/arithmetic.test.arca
 15
@@ -21,16 +21,14 @@ Result: PASS
 -----------------------------------------
 Test #3: channel.test.arca
 File: tests/features/channel.test.arca
-Duration: 1s
+Duration: 0s
 Runtime Stdout:
-[arca] Running: tests/features/channel.test.arca
-42
-99
-Result: PASS
+error: Member property 'new' does not exist on struct
+Result: FAIL
 -----------------------------------------
 Test #4: comparison.test.arca
 File: tests/features/comparison.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/comparison.test.arca
 1
@@ -69,7 +67,7 @@ Result: PASS
 -----------------------------------------
 Test #8: env_full.test.arca
 File: tests/features/env_full.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/env_full.test.arca
 0
@@ -94,7 +92,7 @@ Result: PASS
 -----------------------------------------
 Test #11: foreach.test.arca
 File: tests/features/foreach.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/foreach.test.arca
 6
@@ -102,7 +100,7 @@ Result: PASS
 -----------------------------------------
 Test #12: fs.test.arca
 File: tests/features/fs.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/fs.test.arca
 0
@@ -116,7 +114,7 @@ Runtime Stdout:
 [arca] Running: tests/features/fs_full.test.arca
 -1
 -1
-4899634919602390976
+4899634919602389440
 Result: PASS
 -----------------------------------------
 Test #14: functions.test.arca
@@ -137,7 +135,7 @@ Result: PASS
 -----------------------------------------
 Test #16: impl.test.arca
 File: tests/features/impl.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/impl.test.arca
 42
@@ -145,7 +143,7 @@ Result: PASS
 -----------------------------------------
 Test #17: io.test.arca
 File: tests/features/io.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/io.test.arca
 0
@@ -155,12 +153,9 @@ Test #18: json.test.arca
 File: tests/features/json.test.arca
 Duration: 1s
 Runtime Stdout:
-build/output_2136.c:9:6: error: incompatible integer to pointer conversion assigning to 'const char *' from 'int64_t' (aka 'long long') [-Wint-conversion]
-    9 |   v1 = (int64_t)arca_json_stringify((const char*)"hello");
-      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1 error generated.
-[arca] C compilation failed with code: exit status: 1
-Result: FAIL
+[arca] Running: tests/features/json.test.arca
+"hello"
+Result: PASS
 -----------------------------------------
 Test #19: loop.test.arca
 File: tests/features/loop.test.arca
@@ -188,12 +183,12 @@ Result: PASS
 -----------------------------------------
 Test #22: math.test.arca
 File: tests/features/math.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
-build/output_2273.c:23:17: warning: using integer absolute value function 'llabs' when argument is of floating point type [-Wabsolute-value]
+build/output_46407.c:23:17: warning: using integer absolute value function 'llabs' when argument is of floating point type [-Wabsolute-value]
    23 |   v4 = (int64_t)llabs((double)v3);
       |                 ^
-build/output_2273.c:23:17: note: use function 'fabs' instead
+build/output_46407.c:23:17: note: use function 'fabs' instead
    23 |   v4 = (int64_t)llabs((double)v3);
       |                 ^~~~~
       |                 fabs
@@ -208,7 +203,7 @@ Result: PASS
 -----------------------------------------
 Test #23: method.test.arca
 File: tests/features/method.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/method.test.arca
 hello Alice
@@ -224,7 +219,7 @@ Result: PASS
 -----------------------------------------
 Test #25: none.test.arca
 File: tests/features/none.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/none.test.arca
 0
@@ -232,7 +227,7 @@ Result: PASS
 -----------------------------------------
 Test #26: option.test.arca
 File: tests/features/option.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/option.test.arca
 1
@@ -241,7 +236,7 @@ Result: PASS
 -----------------------------------------
 Test #27: parse_int.test.arca
 File: tests/features/parse_int.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/parse_int.test.arca
 123
@@ -260,7 +255,7 @@ Result: PASS
 -----------------------------------------
 Test #29: path_full.test.arca
 File: tests/features/path_full.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/path_full.test.arca
 /usr/bin
@@ -268,7 +263,7 @@ Result: PASS
 -----------------------------------------
 Test #30: process.test.arca
 File: tests/features/process.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/process.test.arca
 0
@@ -301,11 +296,10 @@ Result: PASS
 -----------------------------------------
 Test #34: spawn.test.arca
 File: tests/features/spawn.test.arca
-Duration: 2s
+Duration: 0s
 Runtime Stdout:
-[arca] Running: tests/features/spawn.test.arca
-100
-Result: PASS
+error: Member property 'new' does not exist on struct
+Result: FAIL
 -----------------------------------------
 Test #35: string.test.arca
 File: tests/features/string.test.arca
@@ -319,7 +313,7 @@ Result: PASS
 -----------------------------------------
 Test #36: string_slice.test.arca
 File: tests/features/string_slice.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/string_slice.test.arca
 1
@@ -327,7 +321,7 @@ Result: PASS
 -----------------------------------------
 Test #37: strings.test.arca
 File: tests/features/strings.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/strings.test.arca
 1
@@ -336,7 +330,7 @@ Result: PASS
 -----------------------------------------
 Test #38: struct.test.arca
 File: tests/features/struct.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/struct.test.arca
 1
@@ -345,7 +339,7 @@ Result: PASS
 -----------------------------------------
 Test #39: throw.test.arca
 File: tests/features/throw.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/throw.test.arca
 1
@@ -370,7 +364,7 @@ Result: PASS
 -----------------------------------------
 Test #42: variables.test.arca
 File: tests/features/variables.test.arca
-Duration: 2s
+Duration: 1s
 Runtime Stdout:
 [arca] Running: tests/features/variables.test.arca
 10
@@ -378,7 +372,7 @@ Result: PASS
 -----------------------------------------
 Test #43: while_loop.test.arca
 File: tests/features/while_loop.test.arca
-Duration: 1s
+Duration: 2s
 Runtime Stdout:
 [arca] Running: tests/features/while_loop.test.arca
 10
@@ -388,29 +382,108 @@ Test #44: ai.test.arca
 File: tests/std-libs/ai.test.arca
 Duration: 1s
 Runtime Stdout:
-build/output_3043.c:51:20: warning: passing arguments to 'OpenAI_chat' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
-   51 |   v12 = OpenAI_chat(v10, "Hello Arca AI");
-      |                    ^
-build/output_3043.c:55:28: warning: passing arguments to 'VectorStore_connect' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
-   55 |   v14 = VectorStore_connect("VectorStore", "memory", "local");
-      |                            ^
-build/output_3043.c:57:22: warning: passing arguments to 'RAGEngine_new' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
-   57 |   v16 = RAGEngine_new("RAGEngine", v14, "openai", "gpt-4o");
-      |                      ^
-build/output_3043.c:59:18: warning: passing arguments to 'rag_query' without a prototype is deprecated in all versions of C and is not supported in C23 [-Wdeprecated-non-prototype]
-   59 |   v18 = rag_query(v16, "What is Arca?");
-      |                  ^
-4 warnings generated.
-Undefined symbols for architecture arm64:
-  "_OpenAI_chat", referenced from:
-      _arca_main in output_3043-b3932c.o
-  "_RAGEngine_new", referenced from:
-      _arca_main in output_3043-b3932c.o
-  "_VectorStore_connect", referenced from:
-      _arca_main in output_3043-b3932c.o
-  "_rag_query", referenced from:
-      _arca_main in output_3043-b3932c.o
-ld: symbol(s) not found for architecture arm64
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
+[arca] Running: tests/std-libs/ai.test.arca
+0
+csv
+bpe
+{"role":"assistant","content":"[AI Response to: Hello Arca AI]"}
+{"answer":"[RAG Answer for: What is Arca?]","sources":["doc_1"]}
+Result: PASS
+-----------------------------------------
+Test #45: async.test.arca
+File: tests/std-libs/async.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/std-libs/async.test.arca
+0
+1
+Result: PASS
+-----------------------------------------
+Test #46: backend.test.arca
+File: tests/std-libs/backend.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/std-libs/backend.test.arca
+Native LLVM IR & Machine Code generated successfully
+Result: PASS
+-----------------------------------------
+Test #47: collections.test.arca
+File: tests/std-libs/collections.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/std-libs/collections.test.arca
+0
+0
+0
+0
+0
+0
+0
+Result: PASS
+-----------------------------------------
+Test #48: compress.test.arca
+File: tests/std-libs/compress.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/std-libs/compress.test.arca
+zstd_compressed_bytes
+Result: PASS
+-----------------------------------------
+Test #49: crypto.test.arca
+File: tests/std-libs/crypto.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/std-libs/crypto.test.arca
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+Result: PASS
+-----------------------------------------
+Test #50: http_full.test.arca
+File: tests/std-libs/http_full.test.arca
+Duration: 0s
+Runtime Stdout:
+error: Member property 'to_header' does not exist on struct
+
+error: Member property 'post' does not exist on struct
+Result: FAIL
+-----------------------------------------
+Test #51: import.test.arca
+File: tests/std-libs/import.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/std-libs/import.test.arca
+55
+Result: PASS
+-----------------------------------------
+Test #52: iterator.test.arca
+File: tests/std-libs/iterator.test.arca
+Duration: 0s
+Runtime Stdout:
+error: Member property 'filter' does not exist on struct
+Result: FAIL
+-----------------------------------------
+Test #53: log.test.arca
+File: tests/std-libs/log.test.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/std-libs/log.test.arca
+hello
+Result: PASS
+-----------------------------------------
+Test #54: opt.test.arca
+File: tests/std-libs/opt.test.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/std-libs/opt.test.arca
+610
+Result: PASS
+-----------------------------------------
+Test #55: os.test.arca
+File: tests/std-libs/os.test.arca
+Duration: 0s
+Runtime Stdout:
+build/output_47009.c:24:6: error: incompatible pointer to integer conversion assigning to 'int64_t' (aka 'long long') from 'const char *' [-Wint-conversion]
+   24 |   v5 = (const char*)arca_env_get("PATH");
+      |      ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
 [arca] C compilation failed with code: exit status: 1
 Result: FAIL

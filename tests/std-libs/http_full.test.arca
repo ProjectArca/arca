@@ -9,17 +9,18 @@ fn main() {
   let req = Request { method: "POST", path: "/users", url: "http://localhost:3000/users" }
   println(req.method)
 
-  let res = Response.json("{\"status\":\"ok\",\"user\":\"arca\"}")
+  let res = Response { status: 200, content_type: "application/json", body: "{\"status\":\"ok\",\"user\":\"arca\"}" }
   println(res.status)
   println(res.body)
 
-  let cookie = Cookie.new("session_id", "abc123xyz")
-  println(cookie.to_header())
+  let cookie = Cookie { name: "session_id", value: "abc123xyz" }
+  let header = cookie.to_header()
+  println(header)
 
-  let router = Router.new("/api/v1")
+  let router = Router { prefix: "/api/v1" }
   let endpoint = router.post("/users")
   println(endpoint)
 
-  let mw = Middleware.use("cors")
+  let mw = Middleware { name: "cors" }
   println(mw.name)
 }

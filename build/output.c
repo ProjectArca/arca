@@ -5,10 +5,18 @@ void arca_main(void);
 
 void arca_main(void) {
   int64_t v0;
-  const char* v1;
-  v1 = (const char*)arca_stdin_read_line();
-  v0 = (int64_t)v1;
-  arca_print_int(0);
+  int64_t v1;
+  int64_t v2;
+  int64_t v3;
+  int64_t v4;
+  v1 = arca_future_create();
+  v0 = v1;
+  v2 = arca_future_complete(v1, 0);
+  v4 = arca_future_await(v1);
+  v3 = v4;
+  arca_print_int(v4);
+  putchar('\n');
+  arca_print_int(1);
   putchar('\n');
   return;
 }

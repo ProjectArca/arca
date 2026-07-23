@@ -451,6 +451,76 @@ impl TypeEnv {
             params: vec![rag_engine_struct, Type::Primitive(PrimitiveType::String)],
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),
         });
+
+        // std/collections structs
+        let handle_struct = |name: &str| -> Type {
+            Type::Struct {
+                name: name.into(),
+                fields: vec![("handle".into(), Type::Primitive(PrimitiveType::I64))].into_iter().collect(),
+                methods: HashMap::new(),
+            }
+        };
+        self.structs.insert("Vec".into(), handle_struct("Vec"));
+        self.structs.insert("HashMap".into(), handle_struct("HashMap"));
+        self.structs.insert("HashSet".into(), handle_struct("HashSet"));
+        self.structs.insert("Queue".into(), handle_struct("Queue"));
+        self.structs.insert("Deque".into(), handle_struct("Deque"));
+        self.structs.insert("BinaryHeap".into(), handle_struct("BinaryHeap"));
+        self.structs.insert("LinkedList".into(), handle_struct("LinkedList"));
+        self.structs.insert("Iterator".into(), handle_struct("Iterator"));
+        self.structs.insert("Channel".into(), handle_struct("Channel"));
+
+        // std/http structs
+        let request_struct = Type::Struct {
+            name: "Request".into(),
+            fields: vec![
+                ("method".into(), Type::Primitive(PrimitiveType::String)),
+                ("path".into(), Type::Primitive(PrimitiveType::String)),
+                ("url".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Request".into(), request_struct);
+
+        let response_struct = Type::Struct {
+            name: "Response".into(),
+            fields: vec![
+                ("status".into(), Type::Primitive(PrimitiveType::I32)),
+                ("content_type".into(), Type::Primitive(PrimitiveType::String)),
+                ("body".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Response".into(), response_struct);
+
+        let router_struct = Type::Struct {
+            name: "Router".into(),
+            fields: vec![
+                ("prefix".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Router".into(), router_struct);
+
+        let cookie_struct = Type::Struct {
+            name: "Cookie".into(),
+            fields: vec![
+                ("name".into(), Type::Primitive(PrimitiveType::String)),
+                ("value".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Cookie".into(), cookie_struct);
+
+        let middleware_struct = Type::Struct {
+            name: "Middleware".into(),
+            fields: vec![
+                ("name".into(), Type::Primitive(PrimitiveType::String)),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("Middleware".into(), middleware_struct);
+
         self.insert_var("VectorStore".into(), Type::Unknown);
         self.insert_var("RAGEngine".into(), Type::Unknown);
         self.insert_var("Tensor".into(), Type::Unknown);
@@ -462,28 +532,16 @@ impl TypeEnv {
         self.insert_var("Matrix".into(), Type::Unknown);
         self.insert_var("Future".into(), Type::Unknown);
         self.insert_var("Task".into(), Type::Unknown);
-        self.insert_var("Iterator".into(), Type::Unknown);
-        self.insert_var("Vec".into(), Type::Unknown);
-        self.insert_var("HashMap".into(), Type::Unknown);
-        self.insert_var("HashSet".into(), Type::Unknown);
-        self.insert_var("Queue".into(), Type::Unknown);
-        self.insert_var("Deque".into(), Type::Unknown);
-        self.insert_var("BinaryHeap".into(), Type::Unknown);
-        self.insert_var("LinkedList".into(), Type::Unknown);
         self.insert_var("Value".into(), Type::Unknown);
         self.insert_var("Object".into(), Type::Unknown);
         self.insert_var("Instant".into(), Type::Unknown);
         self.insert_var("Duration".into(), Type::Unknown);
         self.insert_var("Timer".into(), Type::Unknown);
         self.insert_var("ArenaAllocator".into(), Type::Unknown);
-        self.insert_var("Response".into(), Type::Unknown);
-        self.insert_var("Request".into(), Type::Unknown);
         self.insert_var("Pool".into(), Type::Unknown);
         self.insert_var("Arena".into(), Type::Unknown);
-        self.insert_var("Router".into(), Type::Unknown);
         self.insert_var("File".into(), Type::Unknown);
         self.insert_var("TcpListener".into(), Type::Unknown);
-        self.insert_var("Channel".into(), Type::Unknown);
         self.insert_var("Array".into(), Type::Unknown);
         self.insert_var("Map".into(), Type::Unknown);
         self.insert_var("Set".into(), Type::Unknown);
