@@ -1,110 +1,128 @@
 
 =========================================
-  Arca Test Suite v0.1.0-alpha
+        Arca Test Suite v0.1.0-alpha
 =========================================
+  Commit   : 98c5d22
+  Backend  : AIR → C
 
-── Parse Layer ───────────────────────────────
-  struct_literal                       206µs  PASS
-  simple                                 4µs  PASS
-  variables                              6µs  PASS
+──────────────────────────────────────────
+Parse
+──────────────────────────────────────────
+  struct_literal                       195µs  ✓
+  simple                                 7µs  ✓
+  variables                             10µs  ✓
 
-── Semantic Layer ────────────────────────────
-  check_borrow                         613µs  PASS
-  type_mismatch_invalid                 95µs  PASS
-  check_simple                          96µs  PASS
+──────────────────────────────────────────
+Semantic
+──────────────────────────────────────────
+  check_borrow                         630µs  ✓
+  type_mismatch_invalid                117µs  ✓
+  check_simple                         111µs  ✓
 
-── Codegen Layer ────────────────────────────
-  simple                                82µs  PASS
-  branching                            133µs  PASS
-  calls                                139µs  PASS
+──────────────────────────────────────────
+Code Generation
+──────────────────────────────────────────
+  simple                                96µs  ✓
+  branching                            123µs  ✓
+  calls                                132µs  ✓
 
-── Runtime Layer ────────────────────────────
-  none                                0ms  PASS
-  while_loop                          0ms  PASS
-  result                              0ms  PASS
-  math                                0ms  PASS
-  move                                0ms  PASS
-  struct                              0ms  PASS
-  foreach                             0ms  PASS
-  for_loop                            0ms  PASS
-  loop                                0ms  PASS
-  path                                0ms  PASS
-  channel                             0ms  PASS
-  comparison                          0ms  PASS
-  parse_int                           0ms  PASS
-  extend                              0ms  PASS
-  env                                 0ms  PASS
-  match                               0ms  PASS
-  enum                                0ms  PASS
-  impl                                0ms  PASS
-  prime                               0ms  PASS
-  sleep                               1ms  PASS
-  json                                0ms  PASS
-  strings                             0ms  PASS
-  io                                  0ms  PASS
-  defer                               0ms  PASS
-  fs                                  0ms  PASS
-  option                              0ms  PASS
-  borrow                              0ms  PASS
-  match_payload                       0ms  PASS
-  ref_ptr                             0ms  PASS
-  path_full                           0ms  PASS
-  to_string                           0ms  PASS
-  fib                                 0ms  PASS
-  string_slice                        0ms  PASS
-  string                              0ms  PASS
-  throw                               0ms  PASS
-  fs_full                             0ms  PASS
-  env_full                            0ms  PASS
-  if_else                             0ms  PASS
-  arithmetic                          0ms  PASS
-  method                              0ms  PASS
-  spawn                               0ms  PASS
-  functions                           0ms  PASS
-  try_catch                           0ms  PASS
-  process                             0ms  PASS
-  variables                           0ms  PASS
-  serve                               0ms  PASS
-  ai                                  0ms  PASS
-  os                                  0ms  PASS
-  crypto                              0ms  PASS
-  collections                         0ms  PASS
-  timing                              0ms  PASS
-  iterator                            0ms  PASS
-  compress                            0ms  PASS
-  import                              0ms  PASS
-  log                                 0ms  PASS
-  std_string_patch                    0ms  PASS
-  std_more_patches                    0ms  PASS
-  opt                                 0ms  PASS
-  async                               0ms  PASS
-  std_namespace_api                   0ms  PASS
-  http_full                           0ms  PASS
-  backend                             0ms  PASS
-  std_fs_patch                        4ms  PASS
-  toolchain                           0ms  PASS
-  collections_structs                 0ms  PASS
-  iterator_chain                      0ms  PASS
-  os_queries                          0ms  PASS
-  ai_chat                             0ms  PASS
-  compress_crypto                     0ms  PASS
-  log_info                            0ms  PASS
-  json_stringify                      0ms  PASS
-  expression_eval                     0ms  PASS
-  statistics                          0ms  PASS
-  todo_cli                            0ms  PASS
-  (link 439ms, run 853ms)
+──────────────────────────────────────────
+Runtime
+──────────────────────────────────────────
+  none                                1ms  ✓
+  while_loop                          1ms  ✓
+  test_discovery                      1ms  ✓
+  result                              1ms  ✓
+  math                                1ms  ✓
+  move                                2ms  ✓
+  struct                              1ms  ✓
+  foreach                             1ms  ✓
+  for_loop                            1ms  ✓
+  loop                                1ms  ✓
+  path                                0ms  ✓
+  channel                             0ms  ✓
+  comparison                          0ms  ✓
+  parse_int                           0ms  ✓
+  extend                              0ms  ✓
+  env                                 0ms  ✓
+  match                               0ms  ✓
+  enum                                0ms  ✓
+  impl                                0ms  ✓
+  prime                               0ms  ✓
+  sleep                               1ms  ✓
+  json                                0ms  ✓
+  strings                             0ms  ✓
+  io                                  0ms  ✓
+  defer                               0ms  ✓
+  fs                                  0ms  ✓
+  option                              0ms  ✓
+  test_keyword                        0ms  ✓
+  borrow                              0ms  ✓
+  match_payload                       0ms  ✓
+  ref_ptr                             0ms  ✓
+  path_full                           0ms  ✓
+  to_string                           0ms  ✓
+  fib                                 0ms  ✓
+  string_slice                        0ms  ✓
+  string                              0ms  ✓
+  throw                               0ms  ✓
+  fs_full                             0ms  ✓
+  env_full                            0ms  ✓
+  if_else                             0ms  ✓
+  arithmetic                          0ms  ✓
+  method                              0ms  ✓
+  spawn                               0ms  ✓
+  functions                           0ms  ✓
+  try_catch                           0ms  ✓
+  process                             0ms  ✓
+  variables                           0ms  ✓
+  serve                               0ms  ✓
+  ai                                  0ms  ✓
+  os                                  0ms  ✓
+  crypto                              0ms  ✓
+  collections                         0ms  ✓
+  timing                              0ms  ✓
+  iterator                            0ms  ✓
+  compress                            0ms  ✓
+  import                              0ms  ✓
+  log                                 0ms  ✓
+  std_string_patch                    0ms  ✓
+  std_more_patches                    0ms  ✓
+  opt                                 0ms  ✓
+  async                               0ms  ✓
+  std_namespace_api                   0ms  ✓
+  http_full                           0ms  ✓
+  backend                             0ms  ✓
+  std_fs_patch                        6ms  ✓
+  toolchain                           0ms  ✓
+  collections_structs                 0ms  ✓
+  iterator_chain                      0ms  ✓
+  os_queries                          0ms  ✓
+  ai_chat                             0ms  ✓
+  compress_crypto                     0ms  ✓
+  log_info                            0ms  ✓
+  json_stringify                      0ms  ✓
+  expression_eval                     0ms  ✓
+  statistics                          0ms  ✓
+  todo_cli                            0ms  ✓
+  test_discovery::fail test           0ms  ✓
+  test_discovery::pass                0ms  ✓
+  test_keyword::expression            0ms  ✓
+  test_keyword::comparison            0ms  ✓
+  test_keyword::addition works        0ms  ✓
+  (link 402ms, run 678ms)
 
-=========================================
-  Results
------------------------------------------
-  Parse           3/  3  passed
-  Semantic        3/  3  passed
-  Codegen         3/  3  passed
-  Runtime        74/ 74  passed
------------------------------------------
-  Total          83/ 83  (100%)
-  Commit        f635721
-  Version       0.1.0-alpha
+──────────────────────────────────────────
+Summary
+──────────────────────────────────────────
+  Tests       90
+  Passed      90  ✓
+  Failed      0  
+  Pass Rate   100%
+  Commit      98c5d22
+  Version     0.1.0-alpha
+  Backend     AIR → C
+
+  ✓ ALL TESTS PASSED
 =========================================
 

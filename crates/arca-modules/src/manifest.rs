@@ -23,6 +23,7 @@ pub struct PackageManifest {
     pub package: PackageMetadata,
     pub language: LanguageConfig,
     pub dependencies: HashMap<String, String>,
+    pub workspace: Option<Vec<String>>,
 }
 
 impl PackageManifest {
@@ -31,6 +32,7 @@ impl PackageManifest {
         let mut version = "0.1.0".to_string();
         let mut edition = "2026".to_string();
         let mut dependencies = HashMap::new();
+        let mut workspace: Option<Vec<String>> = None;
 
         let mut lang_version = "1.0".to_string();
         let capabilities = vec!["ffi".to_string(), "comptime".to_string(), "actors".to_string()];
@@ -59,17 +61,28 @@ impl PackageManifest {
                         "edition" => edition = v.to_string(),
                         _ => {}
                     },
-                    "language" => match k {
-                        "version" => lang_version = v.to_string(),
-                        _ => {}
-                    },
-                    "dependencies" => {
-                        dependencies.insert(k.to_string(), v.to_string());
-                    }
-                    _ => {}
-                }
-            }
-        }
+                     "language" => match k {
+                         "version" => lang_version = v.to_string(),
+                         _ => {}
+                     },
+                     "dependencies" => {
+                         dependencies.insert(k.to_string(), v.to_string());
+                     }
+                     "workspace" => match k {
+                         "members" => {
+                             workspace = Some(
+                                 v.split(',')
+                                     .map(|s| s.trim().trim_matches('"').to_string())
+                                     .filter(|s| !s.is_empty())
+                                     .collect(),
+                             );
+                         }
+                         _ => {}
+                     }
+                     _ => {}
+                 }
+             }
+         }
 
         if name.is_empty() {
             return Err("Missing required field 'name' in [package] section of Arca.toml".to_string());
@@ -86,6 +99,7 @@ impl PackageManifest {
                 capabilities,
             },
             dependencies,
+            workspace,
         })
     }
 

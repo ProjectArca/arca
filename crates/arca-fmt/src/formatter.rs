@@ -8,7 +8,7 @@ pub struct ArcaFormatter {
 
 impl ArcaFormatter {
     pub fn new() -> Self {
-        Self { indent_size: 2 }
+        Self { indent_size: 4 }
     }
 
     pub fn format_source<S: AsRef<str>>(&self, source: S) -> String {
@@ -27,9 +27,10 @@ impl ArcaFormatter {
 
             match &token.kind {
                 TokenKind::OpenBrace => {
-                    if !out.ends_with(' ') && !out.ends_with('\n') && !at_line_start {
-                        out.push(' ');
+                    if !out.ends_with('\n') && !at_line_start {
+                        out.push('\n');
                     }
+                    out.push_str(&" ".repeat(indent_level * self.indent_size));
                     out.push('{');
                     out.push('\n');
                     indent_level += 1;

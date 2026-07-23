@@ -639,6 +639,10 @@ fn main() {
             let target = if args.len() >= 3 { &args[2] } else { "." };
             handle_bench(target);
         }
+        "workspace" => {
+            let target = if args.len() >= 3 { &args[2] } else { "." };
+            handle_workspace(target);
+        }
         "new" => {
             if args.len() < 3 {
                 eprintln!("Error: 'arca new' requires a package name argument.");
@@ -806,6 +810,27 @@ fn handle_bench(target: &str) {
     fs::remove_file(r_path).ok();
     for o in &object_files { fs::remove_file(o).ok(); }
     fs::remove_file(binary).ok();
+}
+
+fn handle_workspace(dir: &str) {
+    println!("[arca-workspace] Scanning workspace at '{}'...", dir);
+
+    match arca_modules::PackageManifest::load_from_dir(dir) {
+        Ok(manifest) => {
+            println!("[arca-workspace] Package: {} v{}", manifest.package.name, manifest.package.version);
+            if let Some(members) = &manifest.workspace {
+                println!("[arca-workspace] Workspace members ({}):", members.len());
+                for member in members {
+                    println!("  - {}", member);
+                }
+            } else {
+                println!("[arca-workspace] No workspace members defined");
+            }
+        }
+        Err(e) => {
+            eprintln!("[arca-workspace] Error: {}", e);
+        }
+    }
 }
 
 fn handle_lsp() {

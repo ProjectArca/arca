@@ -116,4 +116,63 @@ impl PackageManager {
             manifest.package.name, manifest.package.version
         ))
     }
+
+    pub fn resolve_dependencies<P: AsRef<Path>>(&self, dir: P) -> Result<Vec<(String, String)>, String> {
+        let manifest = PackageManifest::load_from_dir(&dir)?;
+        let mut resolved = Vec::new();
+
+        for (name, constraint) in &manifest.dependencies {
+            let version = resolve_version_constraint(constraint);
+            resolved.push((name.clone(), version));
+        }
+
+        Ok(resolved)
+    }
+}
+
+fn resolve_version_constraint(constraint: &str) -> String {
+    // Simple version constraint resolver
+    // Supports: "1.0.0", "^1.0.0", "~1.0.0", ">=1.0.0", ">1.0.0", "<=1.0.0", "<1.0.0"
+    let constraint = constraint.trim();
+    if constraint.starts_with('^') {
+        // Caret: ^1.0.0 -> >=1.0.0 <2.0.0
+        let base = constraint.trim_start_matches('^');
+        format!(">={},<{}", base, increment_major(base))
+    } else if constraint.starts_with('~') {
+        // Tilde: ~1.0.0 -> >=1.0.0 <1.1.0
+        let base = constraint.trim_start_matches('~');
+        format!(">={},<{}", base, increment_minor(base))
+    } else if constraint.starts_with(">=") {
+        constraint.to_string()
+    } else if constraint.starts_with('>') {
+        constraint.to_string()
+    } else if constraint.starts_with("<=") {
+        constraint.to_string()
+    } else if constraint.starts_with('<') {
+        constraint.to_string()
+    } else {
+        // Exact version
+        constraint.to_string()
+    }
+}
+
+fn increment_major(v: &str) -> String {
+    let parts: Vec<&str> = v.split('.').collect();
+    if parts.len() >= 1 {
+        let major: u32 = parts[0].parse().unwrap_or(0);
+        format!("{}.0.0", major + 1)
+    } else {
+        "2.0.0".to_string()
+    }
+}
+
+fn increment_minor(v: &str) -> String {
+    let parts: Vec<&str> = v.split('.').collect();
+    if parts.len() >= 2 {
+        let major: u32 = parts[0].parse().unwrap_or(0);
+        let minor: u32 = parts[1].parse().unwrap_or(0);
+        format!("{}.{}.0", major, minor + 1)
+    } else {
+        "1.1.0".to_string()
+    }
 }
