@@ -318,7 +318,7 @@ impl CodeGenerator {
             let safe = name.replace('.', "_");
             // Skip prefix for internal __arca_* functions
             let safe_name = if name == "main" { self.p("arca_main") }
-                          else if name.starts_with("__") { safe.clone() }
+                          else if name.starts_with("__arca_") { safe.clone() }
                           else { self.p(&safe) };
             let ret = self.type_to_c(&func.return_type);
             let mut d = format!("{} {}(", ret, safe_name);
@@ -402,7 +402,7 @@ impl CodeGenerator {
 
         let safe_name = name.replace('.', "_");
         let safe_name = if name == "main" { self.p("arca_main") }
-                      else if name.starts_with("__") { safe_name }
+                      else if name.starts_with("__arca_") { safe_name }
                       else { self.p(&safe_name) };
         let ret_c = self.type_to_c(&func.return_type);
 
@@ -1275,7 +1275,7 @@ impl CodeGenerator {
             }
             _ => {
                 let safe_name = fn_name.replace('.', "_");
-                let call_name = if fn_name.starts_with("__") { safe_name.clone() }
+                let call_name = if fn_name.starts_with("__arca_") { safe_name.clone() }
                     else if self.module_fns.contains_key(fn_name) { self.p(&safe_name) }
                     else { safe_name.clone() };
                 let pre = target.and_then(|t| self.var_names.get(&t).cloned()).map(|n| format!("{} = ", n)).unwrap_or_default();

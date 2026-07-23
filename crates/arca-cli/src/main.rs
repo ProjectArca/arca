@@ -763,6 +763,8 @@ fn handle_test(target: &str, filter: &str) {
     let mut r_pass = 0; let mut r_fail = 0;
     let mut object_files: Vec<String> = Vec::new();
     let mut test_names: Vec<String> = Vec::new();
+    let mut discovered_tests: Vec<(String, String)> = Vec::new(); // (test_fn_name, display_name)
+    let mut discovered_benches: Vec<(String, String)> = Vec::new();
 
     // Phase 1: compile each test to prefixed C → .o
     for dir in &rt_dirs {
@@ -779,6 +781,34 @@ fn handle_test(target: &str, filter: &str) {
                             // Strip int main(...) block — runner provides its own main
                             if let Some(main_pos) = c_code.find("int main(int argc, char** argv)") {
                                 c_code.truncate(main_pos);
+                            }
+
+                            // Discover __test_* functions in the C code
+                            let prefix = format!("test_{}___test_", safe);
+                            let mut search_pos = 0;
+                            while let Some(pos) = c_code[search_pos..].find(&prefix) {
+                                let start = search_pos + pos + prefix.len();
+                                let end = c_code[start..].find('(').unwrap_or(0);
+                                if end > 0 {
+                                    let test_fn = format!("test_{}___test_{}", safe, &c_code[start..start + end]);
+                                    let display = &c_code[start..start + end].replace('_', " ");
+                                    discovered_tests.push((test_fn, format!("{}::{}", name, display)));
+                                }
+                                search_pos = start + end;
+                            }
+
+                            // Discover __bench_* functions
+                            let bprefix = format!("test_{}___bench_", safe);
+                            let mut bpos = 0;
+                            while let Some(pos) = c_code[bpos..].find(&bprefix) {
+                                let start = bpos + pos + bprefix.len();
+                                let end = c_code[start..].find('(').unwrap_or(0);
+                                if end > 0 {
+                                    let bench_fn = format!("test_{}___bench_{}", safe, &c_code[start..start + end]);
+                                    let display = &c_code[start..start + end].replace('_', " ");
+                                    discovered_benches.push((bench_fn, format!("{}::{}", name, display)));
+                                }
+                                bpos = start + end;
                             }
                             let c_path = format!("build/t_{}.c", safe);
                             let o_path = format!("build/t_{}.o", safe);
@@ -815,27 +845,45 @@ fn handle_test(target: &str, filter: &str) {
              #include <time.h>\n\n");
 
         // Forward declarations for each test
+        // Combine file tests + discovered __test__/__bench__ functions
+        let mut all_names: Vec<String> = test_names.clone();
+        let mut all_fns: Vec<String> = Vec::new();
         for name in &test_names {
             let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
-            runner.push_str(&format!("void test_{}_arca_main(void);\n", safe));
+            all_fns.push(format!("test_{}_arca_main", safe));
+        }
+        // Discovered tests go in a separate layer (after file tests)
+        let layer_test_start = all_names.len();
+        for (fn_name, display) in &discovered_tests {
+            all_names.push(display.clone());
+            all_fns.push(fn_name.clone());
+        }
+        // TODO: bench in a separate section with timing
+
+        // Forward declarations
+        for (i, _name) in all_names.iter().enumerate() {
+            let safe_fn = &all_fns[i];
+            if safe_fn.starts_with("test_") && safe_fn.ends_with("_arca_main") {
+                runner.push_str(&format!("void {}();\n", safe_fn));
+            } else {
+                runner.push_str(&format!("void {}();\n", safe_fn));
+            }
         }
         runner.push('\n');
 
-        runner.push_str(&format!("const char* test_names[{}] = {{\n", test_names.len()));
-        for name in &test_names { runner.push_str(&format!("  \"{}\",\n", name)); }
+        runner.push_str(&format!("const char* test_names[{}] = {{\n", all_names.len()));
+        for name in &all_names { runner.push_str(&format!("  \"{}\",\n", name)); }
         runner.push_str("};\n\n");
 
-        runner.push_str(&format!("void (*test_fns[{}])() = {{\n", test_names.len()));
-        for name in &test_names {
-            let safe = name.replace(|c: char| !c.is_alphanumeric(), "_");
-            runner.push_str(&format!("  test_{}_arca_main,\n", safe));
-        }
+        runner.push_str(&format!("void (*test_fns[{}])() = {{\n", all_fns.len()));
+        for fn_name in &all_fns { runner.push_str(&format!("  {},\n", fn_name)); }
         runner.push_str("};\n\n");
 
         runner.push_str(&format!(
             "int main() {{\n\
                int n = {};\n\
                int pass = 0, fail = 0;\n\
+               // Phase 1: Runtime file tests\n\
                for (int i = 0; i < n; i++) {{\n\
                  struct timespec t0, t1;\n\
                  clock_gettime(CLOCK_MONOTONIC, &t0);\n\
@@ -847,15 +895,25 @@ fn handle_test(target: &str, filter: &str) {
                  clock_gettime(CLOCK_MONOTONIC, &t1);\n\
                  long ms = (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_nsec - t0.tv_nsec) / 1000000;\n\
                  int has_err = strstr(buf, \"error:\") != NULL;\n\
-                 if (ms < 1000)\n\
-                   printf(\"  %-35s %ldms  %s\\n\", test_names[i], ms, has_err ? \"✗\" : \"✓\");\n\
-                 else\n\
-                   printf(\"  %-35s %ld.%lds  %s\\n\", test_names[i], ms/1000, (ms%1000)/100, has_err ? \"✗\" : \"✓\");\n\
+                  if (ms < 1000)\n\
+                    printf(\"  %-35s %ldms  %s\\n\", test_names[i], ms, has_err ? \"✗\" : \"✓\");\n\
+                  else\n\
+                    printf(\"  %-35s %ld.%lds  %s\\n\", test_names[i], ms/1000, (ms%1000)/100, has_err ? \"✗\" : \"✓\");\n\
                  if (has_err) fail++; else pass++;\n\
                }}\n\
-               printf(\"---\\nRuntime layer: %d passed, %d failed out of %d tests\\n\", pass, fail, n);\n\
-               return fail > 0;\n\
-             }}\n", test_names.len()));
+                // Phase 2: Discovered tests\n\
+               for (int i = {}; i < n; i++) {{\n\
+                  printf(\"  %-35s \\n\", test_names[i]); fflush(stdout);\n\
+                 int p[2]; pipe(p);\n\
+                 if (fork() == 0) {{ close(p[0]); dup2(p[1], 1); close(p[1]); test_fns[i](); _exit(0); }}\n\
+                 close(p[1]);\n\
+                 char buf[65536]; int nr = read(p[0], buf, sizeof(buf)-1); buf[nr] = 0;\n\
+                 waitpid(-1, NULL, 0);\n\
+                 int has_err = strstr(buf, \"error:\") != NULL;\n\
+                  printf(\"  %s\\n\", has_err ? \"✗\" : \"✓\");\n\
+                  if (has_err) fail++; else pass++;\n\
+                }}\n\
+               }}\n", all_names.len(), layer_test_start));
 
         let r_path = "build/runner.c";
         let binary = "build/test_bundle";

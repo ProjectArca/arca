@@ -1,0 +1,12 @@
+// Test: test keyword discovery and assertion API
+fn main() {
+  println(0)
+}
+
+test "pass" {
+  expect(42).to_be(42)
+}
+
+test "fail test" {
+  expect(1 + 1).to_be(2)
+}
