@@ -638,6 +638,12 @@ fn compile_and_run(source: &str, target: &str) -> Result<String, String> {
     }
 }
 
+fn fmt_dur(us: u128) -> String {
+    if us < 1000 { format!("{}µs", us) }
+    else if us < 1_000_000 { format!("{}ms", us / 1000) }
+    else { let s = us / 1_000_000; let d = (us % 1_000_000) / 100_000; format!("{}.{}s", s, d) }
+}
+
 fn handle_test(target: &str) {
     println!("\n=========================================");
     println!("  Arca Test Suite v{}", ARCA_VERSION);
@@ -668,10 +674,10 @@ fn handle_test(target: &str) {
                 let mut parser = Parser::new(lexer).with_file(&*path.to_string_lossy());
                 let _ = parser.parse_program();
                 let errors = parser.diagnostics().len();
-                let ms = start.elapsed().as_millis();
+                let us = start.elapsed().as_micros();
                 let ok = errors == 0;
                 if ok { p_pass += 1; } else { p_fail += 1; }
-                println!("  {:35} {:4}ms  {}", name, ms, if ok { "PASS" } else { "FAIL" });
+                println!("  {:35} {:>6}  {}", name, fmt_dur(us), if ok { "PASS" } else { "FAIL" });
             }
         }
     }
@@ -688,7 +694,7 @@ fn handle_test(target: &str) {
                 let source = fs::read_to_string(&path).unwrap_or_default();
                 let start = Instant::now();
                 let result = compile_arca_to_c(&source, &path.to_string_lossy());
-                let ms = start.elapsed().as_millis();
+                let us = start.elapsed().as_micros();
                 let expects_fail = name.ends_with("_invalid");
                 let passed = match (&result, expects_fail) {
                     (Ok(_), false) => true,
@@ -696,8 +702,8 @@ fn handle_test(target: &str) {
                     _ => false,
                 };
                 if passed { s_pass += 1; } else { s_fail += 1; }
-                println!("  {:35} {:4}ms  {}",
-                    name, ms,
+                println!("  {:35} {:>6}  {}",
+                    name, fmt_dur(us),
                     if passed { "PASS" } else { "FAIL" });
             }
         }
@@ -716,25 +722,30 @@ fn handle_test(target: &str) {
                 let target_str = path.to_string_lossy();
                 let start = Instant::now();
                 let c_result = compile_arca_to_c(&source, &target_str);
-                let ms = start.elapsed().as_millis();
+                let us = start.elapsed().as_micros();
                 let passed = c_result.is_ok();
                 if passed { c_pass += 1; } else { c_fail += 1; }
-                println!("  {:35} {:4}ms  {}",
-                    name, ms,
+                println!("  {:35} {:>6}  {}",
+                    name, fmt_dur(us),
                     if passed { "PASS" } else { "FAIL" });
             }
         }
     }
 
-    // Layer 4: Runtime tests
+    // Layer 4: Runtime tests (per-test compile+link+run in single Rust process)
     println!("\n── Runtime Layer ────────────────────────────");
+
     let rt_dirs = vec![
         format!("{}/runtime/features", target),
         format!("{}/runtime/std-libs", target),
         format!("{}/regression", target),
     ];
+
+    fs::create_dir_all("build").ok();
+    ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+
     let mut r_pass = 0; let mut r_fail = 0;
-    let mut r_times: Vec<u128> = Vec::new();
+
     for dir in &rt_dirs {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
@@ -744,12 +755,12 @@ fn handle_test(target: &str) {
                     let source = fs::read_to_string(&path).unwrap_or_default();
                     let start = Instant::now();
                     let result = compile_and_run(&source, &path.to_string_lossy());
-                    let ms = start.elapsed().as_millis();
-                    r_times.push(ms);
+                    let us = start.elapsed().as_micros();
                     let passed = result.as_ref().map(|o| !o.contains("error:")).unwrap_or(false);
                     if passed { r_pass += 1; } else { r_fail += 1; }
-                    let tag = if passed { "PASS" } else { "FAIL" };
-                    println!("  {:35} {:4}ms  {}", name, ms, tag);
+                    println!("  {:35} {:>6}  {}",
+                        name, fmt_dur(us),
+                        if passed { "PASS" } else { "FAIL" });
                 }
             }
         }
@@ -759,8 +770,6 @@ fn handle_test(target: &str) {
     let total = p_pass + p_fail + s_pass + s_fail + c_pass + c_fail + r_pass + r_fail;
     let passed = p_pass + s_pass + c_pass + r_pass;
     let failed = p_fail + s_fail + c_fail + r_fail;
-    let rt_avg = if !r_times.is_empty() { r_times.iter().sum::<u128>() / r_times.len() as u128 } else { 0 };
-    let rt_total: u128 = r_times.iter().sum();
     let pct = if total > 0 { passed * 100 / total } else { 0 };
 
     println!("\n=========================================");
@@ -772,8 +781,6 @@ fn handle_test(target: &str) {
     println!("  Runtime       {:>3}/{:>3}  passed", r_pass, r_pass + r_fail);
     println!("-----------------------------------------");
     println!("  Total         {:>3}/{:>3}  ({}%)", passed, total, pct);
-    println!("  Runtime avg   {} ms", rt_avg);
-    println!("  Runtime total {} ms", rt_total);
     if !commit.is_empty() {
         println!("  Commit        {}", commit);
     }
