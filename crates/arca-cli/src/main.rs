@@ -782,7 +782,8 @@ fn handle_test(target: &str) {
             "#include \"arca_runtime.h\"\n\
              #include <string.h>\n\
              #include <unistd.h>\n\
-             #include <sys/wait.h>\n\n");
+             #include <sys/wait.h>\n\
+             #include <time.h>\n\n");
 
         // Forward declarations for each test
         for name in &test_names {
@@ -807,14 +808,21 @@ fn handle_test(target: &str) {
                int n = {};\n\
                int pass = 0, fail = 0;\n\
                for (int i = 0; i < n; i++) {{\n\
-                 printf(\"  %-35s \", test_names[i]); fflush(stdout);\n\
+                 struct timespec t0, t1;\n\
+                 clock_gettime(CLOCK_MONOTONIC, &t0);\n\
                  int p[2]; pipe(p);\n\
                  if (fork() == 0) {{ close(p[0]); dup2(p[1], 1); close(p[1]); test_fns[i](); _exit(0); }}\n\
                  close(p[1]);\n\
                  char buf[65536]; int nr = read(p[0], buf, sizeof(buf)-1); buf[nr] = 0;\n\
                  waitpid(-1, NULL, 0);\n\
-                 printf(\"%s\\n\", strstr(buf, \"error:\") ? \"  FAIL\" : \"  PASS\");\n\
-                 if (strstr(buf, \"error:\")) fail++; else pass++;\n\
+                 clock_gettime(CLOCK_MONOTONIC, &t1);\n\
+                 long ms = (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_nsec - t0.tv_nsec) / 1000000;\n\
+                 int has_err = strstr(buf, \"error:\") != NULL;\n\
+                 if (ms < 1000)\n\
+                   printf(\"  %-35s %ldms  %s\\n\", test_names[i], ms, has_err ? \"FAIL\" : \"PASS\");\n\
+                 else\n\
+                   printf(\"  %-35s %ld.%lds  %s\\n\", test_names[i], ms/1000, (ms%1000)/100, has_err ? \"FAIL\" : \"PASS\");\n\
+                 if (has_err) fail++; else pass++;\n\
                }}\n\
                printf(\"---\\nRuntime layer: %d passed, %d failed out of %d tests\\n\", pass, fail, n);\n\
                return fail > 0;\n\
