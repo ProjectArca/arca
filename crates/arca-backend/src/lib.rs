@@ -344,6 +344,9 @@ impl CodeGenerator {
                             && fn_name != "println" && fn_name != "print"
                             && fn_name != "sqrt" && fn_name != "sin" && fn_name != "cos" && fn_name != "abs"
                             && fn_name != "pow" && fn_name != "rand"
+                            && fn_name != "min" && fn_name != "max" && fn_name != "clamp"
+                            && fn_name != "floor" && fn_name != "ceil" && fn_name != "round"
+                            && fn_name != "log" && fn_name != "exp" && fn_name != "random_range"
                             && fn_name != "sleep" && fn_name != "env_get"
                             && fn_name != "stdin_read_line"
                             && fn_name != "arca_fs_open" && fn_name != "arca_fs_close"
@@ -792,6 +795,56 @@ impl CodeGenerator {
             "rand" => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 self.emit_ln(&format!("{} = (int64_t)rand();", tn));
+            }
+            "log" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)log((double){});", tn, x));
+            }
+            "exp" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)exp((double){});", tn, x));
+            }
+            "min" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let a = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let b = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = {} < {} ? {} : {};", tn, a, b, a, b));
+            }
+            "max" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let a = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let b = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = {} > {} ? {} : {};", tn, a, b, a, b));
+            }
+            "clamp" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let lo = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                let hi = if args.len() > 2 { self.emit_air_value_str(&args[2]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = {} < {} ? {} : ({} > {} ? {} : {});", tn, x, lo, lo, x, hi, hi, x));
+            }
+            "floor" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)floor((double){});", tn, x));
+            }
+            "ceil" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)ceil((double){});", tn, x));
+            }
+            "round" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let x = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)round((double){});", tn, x));
+            }
+            "random_range" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let lo = if args.len() > 0 { self.emit_air_value_str(&args[0]) } else { "0".to_string() };
+                let hi = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (int64_t)({} + (double)rand() / (double)RAND_MAX * (double)({} - {}));", tn, lo, hi, lo));
             }
             "sleep" => {
                 let ms = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "0".to_string() };

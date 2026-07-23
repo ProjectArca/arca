@@ -132,12 +132,31 @@ impl TypeEnv {
             params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
             return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
         };
-        self.functions.insert("pow".into(), math_i64_i64_fn);
+        self.functions.insert("pow".into(), math_i64_i64_fn.clone());
         let math_void_fn = FnType {
             params: Vec::new(),
             return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
         };
         self.functions.insert("rand".into(), math_void_fn);
+
+        // std/math extras
+        let math_i64_i64_i64_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("min".into(), math_i64_i64_fn.clone());
+        self.functions.insert("max".into(), math_i64_i64_fn.clone());
+        self.functions.insert("clamp".into(), math_i64_i64_i64_fn);
+        self.functions.insert("floor".into(), math_i64_fn.clone());
+        self.functions.insert("ceil".into(), math_i64_fn.clone());
+        self.functions.insert("round".into(), math_i64_fn.clone());
+        self.functions.insert("log".into(), math_i64_fn.clone());
+        self.functions.insert("exp".into(), math_i64_fn.clone());
+        let random_range_fn = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("random_range".into(), random_range_fn);
 
         // std/os module
         let string_fn = FnType {

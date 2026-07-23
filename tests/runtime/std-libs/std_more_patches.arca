@@ -1,0 +1,8 @@
+// Patches 3-5, 9-15: math, path, time, process, env, os, crypto
+fn main() {
+  println(min(3, 7))
+  println(max(3, 7))
+  println(clamp(15, 0, 10))
+  println(arch())
+  println(cpu_count())
+}
