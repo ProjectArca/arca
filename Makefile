@@ -1,7 +1,7 @@
 # Arca Project Makefile
 # Commands for building compiler, runtime library, compiling code, running examples, and benchmarking.
 
-.PHONY: all build runtime compile run bench clean help install update test test-all
+.PHONY: all build runtime compile run bench clean help install update test test-all version-patch version-minor version-major
 
 CC ?= cc
 CFLAGS ?= -O3 -flto -march=native
@@ -50,6 +50,22 @@ install: build
 update: build install
 	@echo "[arca] ✅ Update complete!"
 
+# Version bump targets
+VERSION_FILE := crates/arca-cli/src/main.rs
+VERSION_PATTERN := ARCA_VERSION = "
+
+version-patch:
+	@echo "[arca] Bumping patch version..."
+	@./scripts/bump_version.sh patch
+
+version-minor:
+	@echo "[arca] Bumping minor version..."
+	@./scripts/bump_version.sh minor
+
+version-major:
+	@echo "[arca] Bumping major version..."
+	@./scripts/bump_version.sh major
+
 # Compile an Arca source file to native executable
 # Usage: make compile FILE=benchmarks/web_api/server.arca
 compile: build runtime
@@ -91,10 +107,15 @@ help:
 	@echo "Arca Makefile Targets:"
 	@echo "  make build               Build Arca compiler CLI (release mode)"
 	@echo "  make runtime             Build native C runtime static library (libarca_runtime.a)"
-	@echo "  make install             Install arca to ~/.arca/bin (force replaces)"
+	@echo "  make install             Install arca to ~/.arca/bin"
 	@echo "  make update              Build latest and reinstall"
 	@echo "  make compile FILE=<path> Compile an Arca source file to native executable"
 	@echo "  make run FILE=<path>    Compile and execute an Arca source file"
 	@echo "  make bench              Run full benchmark suite (Arca vs Rust vs Go vs Bun)"
 	@echo "  make test               Run Arca test suite"
-	@echo "  make clean              Clean build directory and temporary binaries"
+	@echo ""
+	@echo "  make version-patch       Bump patch (0.1.0 → 0.1.1)"
+	@echo "  make version-minor       Bump minor (0.1.0 → 0.2.0)"
+	@echo "  make version-major       Bump major (0.1.0 → 1.0.0)"
+	@echo ""
+	@echo "  make clean               Clean build directory and temporary binaries"

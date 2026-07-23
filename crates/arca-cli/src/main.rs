@@ -15,7 +15,7 @@ use std::path::Path;
 use std::process;
 use std::time::{Duration, Instant};
 
-const ARCA_VERSION: &str = "0.1.0-alpha";
+const ARCA_VERSION = "1.0.10-alpha";
 
 
 
