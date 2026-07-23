@@ -13,6 +13,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::process;
+use std::time::Instant;
 
 const ARCA_VERSION: &str = "0.1.0-alpha";
 
@@ -462,95 +463,23 @@ fn main() {
                 process::exit(1);
             }
             let target = &args[2];
-
             let source = fs::read_to_string(target).unwrap_or_else(|e| {
                 eprintln!("Error: failed to read '{}': {}", target, e);
                 process::exit(1);
             });
-
-            let lexer = Lexer::new(&source);
-            let mut parser = Parser::new(lexer).with_file(target);
-            let program = parser.parse_program();
-            if !parser.diagnostics().is_empty() {
-                for diag in parser.diagnostics() { eprintln!("{}", diag.render(Some(&source))); }
-                process::exit(1);
-            }
-
-            let lowerer = Lowerer::new();
-            let hir = lowerer.lower_program(&program);
-
-            let mut type_checker = TypeChecker::new();
-            let mut diags = type_checker.check_program(&hir);
-            let mut borrow_checker = arca_borrowck::BorrowChecker::new();
-            diags.extend(borrow_checker.check_program(&hir));
-            if !diags.is_empty() {
-                for diag in &diags { eprintln!("{}", diag.render(Some(&source))); }
-                process::exit(1);
-            }
-
-            let mut air_builder = AirBuilder::new();
-            let air_module = air_builder.build_module(&hir);
-            let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
-            let c_code = cg.generate_c_from_air(&air_module);
-            let pid = std::process::id();
-            let c_path = format!("build/output_{}.c", pid);
-            let bin_path = format!("build/output_{}", pid);
-            fs::create_dir_all("build").ok();
-            fs::write(&c_path, &c_code).ok();
-
-            fs::create_dir_all("build").ok();
-            let runtime_o = "build/arca_runtime.o";
-            let http_o = "build/http.o";
-            let compile_o = |src: &str, out: &str| {
-                let src_mtime = std::fs::metadata(src).and_then(|m| m.modified()).ok();
-                let out_mtime = std::fs::metadata(out).and_then(|m| m.modified()).ok();
-                if src_mtime.map_or(true, |s| out_mtime.map_or(true, |o| s > o)) {
-                    std::process::Command::new("cc")
-                        .args(&["-O3", "-c", src, "-o", out, "-I", "library/runtime"])
-                        .status().ok();
-                }
-            };
-            compile_o("library/runtime/arca_runtime.c", runtime_o);
-            compile_o("library/net/http.c", http_o);
-
-            // Compile generated C to .o (fast, no optimization), then link
-            let gen_o = format!("{}_gen.o", c_path);
-            std::process::Command::new("cc")
-                .args(&["-c", &c_path, "-o", &gen_o, "-I", "library/runtime"])
-                .status().ok();
-            let status = std::process::Command::new("cc")
-                .args(&["-o", &bin_path, &gen_o, runtime_o, http_o])
-                .status();
-            match status {
-                Ok(s) if s.success() => {
-                    println!("[arca] Running: {}", target);
-                    let run_status = std::process::Command::new(&bin_path).status();
-                    fs::remove_file(&c_path).ok();
-                    fs::remove_file(&bin_path).ok();
-                    match run_status {
-                        Ok(rs) if rs.success() => {}
-                        Ok(rs) => eprintln!("[arca] Program exited with code: {}", rs),
-                        Err(e) => eprintln!("[arca] Failed to run program: {}", e),
-                    }
-                }
-                Ok(s) => {
-                    fs::remove_file(&c_path).ok();
-                    fs::remove_file(&bin_path).ok();
-                    eprintln!("[arca] C compilation failed with code: {}", s);
-                    process::exit(1);
+            match compile_and_run(&source, target) {
+                Ok(out) => {
+                    print!("{}", out);
                 }
                 Err(e) => {
-                    fs::remove_file(&c_path).ok();
-                    fs::remove_file(&bin_path).ok();
-                    eprintln!("[arca] Failed to invoke C compiler 'cc': {}", e);
-                    eprintln!("       Install clang or gcc to run Arca programs.");
+                    eprintln!("{}", e);
                     process::exit(1);
                 }
             }
         }
         "test" => {
-            let target = if args.len() >= 3 { &args[2] } else { "." };
-            println!("[arca] Running test suite: {}", target);
+            let target = if args.len() >= 3 { &args[2] } else { "tests" };
+            handle_test(target);
         }
         "fmt" => {
             let target = if args.len() >= 3 { &args[2] } else { "." };
@@ -622,4 +551,234 @@ fn handle_fmt(target: &str) {
         eprintln!("[arca] Target path '{}' does not exist.", target);
         process::exit(1);
     }
+}
+
+fn ensure_runtime_o(runtime_o: &str, http_o: &str) {
+    let check = |src: &str, out: &str| {
+        let src_mtime = fs::metadata(src).and_then(|m| m.modified()).ok();
+        let out_mtime = fs::metadata(out).and_then(|m| m.modified()).ok();
+        if src_mtime.map_or(true, |s| out_mtime.map_or(true, |o| s > o)) {
+            std::process::Command::new("cc")
+                .args(&["-O3", "-c", src, "-o", out, "-I", "library/runtime"])
+                .status().ok();
+        }
+    };
+    check("library/runtime/arca_runtime.c", runtime_o);
+    check("library/net/http.c", http_o);
+}
+
+fn compile_arca_to_c(source: &str, target: &str) -> Result<String, String> {
+    let lexer = Lexer::new(source);
+    let mut parser = Parser::new(lexer).with_file(target);
+    let program = parser.parse_program();
+    if !parser.diagnostics().is_empty() {
+        let mut msg = String::new();
+        for d in parser.diagnostics() { msg.push_str(&d.render(Some(source))); }
+        return Err(msg);
+    }
+    let lowerer = Lowerer::new();
+    let hir = lowerer.lower_program(&program);
+    let mut type_checker = TypeChecker::new();
+    let mut diags = type_checker.check_program(&hir);
+    let mut borrow_checker = arca_borrowck::BorrowChecker::new();
+    diags.extend(borrow_checker.check_program(&hir));
+    if !diags.is_empty() {
+        let mut msg = String::new();
+        for d in &diags { msg.push_str(&d.render(Some(source))); }
+        return Err(msg);
+    }
+    let mut air_builder = AirBuilder::new();
+    let air_module = air_builder.build_module(&hir);
+    let mut cg = CodeGenerator::new(BackendKind::C, TargetArch::Arm64);
+    Ok(cg.generate_c_from_air(&air_module))
+}
+
+fn compile_and_run(source: &str, target: &str) -> Result<String, String> {
+    let c_code = compile_arca_to_c(source, target)?;
+    let pid = process::id();
+    let c_path = format!("build/output_{}.c", pid);
+    let bin_path = format!("build/output_{}", pid);
+    let gen_o = format!("{}_gen.o", c_path);
+    fs::create_dir_all("build").ok();
+    fs::write(&c_path, &c_code).ok();
+    ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+
+    std::process::Command::new("cc")
+        .args(&["-c", &c_path, "-o", &gen_o, "-I", "library/runtime"])
+        .status().ok();
+    let status = std::process::Command::new("cc")
+        .args(&["-o", &bin_path, &gen_o, "build/arca_runtime.o", "build/http.o"])
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            let output = std::process::Command::new(&bin_path).output();
+            fs::remove_file(&c_path).ok();
+            fs::remove_file(&gen_o).ok();
+            fs::remove_file(&bin_path).ok();
+            match output {
+                Ok(out) => {
+                    let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                    let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+                    Ok(if stderr.is_empty() { stdout } else { format!("{}{}", stdout, stderr) })
+                }
+                Err(e) => Err(format!("Failed to run program: {}", e)),
+            }
+        }
+        Ok(s) => {
+            fs::remove_file(&c_path).ok();
+            fs::remove_file(&gen_o).ok();
+            Err(format!("C compilation failed with code: {}", s))
+        }
+        Err(e) => {
+            fs::remove_file(&c_path).ok();
+            fs::remove_file(&gen_o).ok();
+            Err(format!("Failed to invoke C compiler 'cc': {}", e))
+        }
+    }
+}
+
+fn handle_test(target: &str) {
+    println!("\n=========================================");
+    println!("  Arca Test Suite v{}", ARCA_VERSION);
+    println!("=========================================\n");
+
+    let commit = process::Command::new("git")
+        .args(&["rev-parse", "--short", "HEAD"])
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default();
+
+    ensure_runtime_o("build/arca_runtime.o", "build/http.o");
+
+    // Layer 1: Parse tests
+    println!("── Parse Layer ───────────────────────────────");
+    let parse_dir = format!("{}/parse", target);
+    let mut p_pass = 0; let mut p_fail = 0;
+    if let Ok(entries) = fs::read_dir(&parse_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "arca") {
+                let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                let source = fs::read_to_string(&path).unwrap_or_default();
+                let start = Instant::now();
+                let lexer = Lexer::new(&source);
+                let mut parser = Parser::new(lexer).with_file(&*path.to_string_lossy());
+                let _ = parser.parse_program();
+                let errors = parser.diagnostics().len();
+                let ms = start.elapsed().as_millis();
+                let ok = errors == 0;
+                if ok { p_pass += 1; } else { p_fail += 1; }
+                println!("  {:35} {:4}ms  {}", name, ms, if ok { "PASS" } else { "FAIL" });
+            }
+        }
+    }
+
+    // Layer 2: Semantic tests
+    println!("\n── Semantic Layer ────────────────────────────");
+    let sem_dir = format!("{}/semantic", target);
+    let mut s_pass = 0; let mut s_fail = 0;
+    if let Ok(entries) = fs::read_dir(&sem_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "arca") {
+                let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                let source = fs::read_to_string(&path).unwrap_or_default();
+                let start = Instant::now();
+                let result = compile_arca_to_c(&source, &path.to_string_lossy());
+                let ms = start.elapsed().as_millis();
+                let expects_fail = name.ends_with("_invalid");
+                let passed = match (&result, expects_fail) {
+                    (Ok(_), false) => true,
+                    (Err(_), true) => true,
+                    _ => false,
+                };
+                if passed { s_pass += 1; } else { s_fail += 1; }
+                println!("  {:35} {:4}ms  {}",
+                    name, ms,
+                    if passed { "PASS" } else { "FAIL" });
+            }
+        }
+    }
+
+    // Layer 3: Codegen tests
+    println!("\n── Codegen Layer ────────────────────────────");
+    let cg_dir = format!("{}/codegen", target);
+    let mut c_pass = 0; let mut c_fail = 0;
+    if let Ok(entries) = fs::read_dir(&cg_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "arca") {
+                let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                let source = fs::read_to_string(&path).unwrap_or_default();
+                let target_str = path.to_string_lossy();
+                let start = Instant::now();
+                let c_result = compile_arca_to_c(&source, &target_str);
+                let ms = start.elapsed().as_millis();
+                let passed = c_result.is_ok();
+                if passed { c_pass += 1; } else { c_fail += 1; }
+                println!("  {:35} {:4}ms  {}",
+                    name, ms,
+                    if passed { "PASS" } else { "FAIL" });
+            }
+        }
+    }
+
+    // Layer 4: Runtime tests
+    println!("\n── Runtime Layer ────────────────────────────");
+    let rt_dirs = vec![
+        format!("{}/runtime/features", target),
+        format!("{}/runtime/std-libs", target),
+        format!("{}/regression", target),
+    ];
+    let mut r_pass = 0; let mut r_fail = 0;
+    let mut r_times: Vec<u128> = Vec::new();
+    for dir in &rt_dirs {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().map_or(false, |e| e == "arca") {
+                    let name = path.file_stem().unwrap().to_string_lossy().to_string();
+                    let source = fs::read_to_string(&path).unwrap_or_default();
+                    let start = Instant::now();
+                    let result = compile_and_run(&source, &path.to_string_lossy());
+                    let ms = start.elapsed().as_millis();
+                    r_times.push(ms);
+                    let passed = result.as_ref().map(|o| !o.contains("error:")).unwrap_or(false);
+                    if passed { r_pass += 1; } else { r_fail += 1; }
+                    let tag = if passed { "PASS" } else { "FAIL" };
+                    println!("  {:35} {:4}ms  {}", name, ms, tag);
+                }
+            }
+        }
+    }
+
+    // Summary
+    let total = p_pass + p_fail + s_pass + s_fail + c_pass + c_fail + r_pass + r_fail;
+    let passed = p_pass + s_pass + c_pass + r_pass;
+    let failed = p_fail + s_fail + c_fail + r_fail;
+    let rt_avg = if !r_times.is_empty() { r_times.iter().sum::<u128>() / r_times.len() as u128 } else { 0 };
+    let rt_total: u128 = r_times.iter().sum();
+    let pct = if total > 0 { passed * 100 / total } else { 0 };
+
+    println!("\n=========================================");
+    println!("  Results");
+    println!("-----------------------------------------");
+    println!("  Parse         {:>3}/{:>3}  passed", p_pass, p_pass + p_fail);
+    println!("  Semantic      {:>3}/{:>3}  passed", s_pass, s_pass + s_fail);
+    println!("  Codegen       {:>3}/{:>3}  passed", c_pass, c_pass + c_fail);
+    println!("  Runtime       {:>3}/{:>3}  passed", r_pass, r_pass + r_fail);
+    println!("-----------------------------------------");
+    println!("  Total         {:>3}/{:>3}  ({}%)", passed, total, pct);
+    println!("  Runtime avg   {} ms", rt_avg);
+    println!("  Runtime total {} ms", rt_total);
+    if !commit.is_empty() {
+        println!("  Commit        {}", commit);
+    }
+    println!("  Version       {}", ARCA_VERSION);
+    println!("=========================================\n");
+
+    if failed > 0 { process::exit(1); }
 }

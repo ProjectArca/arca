@@ -1,0 +1,8 @@
+// Regression: arch/cpu_count/env needed backend handlers
+// Expected output:
+// arm64
+// 8
+fn main() {
+  println(arch())
+  println(cpu_count())
+}

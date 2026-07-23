@@ -1,0 +1,8 @@
+// Regression: Iterator method chaining (filter/map/take/skip/collect)
+// Expected output:
+// 0
+fn main() {
+  let it = Iterator { handle: 10 }
+  let res = it.filter(1).map(2).take(5).skip(1).collect()
+  println(res)
+}

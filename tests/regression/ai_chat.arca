@@ -1,0 +1,7 @@
+// Regression: OpenAI.chat method needed backend handler
+// Expected output:
+// {"role":"assistant","content":"[AI Response to: Hello Arca AI]"}
+fn main() {
+  let ai = OpenAI { api_key: "sk-test", model: "gpt-4o" }
+  println(ai.chat("Hello Arca AI"))
+}

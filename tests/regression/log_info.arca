@@ -1,0 +1,6 @@
+// Regression: info/warn/error/debug needed backend handlers
+// Expected output:
+// hello
+fn main() {
+  info("hello")
+}

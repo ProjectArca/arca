@@ -1,0 +1,6 @@
+// Regression: json_stringify returned (int64_t) cast instead of (const char*)
+// Expected output:
+// "hello"
+fn main() {
+  println(json_stringify("hello"))
+}

@@ -1,0 +1,7 @@
+// Regression: Vec/HashMap/etc struct types not registered
+// Expected output:
+// 0
+fn main() {
+  let v = Vec { handle: 0 }
+  println(v.handle)
+}
