@@ -799,7 +799,7 @@ impl AirBuilder {
         }
 
         // ===== PATCH 1: std/string methods =====
-        if is_method("len") {
+        if is_method("len") && !callee_name.contains("Vec.") && !callee_name.contains("File.") {
             let mut new_args = Vec::new();
             if let Some(obj) = method_obj { new_args.push(obj); }
             new_args.extend_from_slice(args);
@@ -867,15 +867,21 @@ impl AirBuilder {
             return ("__arca_str_count".to_string(), new_args);
         }
 
+        // ===== Vec namespace API (for raw handles) — must come before is_method("push") etc =====
+        if callee_name == "Vec.get" { return ("arca_vec_get".to_string(), args.to_vec()); }
+        if callee_name == "Vec.len" { return ("arca_vec_len".to_string(), args.to_vec()); }
+        if callee_name == "Vec.push" { return ("arca_vec_push".to_string(), args.to_vec()); }
+
         // ===== PATCH 2: std/collections methods =====
         // Vec methods: vec.val -> arca_vec_func(vec.handle, ...)
         // But the method_obj is the Vec STRUCT, not the handle.
         // These are handled in the backend's emit_air_call by extracting the handle.
         if is_method("push") { return ("vec_push_m".to_string(), with_obj(args, &method_obj)); }
-        if is_method("pop") { return ("vec_pop_m".to_string(), with_obj(args, &method_obj)); }
-        if is_method("get") { return ("vec_get_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("pop") && !callee_name.contains("Vec.") { return ("vec_pop_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("get") && !callee_name.contains("Vec.") && !callee_name.contains("Router.") && !callee_name.contains("env_get")
+            { return ("vec_get_m".to_string(), with_obj(args, &method_obj)); }
         if is_method("insert") { return ("vec_insert_m".to_string(), with_obj(args, &method_obj)); }
-        if is_method("remove") { return ("vec_remove_m".to_string(), with_obj(args, &method_obj)); }
+        if is_method("remove") && !callee_name.contains("File.") { return ("vec_remove_m".to_string(), with_obj(args, &method_obj)); }
         if is_method("clear") { return ("vec_clear_m".to_string(), with_obj(args, &method_obj)); }
         // Map methods
         if is_method("set") { return ("map_set_m".to_string(), with_obj(args, &method_obj)); }
@@ -919,6 +925,7 @@ impl AirBuilder {
         if callee_name == "File.mkdir" { return ("file_mkdir".to_string(), args.to_vec()); }
         if callee_name == "File.rename" { return ("file_rename".to_string(), args.to_vec()); }
         if callee_name == "File.append" { return ("file_append".to_string(), args.to_vec()); }
+        if callee_name == "File.metadata" { return ("fs_metadata".to_string(), args.to_vec()); }
 
         if callee_name == "Path.join" { return ("path_join".to_string(), args.to_vec()); }
         if callee_name == "Path.parent" { return ("path_parent".to_string(), args.to_vec()); }
@@ -931,6 +938,8 @@ impl AirBuilder {
         if callee_name == "Result.unwrap" { return ("arca_result_unwrap".to_string(), args.to_vec()); }
         if callee_name == "Option.is_some" { return ("arca_option_is_some".to_string(), args.to_vec()); }
         if callee_name == "Option.unwrap" { return ("arca_result_unwrap".to_string(), args.to_vec()); }
+
+        // ===== Vec namespace API (for raw handles) =====
 
         if callee_name == "Channel.new" {
             return ("arca_channel_create".to_string(), args.to_vec());

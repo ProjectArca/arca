@@ -1,10 +1,10 @@
 // Test: std/fs — exists, remove
 // Expected output:
 // 0
-// 0
+// -1
 fn main() {
-  let e = fs_exists("/tmp/nonexistent_file_arca")
+  let e = File.exists("/tmp/nonexistent_file_arca")
   println(e)
-  let r = fs_remove("/tmp/nonexistent_file_arca")
+  let r = File.remove("/tmp/nonexistent_file_arca")
   println(r)
 }

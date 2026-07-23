@@ -201,6 +201,10 @@ impl TypeEnv {
         self.functions.insert("File.mkdir".into(), string_to_i32.clone());
         self.functions.insert("File.rename".into(), string_string_to_i32.clone());
         self.functions.insert("File.append".into(), string_string_to_i32.clone());
+        self.functions.insert("File.metadata".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
 
         // Namespaced API: Path.*
         self.functions.insert("Path.join".into(), string_string_fn.clone());
@@ -224,6 +228,20 @@ impl TypeEnv {
         // Namespaced API: Option.*
         self.functions.insert("Option.is_some".into(), i64_to_i64.clone());
         self.functions.insert("Option.unwrap".into(), i64_to_i64.clone());
+
+        // Namespaced API: Vec.* (for raw Vec handle access)
+        self.functions.insert("Vec.get".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("Vec.len".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("Vec.push".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
 
         // std/encoding
         let int_fn = FnType {
@@ -565,6 +583,7 @@ impl TypeEnv {
         self.insert_var("SSE".into(), Type::Unknown);
         self.insert_var("Json".into(), Type::Unknown);
         self.insert_var("Path".into(), Type::Unknown);
+        self.insert_var("Vec".into(), Type::Unknown);
         self.insert_var("Result".into(), Type::Unknown);
         self.insert_var("Option".into(), Type::Unknown);
         self.insert_var("OpenAI".into(), Type::Unknown);

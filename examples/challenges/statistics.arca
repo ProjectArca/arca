@@ -6,12 +6,12 @@
 // Average: 4
 
 fn min(arr: i64) -> i64 {
-  let result = arca_vec_get(arr, 0)
-  let n = arca_vec_len(arr)
+  let result = Vec.get(arr, 0)
+  let n = Vec.len(arr)
   let i = 1
   loop {
     if i >= n { break }
-    let val = arca_vec_get(arr, i)
+    let val = Vec.get(arr, i)
     if val < result { result = val }
     i = i + 1
   }
@@ -19,12 +19,12 @@ fn min(arr: i64) -> i64 {
 }
 
 fn max(arr: i64) -> i64 {
-  let result = arca_vec_get(arr, 0)
-  let n = arca_vec_len(arr)
+  let result = Vec.get(arr, 0)
+  let n = Vec.len(arr)
   let i = 1
   loop {
     if i >= n { break }
-    let val = arca_vec_get(arr, i)
+    let val = Vec.get(arr, i)
     if val > result { result = val }
     i = i + 1
   }
@@ -33,11 +33,11 @@ fn max(arr: i64) -> i64 {
 
 fn sum(arr: i64) -> i64 {
   let total = 0
-  let n = arca_vec_len(arr)
+  let n = Vec.len(arr)
   let i = 0
   loop {
     if i >= n { break }
-    total = total + arca_vec_get(arr, i)
+    total = total + Vec.get(arr, i)
     i = i + 1
   }
   total
