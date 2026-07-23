@@ -5,8 +5,12 @@ void arca_main(void);
 
 void arca_main(void) {
   int64_t v0;
-  v0 = 3 + 2;
+  int64_t v1;
+  v0 = 15 - 5;
   arca_print_int(v0);
+  putchar('\n');
+  v1 = 30 * 6;
+  arca_print_int(v1);
   putchar('\n');
   return;
 }

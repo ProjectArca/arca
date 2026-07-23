@@ -1,0 +1,530 @@
+Arca Runtime Test Log
+Timestamp: Thu Jul 23 00:57:56 UTC 2026
+=========================================
+-----------------------------------------
+Test #1: arithmetic.arca
+File: tests/runtime/features/arithmetic.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/arithmetic.arca
+15
+30
+Result: PASS
+-----------------------------------------
+Test #2: borrow.arca
+File: tests/runtime/features/borrow.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/borrow.arca
+42
+Result: PASS
+-----------------------------------------
+Test #3: channel.arca
+File: tests/runtime/features/channel.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/channel.arca
+42
+99
+Result: PASS
+-----------------------------------------
+Test #4: comparison.arca
+File: tests/runtime/features/comparison.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/comparison.arca
+1
+1
+1
+1
+1
+1
+Result: PASS
+-----------------------------------------
+Test #5: defer.arca
+File: tests/runtime/features/defer.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/defer.arca
+1
+2
+Result: PASS
+-----------------------------------------
+Test #6: enum.arca
+File: tests/runtime/features/enum.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/enum.arca
+10
+20
+Result: PASS
+-----------------------------------------
+Test #7: env.arca
+File: tests/runtime/features/env.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/env.arca
+/Users/hy4-mac-002
+Result: PASS
+-----------------------------------------
+Test #8: env_full.arca
+File: tests/runtime/features/env_full.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/env_full.arca
+0
+/Users/hy4-mac-002/hasdev/research/project-arca
+Result: PASS
+-----------------------------------------
+Test #9: extend.arca
+File: tests/runtime/features/extend.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/extend.arca
+99
+Result: PASS
+-----------------------------------------
+Test #10: fib.arca
+File: tests/runtime/features/fib.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/fib.arca
+55
+Result: PASS
+-----------------------------------------
+Test #11: for_loop.arca
+File: tests/runtime/features/for_loop.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/for_loop.arca
+10
+Result: PASS
+-----------------------------------------
+Test #12: foreach.arca
+File: tests/runtime/features/foreach.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/foreach.arca
+6
+Result: PASS
+-----------------------------------------
+Test #13: fs.arca
+File: tests/runtime/features/fs.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/fs.arca
+0
+-1
+Result: PASS
+-----------------------------------------
+Test #14: fs_full.arca
+File: tests/runtime/features/fs_full.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/fs_full.arca
+-1
+-1
+4899634919602389440
+Result: PASS
+-----------------------------------------
+Test #15: functions.arca
+File: tests/runtime/features/functions.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/functions.arca
+55
+Result: PASS
+-----------------------------------------
+Test #16: if_else.arca
+File: tests/runtime/features/if_else.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/if_else.arca
+20
+Result: PASS
+-----------------------------------------
+Test #17: impl.arca
+File: tests/runtime/features/impl.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/impl.arca
+42
+Result: PASS
+-----------------------------------------
+Test #18: io.arca
+File: tests/runtime/features/io.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/io.arca
+0
+Result: PASS
+-----------------------------------------
+Test #19: json.arca
+File: tests/runtime/features/json.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/json.arca
+"hello"
+Result: PASS
+-----------------------------------------
+Test #20: loop.arca
+File: tests/runtime/features/loop.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/loop.arca
+6
+Result: PASS
+-----------------------------------------
+Test #21: match.arca
+File: tests/runtime/features/match.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/match.arca
+100
+Result: PASS
+-----------------------------------------
+Test #22: match_payload.arca
+File: tests/runtime/features/match_payload.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/match_payload.arca
+42
+Result: PASS
+-----------------------------------------
+Test #23: math.arca
+File: tests/runtime/features/math.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/math.arca
+3
+0
+1
+99
+16807
+Result: PASS
+-----------------------------------------
+Test #24: method.arca
+File: tests/runtime/features/method.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/method.arca
+hello Alice
+Result: PASS
+-----------------------------------------
+Test #25: move.arca
+File: tests/runtime/features/move.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/move.arca
+100
+Result: PASS
+-----------------------------------------
+Test #26: none.arca
+File: tests/runtime/features/none.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/none.arca
+0
+Result: PASS
+-----------------------------------------
+Test #27: option.arca
+File: tests/runtime/features/option.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/option.arca
+1
+99
+Result: PASS
+-----------------------------------------
+Test #28: parse_int.arca
+File: tests/runtime/features/parse_int.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/parse_int.arca
+123
+Result: PASS
+-----------------------------------------
+Test #29: path.arca
+File: tests/runtime/features/path.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/path.arca
+.txt
+file.txt
+/tmp
+/tmp/notes.txt
+Result: PASS
+-----------------------------------------
+Test #30: path_full.arca
+File: tests/runtime/features/path_full.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/path_full.arca
+/usr/bin
+Result: PASS
+-----------------------------------------
+Test #31: prime.arca
+File: tests/runtime/features/prime.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/prime.arca
+4
+Result: PASS
+-----------------------------------------
+Test #32: process.arca
+File: tests/runtime/features/process.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/process.arca
+0
+Result: PASS
+-----------------------------------------
+Test #33: ref_ptr.arca
+File: tests/runtime/features/ref_ptr.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/ref_ptr.arca
+50
+Result: PASS
+-----------------------------------------
+Test #34: result.arca
+File: tests/runtime/features/result.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/result.arca
+1
+42
+Result: PASS
+-----------------------------------------
+Test #35: sleep.arca
+File: tests/runtime/features/sleep.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/sleep.arca
+0
+Result: PASS
+-----------------------------------------
+Test #36: spawn.arca
+File: tests/runtime/features/spawn.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/spawn.arca
+100
+Result: PASS
+-----------------------------------------
+Test #37: string.arca
+File: tests/runtime/features/string.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/string.arca
+hello  
+1
+1
+Result: PASS
+-----------------------------------------
+Test #38: string_slice.arca
+File: tests/runtime/features/string_slice.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/string_slice.arca
+1
+Result: PASS
+-----------------------------------------
+Test #39: strings.arca
+File: tests/runtime/features/strings.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/strings.arca
+1
+6
+Result: PASS
+-----------------------------------------
+Test #40: struct.arca
+File: tests/runtime/features/struct.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/struct.arca
+1
+24
+Result: PASS
+-----------------------------------------
+Test #41: throw.arca
+File: tests/runtime/features/throw.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/throw.arca
+1
+Result: PASS
+-----------------------------------------
+Test #42: to_string.arca
+File: tests/runtime/features/to_string.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/to_string.arca
+456
+Result: PASS
+-----------------------------------------
+Test #43: try_catch.arca
+File: tests/runtime/features/try_catch.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/try_catch.arca
+trying
+caught
+Result: PASS
+-----------------------------------------
+Test #44: variables.arca
+File: tests/runtime/features/variables.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/variables.arca
+10
+Result: PASS
+-----------------------------------------
+Test #45: while_loop.arca
+File: tests/runtime/features/while_loop.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/features/while_loop.arca
+10
+Result: PASS
+-----------------------------------------
+Test #46: ai.arca
+File: tests/runtime/std-libs/ai.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/ai.arca
+0
+csv
+bpe
+{"role":"assistant","content":"[AI Response to: Hello Arca AI]"}
+{"answer":"[RAG Answer for: What is Arca?]","sources":["doc_1"]}
+Result: PASS
+-----------------------------------------
+Test #47: async.arca
+File: tests/runtime/std-libs/async.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/async.arca
+0
+1
+Result: PASS
+-----------------------------------------
+Test #48: backend.arca
+File: tests/runtime/std-libs/backend.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/backend.arca
+Native LLVM IR & Machine Code generated successfully
+Result: PASS
+-----------------------------------------
+Test #49: collections.arca
+File: tests/runtime/std-libs/collections.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/collections.arca
+0
+0
+0
+0
+0
+0
+0
+Result: PASS
+-----------------------------------------
+Test #50: compress.arca
+File: tests/runtime/std-libs/compress.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/compress.arca
+zstd_compressed_bytes
+Result: PASS
+-----------------------------------------
+Test #51: crypto.arca
+File: tests/runtime/std-libs/crypto.arca
+Duration: 2s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/crypto.arca
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+Result: PASS
+-----------------------------------------
+Test #52: http_full.arca
+File: tests/runtime/std-libs/http_full.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/http_full.arca
+POST
+200
+{"status":"ok","user":"arca"}
+Set-Cookie: session_id=abc123xyz
+/api/v1/users
+cors
+Result: PASS
+-----------------------------------------
+Test #53: import.arca
+File: tests/runtime/std-libs/import.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/import.arca
+55
+Result: PASS
+-----------------------------------------
+Test #54: iterator.arca
+File: tests/runtime/std-libs/iterator.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/iterator.arca
+0
+Result: PASS
+-----------------------------------------
+Test #55: log.arca
+File: tests/runtime/std-libs/log.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/log.arca
+hello
+Result: PASS
+-----------------------------------------
+Test #56: opt.arca
+File: tests/runtime/std-libs/opt.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/opt.arca
+610
+Result: PASS
+-----------------------------------------
+Test #57: os.arca
+File: tests/runtime/std-libs/os.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/os.arca
+arm64
+8
+Result: PASS
+-----------------------------------------
+Test #58: serve.arca
+File: tests/runtime/std-libs/serve.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/serve.arca
+Server running on http://localhost:3000
+Result: PASS
+-----------------------------------------
+Test #59: timing.arca
+File: tests/runtime/std-libs/timing.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/timing.arca
+55
+0
+Result: PASS
+-----------------------------------------
+Test #60: toolchain.arca
+File: tests/runtime/std-libs/toolchain.arca
+Duration: 1s
+Runtime Stdout:
+[arca] Running: tests/runtime/std-libs/toolchain.arca
+Toolchain test pass
+Result: PASS
+=========================================
+Runtime layer: 60 passed, 0 failed out of 60 tests

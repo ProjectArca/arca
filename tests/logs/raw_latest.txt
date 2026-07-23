@@ -1,0 +1,109 @@
+=========================================
+ Arca Multi-Layer Test Suite
+ Date: Thu Jul 23 00:57:54 UTC 2026
+=========================================
+
+----- Layer: parse -----
+[parse] simple  222ms  PASS
+[parse] struct_literal  7ms  PASS
+[parse] variables  8ms  PASS
+---
+Parse layer: 3 passed, 0 failed out of 3 tests
+Log saved to: tests/logs/parse_latest.txt
+Raw log saved to: tests/logs/parse_raw_latest.txt
+
+----- Layer: semantic -----
+[semantic] check_borrow  7ms  PASS
+[semantic] check_simple  10ms  PASS
+[semantic] type_mismatch_invalid  7ms  PASS (expected error)
+---
+Semantic layer: 3 passed, 0 failed out of 3 tests
+Log saved to: tests/logs/semantic_latest.txt
+Raw log saved to: tests/logs/semantic_raw_latest.txt
+
+----- Layer: codegen -----
+[codegen] branching  AIR=8ms C=7ms  PASS
+[codegen] calls  AIR=6ms C=8ms  PASS
+[codegen] simple  AIR=7ms C=7ms  PASS
+---
+Codegen layer: 3 passed, 0 failed out of 3 tests
+Log saved to: tests/logs/codegen_latest.txt
+Raw log saved to: tests/logs/codegen_raw_latest.txt
+
+----- Layer: runtime -----
+[runtime] arithmetic.arca  1378ms  PASS
+[runtime] borrow.arca  1147ms  PASS
+[runtime] channel.arca  1235ms  PASS
+[runtime] comparison.arca  1145ms  PASS
+[runtime] defer.arca  1278ms  PASS
+[runtime] enum.arca  1184ms  PASS
+[runtime] env.arca  1102ms  PASS
+[runtime] env_full.arca  979ms  PASS
+[runtime] extend.arca  1217ms  PASS
+[runtime] fib.arca  1092ms  PASS
+[runtime] for_loop.arca  1161ms  PASS
+[runtime] foreach.arca  1167ms  PASS
+[runtime] fs.arca  1021ms  PASS
+[runtime] fs_full.arca  1021ms  PASS
+[runtime] functions.arca  1087ms  PASS
+[runtime] if_else.arca  1176ms  PASS
+[runtime] impl.arca  1114ms  PASS
+[runtime] io.arca  1175ms  PASS
+[runtime] json.arca  1125ms  PASS
+[runtime] loop.arca  1179ms  PASS
+[runtime] match.arca  1048ms  PASS
+[runtime] match_payload.arca  1137ms  PASS
+[runtime] math.arca  994ms  PASS
+[runtime] method.arca  1252ms  PASS
+[runtime] move.arca  1215ms  PASS
+[runtime] none.arca  1168ms  PASS
+[runtime] option.arca  1141ms  PASS
+[runtime] parse_int.arca  1073ms  PASS
+[runtime] path.arca  1134ms  PASS
+[runtime] path_full.arca  974ms  PASS
+[runtime] prime.arca  990ms  PASS
+[runtime] process.arca  1126ms  PASS
+[runtime] ref_ptr.arca  1109ms  PASS
+[runtime] result.arca  962ms  PASS
+[runtime] sleep.arca  1094ms  PASS
+[runtime] spawn.arca  1132ms  PASS
+[runtime] string.arca  1164ms  PASS
+[runtime] string_slice.arca  1151ms  PASS
+[runtime] strings.arca  1185ms  PASS
+[runtime] struct.arca  1162ms  PASS
+[runtime] throw.arca  1157ms  PASS
+[runtime] to_string.arca  1137ms  PASS
+[runtime] try_catch.arca  1036ms  PASS
+[runtime] variables.arca  1114ms  PASS
+[runtime] while_loop.arca  1039ms  PASS
+[runtime] ai.arca  1160ms  PASS
+[runtime] async.arca  1127ms  PASS
+[runtime] backend.arca  1107ms  PASS
+[runtime] collections.arca  1204ms  PASS
+[runtime] compress.arca  1215ms  PASS
+[runtime] crypto.arca  1647ms  PASS
+[runtime] http_full.arca  968ms  PASS
+[runtime] import.arca  1159ms  PASS
+[runtime] iterator.arca  1185ms  PASS
+[runtime] log.arca  1479ms  PASS
+[runtime] opt.arca  1128ms  PASS
+[runtime] os.arca  1099ms  PASS
+[runtime] serve.arca  1012ms  PASS
+[runtime] timing.arca  1080ms  PASS
+[runtime] toolchain.arca  1044ms  PASS
+=========================================
+Runtime layer: 60 passed, 0 failed out of 60 tests
+
+Detailed log: tests/logs/runtime_latest.txt
+Raw log:      tests/logs/runtime_raw_latest.txt
+
+=========================================
+ Layer Results:
+  parse: PASS
+  semantic: PASS
+  codegen: PASS
+  runtime: PASS
+=========================================
+ Total time: 70911ms
+ Layers: 4 total, 4 passed, 0 failed
+=========================================
