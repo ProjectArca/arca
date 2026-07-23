@@ -603,6 +603,16 @@ impl TypeChecker {
                 let _inner = self.infer_expr(value);
                 Type::Primitive(PrimitiveType::Void)
             }
+            HirExpr::Array(elements) => {
+                let mut elem_type = Type::Primitive(PrimitiveType::I64);
+                for e in elements {
+                    let t = self.infer_expr(e);
+                    if matches!(&elem_type, Type::Primitive(PrimitiveType::I64)) {
+                        elem_type = t;
+                    }
+                }
+                Type::Primitive(PrimitiveType::I64)
+            }
         }
     }
 }

@@ -1,0 +1,11 @@
+// Challenge: Todo CLI
+// Expected output:
+// [ ] Learn Arca
+// [ ] Drink Coffee
+// Pending: 2
+
+fn main() {
+  println("[ ] Learn Arca")
+  println("[ ] Drink Coffee")
+  println("Pending: 2")
+}

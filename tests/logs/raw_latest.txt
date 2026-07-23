@@ -4,49 +4,49 @@
 =========================================
 
 ── Parse Layer ───────────────────────────────
-  struct_literal                       205µs  PASS
+  struct_literal                       203µs  PASS
   simple                                 6µs  PASS
-  variables                             10µs  PASS
+  variables                              7µs  PASS
 
 ── Semantic Layer ────────────────────────────
-  check_borrow                         527µs  PASS
-  type_mismatch_invalid                 99µs  PASS
-  check_simple                          89µs  PASS
+  check_borrow                         568µs  PASS
+  type_mismatch_invalid                 97µs  PASS
+  check_simple                          91µs  PASS
 
 ── Codegen Layer ────────────────────────────
-  simple                                83µs  PASS
-  branching                             91µs  PASS
-  calls                                113µs  PASS
+  simple                                90µs  PASS
+  branching                            101µs  PASS
+  calls                                100µs  PASS
 
 ── Runtime Layer ────────────────────────────
   none                                1ms  PASS
-  while_loop                          0ms  PASS
-  result                              1ms  PASS
-  math                                1ms  PASS
-  move                                1ms  PASS
-  struct                              1ms  PASS
-  foreach                             1ms  PASS
-  for_loop                            1ms  PASS
-  loop                                2ms  PASS
-  path                                2ms  PASS
-  channel                             1ms  PASS
-  comparison                          1ms  PASS
+  while_loop                          1ms  PASS
+  result                              0ms  PASS
+  math                                0ms  PASS
+  move                                0ms  PASS
+  struct                              0ms  PASS
+  foreach                             0ms  PASS
+  for_loop                            0ms  PASS
+  loop                                0ms  PASS
+  path                                0ms  PASS
+  channel                             0ms  PASS
+  comparison                          0ms  PASS
   parse_int                           0ms  PASS
-  extend                              1ms  PASS
-  env                                 1ms  PASS
-  match                               1ms  PASS
-  enum                                1ms  PASS
+  extend                              0ms  PASS
+  env                                 0ms  PASS
+  match                               0ms  PASS
+  enum                                0ms  PASS
   impl                                0ms  PASS
-  prime                               1ms  PASS
-  sleep                               2ms  PASS
-  json                                1ms  PASS
-  strings                             1ms  PASS
+  prime                               0ms  PASS
+  sleep                               1ms  PASS
+  json                                0ms  PASS
+  strings                             0ms  PASS
   io                                  0ms  PASS
   defer                               0ms  PASS
-  fs                                  1ms  PASS
+  fs                                  0ms  PASS
   option                              0ms  PASS
-  borrow                              0ms  PASS
-  match_payload                       1ms  PASS
+  borrow                              1ms  PASS
+  match_payload                       0ms  PASS
   ref_ptr                             0ms  PASS
   path_full                           0ms  PASS
   to_string                           0ms  PASS
@@ -54,9 +54,9 @@
   string_slice                        0ms  PASS
   string                              0ms  PASS
   throw                               0ms  PASS
-  fs_full                             1ms  PASS
+  fs_full                             0ms  PASS
   env_full                            0ms  PASS
-  if_else                             1ms  PASS
+  if_else                             0ms  PASS
   arithmetic                          0ms  PASS
   method                              0ms  PASS
   spawn                               0ms  PASS
@@ -74,19 +74,19 @@
   compress                            0ms  PASS
   import                              0ms  PASS
   log                                 0ms  PASS
-  opt                                 1ms  PASS
-  async                               1ms  PASS
+  opt                                 0ms  PASS
+  async                               0ms  PASS
   http_full                           0ms  PASS
-  backend                             1ms  PASS
+  backend                             0ms  PASS
   toolchain                           0ms  PASS
-  collections_structs                 1ms  PASS
+  collections_structs                 0ms  PASS
   iterator_chain                      0ms  PASS
   os_queries                          0ms  PASS
-  ai_chat                             1ms  PASS
+  ai_chat                             0ms  PASS
   compress_crypto                     0ms  PASS
   log_info                            0ms  PASS
-  json_stringify                      1ms  PASS
-  (link 353ms, run 685ms)
+  json_stringify                      0ms  PASS
+  (link 633ms, run 554ms)
 
 =========================================
   Results
@@ -97,7 +97,7 @@
   Runtime        67/ 67  passed
 -----------------------------------------
   Total          76/ 76  (100%)
-  Commit        9df2cb2
+  Commit        f2db2d3
   Version       0.1.0-alpha
 =========================================
 

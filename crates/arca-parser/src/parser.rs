@@ -992,6 +992,22 @@ impl<'a> Parser<'a> {
                 self.expect(TokenKind::CloseParen);
                 Some(expr)
             }
+            TokenKind::OpenBracket => {
+                self.advance();
+                let mut elements = Vec::new();
+                while self.current_token.kind != TokenKind::CloseBracket && self.current_token.kind != TokenKind::Eof {
+                    if let Some(elem) = self.parse_expression(Precedence::Lowest) {
+                        elements.push(elem);
+                    }
+                    if self.current_token.kind == TokenKind::Comma {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                self.expect(TokenKind::CloseBracket);
+                Some(Expr::Array(elements))
+            }
             TokenKind::Minus => {
                 self.advance();
                 let right = self.parse_expression(Precedence::Unary)?;

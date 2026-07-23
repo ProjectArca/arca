@@ -30,6 +30,7 @@ pub enum HirExpr {
         struct_name: String,
         fields: Vec<(String, HirExpr)>,
     },
+    Array(Vec<HirExpr>),
     If {
         cond: Box<HirExpr>,
         then_branch: HirBlock,
@@ -408,6 +409,7 @@ impl Lowerer {
                 body: self.lower_block(body),
             },
             Expr::Throw { value, .. } => HirExpr::Throw(Box::new(self.lower_expr(value))),
+            Expr::Array(elements) => HirExpr::Array(elements.iter().map(|e| self.lower_expr(e)).collect()),
             Expr::NullCoalesce { left, right, .. } => HirExpr::Binary {
                 left: Box::new(self.lower_expr(left)),
                 op: BinaryOp::Equal, // Desugars into null check in lowering

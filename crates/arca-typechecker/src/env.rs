@@ -307,6 +307,14 @@ impl TypeEnv {
         self.functions.insert("replace".into(), string_3_fn);
         self.functions.insert("arca_str_format".into(), string_2_fn.clone());
         self.functions.insert("format".into(), string_2_fn);
+        self.functions.insert("arca_str_slice".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        });
+        self.functions.insert("arca_str_len".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
 
         // std/fs extras
         self.functions.insert("arca_fs_mkdir".into(), i64_to_i32.clone());
@@ -334,6 +342,21 @@ impl TypeEnv {
         // std/json extras
         self.functions.insert("arca_json_parse".into(), string_fn.clone());
         self.functions.insert("parse".into(), string_fn.clone());
+
+        // Vec runtime helpers (for array literal support)
+        let i64_i64_to_i64 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        };
+        self.functions.insert("arca_vec_len".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I64)),
+        });
+        self.functions.insert("arca_vec_get".into(), i64_i64_to_i64.clone());
+        self.functions.insert("arca_vec_push".into(), FnType {
+            params: vec![Type::Primitive(PrimitiveType::I64), Type::Primitive(PrimitiveType::I64)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
 
         // Standard library module bindings
         self.insert_var("serve".into(), Type::Unknown);

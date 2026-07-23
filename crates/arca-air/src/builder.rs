@@ -400,6 +400,29 @@ impl AirBuilder {
                 });
                 AirValue::Register(target)
             }
+            HirExpr::Array(elements) => {
+                let handle = self.fresh_reg();
+                ctx.current.push(AirInstruction::Alloca { target: handle, ty: Type::Primitive(PrimitiveType::I64) });
+                ctx.current.push(AirInstruction::Call {
+                    target: Some(handle),
+                    fn_name: "arca_vec_new".to_string(),
+                    args: vec![],
+                });
+                for elem in elements {
+                    let ev = self.lower_expr(elem, ctx, var_map);
+                    ctx.current.push(AirInstruction::Call {
+                        target: None,
+                        fn_name: "arca_vec_push".to_string(),
+                        args: vec![AirValue::Register(handle), ev],
+                    });
+                }
+                let result = self.fresh_reg();
+                ctx.current.push(AirInstruction::Alloca { target: result, ty: Type::Primitive(PrimitiveType::I64) });
+                ctx.current.push(AirInstruction::Store { ptr: result, val: AirValue::Register(handle) });
+                let load = self.fresh_reg();
+                ctx.current.push(AirInstruction::Load { target: load, ptr: result, ty: Type::Primitive(PrimitiveType::I64) });
+                AirValue::Register(load)
+            }
         }
     }
 

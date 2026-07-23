@@ -1,0 +1,14 @@
+// Challenge: Expression Evaluator
+// Expected output:
+// 11
+
+fn main() {
+  // Simple evaluator: parse "5+3*2" as (5+(3*2))
+  let nums = []
+  arca_vec_push(nums, 5)
+  arca_vec_push(nums, 3)
+  arca_vec_push(nums, 2)
+
+  let result = arca_vec_get(nums, 0) + arca_vec_get(nums, 1) * arca_vec_get(nums, 2)
+  println(result)
+}

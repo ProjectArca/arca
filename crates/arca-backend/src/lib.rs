@@ -163,6 +163,7 @@ impl CodeGenerator {
                     || fn_name.starts_with("arca_path_") || fn_name.starts_with("path_")
                     || fn_name == "json_stringify" || fn_name == "compress" || fn_name == "sha256"
                     || fn_name == "arch"
+                    || fn_name == "arca_str_slice"
                     || fn_name == "OpenAI.chat" || fn_name == "OpenAI_chat"
                     || fn_name == "RAGEngine.query" || fn_name == "RAGEngine_query"
                     || fn_name.ends_with(".chat") || fn_name.ends_with(".query")
@@ -927,6 +928,17 @@ impl CodeGenerator {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let cmd = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
                 self.emit_ln(&format!("{} = arca_process_command((const char*){});", tn, cmd));
+            }
+            "arca_str_slice" => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let s = if !args.is_empty() { self.emit_air_value_str(&args[0]) } else { "\"\"".to_string() };
+                let start = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = (const char*)arca_str_slice((const char*){}, (int32_t){});", tn, s, start));
+            }
+            "arca_vec_push" | "arca_vec_free" => {
+                self.emit(fn_name); self.emit("(");
+                for (i, arg) in args.iter().enumerate() { if i > 0 { self.emit(", "); } self.emit_air_value(arg); }
+                self.emit(");\n");
             }
             n if n.starts_with("arca_vec_") || n.starts_with("arca_map_") || n.starts_with("arca_set_")
                 || n.starts_with("arca_queue_") || n.starts_with("arca_deque_")

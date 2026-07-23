@@ -73,6 +73,7 @@ const char* arca_str_slice(const char* s, int32_t start);
 // Extended string helpers (std/string)
 const char* arca_str_trim(const char* s);
 int32_t arca_str_contains(const char* s, const char* sub);
+int64_t arca_str_len(const char* s);
 int32_t arca_ends_with(const char* s, const char* suffix);
 const char* arca_str_split(const char* s, const char* delim, int index);
 const char* arca_str_replace(const char* s, const char* from, const char* to);

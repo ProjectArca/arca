@@ -150,6 +150,11 @@ int32_t arca_str_contains(const char* s, const char* sub) {
     return strstr(s, sub) != NULL ? 1 : 0;
 }
 
+int64_t arca_str_len(const char* s) {
+    if (!s) return 0;
+    return (int64_t)strlen(s);
+}
+
 int32_t arca_ends_with(const char* s, const char* suffix) {
     if (!s || !suffix) return 0;
     size_t slen = strlen(s);

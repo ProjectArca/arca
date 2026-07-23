@@ -1,0 +1,56 @@
+// Challenge: Statistics
+// Expected output:
+// Min: 1
+// Max: 9
+// Sum: 24
+// Average: 4
+
+fn min(arr: i64) -> i64 {
+  let result = arca_vec_get(arr, 0)
+  let n = arca_vec_len(arr)
+  let i = 1
+  loop {
+    if i >= n { break }
+    let val = arca_vec_get(arr, i)
+    if val < result { result = val }
+    i = i + 1
+  }
+  result
+}
+
+fn max(arr: i64) -> i64 {
+  let result = arca_vec_get(arr, 0)
+  let n = arca_vec_len(arr)
+  let i = 1
+  loop {
+    if i >= n { break }
+    let val = arca_vec_get(arr, i)
+    if val > result { result = val }
+    i = i + 1
+  }
+  result
+}
+
+fn sum(arr: i64) -> i64 {
+  let total = 0
+  let n = arca_vec_len(arr)
+  let i = 0
+  loop {
+    if i >= n { break }
+    total = total + arca_vec_get(arr, i)
+    i = i + 1
+  }
+  total
+}
+
+fn main() {
+  let arr = [7, 2, 9, 1, 5]
+  print("Min: ")
+  println(min(arr))
+  print("Max: ")
+  println(max(arr))
+  print("Sum: ")
+  println(sum(arr))
+  print("Average: ")
+  println(sum(arr) / 5)
+}

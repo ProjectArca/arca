@@ -201,6 +201,7 @@ pub enum Expr {
         body: BlockExpr,
         span: Span,
     },
+    Array(Vec<Expr>),
     Closure {
         params: Vec<ParamDef>,
         body: Box<Expr>,
@@ -258,6 +259,7 @@ impl Expr {
                 | Expr::Throw { span, .. }
                 | Expr::ForLoop { span, .. }
                 | Expr::ForIn { span, .. } => *span,
+            Expr::Array(..) => Span::default(),
             Expr::Block(b) => b.span,
         }
     }
