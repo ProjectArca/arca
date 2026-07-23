@@ -554,17 +554,15 @@ fn handle_fmt(target: &str) {
 }
 
 fn ensure_runtime_o(runtime_o: &str, http_o: &str) {
-    let check = |src: &str, out: &str| {
-        let src_mtime = fs::metadata(src).and_then(|m| m.modified()).ok();
-        let out_mtime = fs::metadata(out).and_then(|m| m.modified()).ok();
-        if src_mtime.map_or(true, |s| out_mtime.map_or(true, |o| s > o)) {
+    let compile = |src: &str, out: &str| {
+        if !std::path::Path::new(out).exists() {
             std::process::Command::new("cc")
                 .args(&["-O3", "-c", src, "-o", out, "-I", "library/runtime"])
                 .status().ok();
         }
     };
-    check("library/runtime/arca_runtime.c", runtime_o);
-    check("library/net/http.c", http_o);
+    compile("library/runtime/arca_runtime.c", runtime_o);
+    compile("library/net/http.c", http_o);
 }
 
 fn compile_arca_to_c(source: &str, target: &str) -> Result<String, String> {
