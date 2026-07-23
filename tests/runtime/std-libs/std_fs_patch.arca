@@ -1,0 +1,9 @@
+// Patch 6: std/fs operations
+fn main() {
+  let r = file_write("/tmp/arca_test.txt", "hello arca fs")
+  println(file_exists("/tmp/arca_test.txt"))
+  let content = file_read("/tmp/arca_test.txt")
+  println(content)
+  let cr = file_copy("/tmp/arca_test.txt", "/tmp/arca_copy.txt")
+  println(file_exists("/tmp/arca_copy.txt"))
+}

@@ -198,6 +198,7 @@ impl CodeGenerator {
                     || fn_name.ends_with(".to_header") || fn_name.ends_with("_to_header")
                     || fn_name.ends_with(".post") || fn_name.ends_with(".get") || fn_name.ends_with(".put") || fn_name.ends_with(".delete")
                     || fn_name == "current_dir"
+                    || fn_name == "file_read"
                     || fn_name == "path_normalize"
                 {
                     "const char*".to_string()
@@ -358,6 +359,9 @@ impl CodeGenerator {
                             && fn_name != "stdout_write" && fn_name != "stderr_write"
                             && fn_name != "fs_rename" && fn_name != "fs_copy"
                             && fn_name != "fs_metadata" && fn_name != "path_normalize"
+                            && fn_name != "file_read" && fn_name != "file_write" && fn_name != "file_append"
+                            && fn_name != "file_copy" && fn_name != "file_rename"
+                            && fn_name != "file_remove" && fn_name != "file_mkdir" && fn_name != "file_exists"
                         {
                             extern_fns.insert(safe);
                         }
@@ -1144,6 +1148,18 @@ impl CodeGenerator {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
                 let handle = self.extract_handle_or_value(&args, 0);
                 self.emit_ln(&format!("{} = arca_iter_collect({});", tn, handle));
+            }
+            n if n == "reduce" || n.ends_with(".reduce") || n.ends_with("_reduce") => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let handle = self.extract_handle_or_value(&args, 0);
+                let fn_val = if args.len() > 1 { self.emit_air_value_str(&args[1]) } else { "0".to_string() };
+                let init = if args.len() > 2 { self.emit_air_value_str(&args[2]) } else { "0".to_string() };
+                self.emit_ln(&format!("{} = arca_iter_reduce({}, {}, {});", tn, handle, fn_val, init));
+            }
+            n if n == "enumerate" || n.ends_with(".enumerate") || n.ends_with("_enumerate") => {
+                let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();
+                let handle = self.extract_handle_or_value(&args, 0);
+                self.emit_ln(&format!("{} = arca_iter_enumerate({});", tn, handle));
             }
             n if n.ends_with(".to_header") || n.ends_with("_to_header") => {
                 let tn = target.and_then(|t| self.var_names.get(&t).cloned()).unwrap_or_default();

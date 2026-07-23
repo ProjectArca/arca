@@ -122,6 +122,16 @@ int32_t arca_fs_mkdir(const char* path);
 int32_t arca_fs_rmdir(const char* path);
 const char* arca_fs_read_dir(const char* path);
 
+// std/fs high-level wrappers
+const char* file_read(const char* path);
+int32_t file_write(const char* path, const char* data);
+int32_t file_append(const char* path, const char* data);
+int32_t file_exists(const char* path);
+int32_t file_copy(const char* src, const char* dst);
+int32_t file_rename(const char* old, const char* new_);
+int32_t file_remove(const char* path);
+int32_t file_mkdir(const char* path);
+
 // std/path
 const char* arca_path_extension(const char* path);
 const char* arca_path_filename(const char* path);
@@ -256,6 +266,8 @@ int64_t arca_iter_map(int64_t h, int64_t map_fn);
 int64_t arca_iter_take(int64_t h, int64_t count);
 int64_t arca_iter_skip(int64_t h, int64_t count);
 int64_t arca_iter_collect(int64_t h);
+int64_t arca_iter_reduce(int64_t h, int64_t fn, int64_t init);
+int64_t arca_iter_enumerate(int64_t h);
 
 // Error Handling Helpers
 void __arca_throw(int64_t err);

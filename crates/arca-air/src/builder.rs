@@ -906,6 +906,10 @@ impl AirBuilder {
         if is_method("hostname") { return ("__arca_hostname".to_string(), with_obj(args, &method_obj)); }
         if is_method("username") { return ("__arca_username".to_string(), with_obj(args, &method_obj)); }
 
+        // ===== PATCH 7: std/json method mappings =====
+        if is_method("value") { return ("arca_json_parse".to_string(), with_obj(args, &method_obj)); }
+        if is_method("pretty") { return ("json_stringify".to_string(), with_obj(args, &method_obj)); }
+
         if callee_name == "Channel.new" {
             return ("arca_channel_create".to_string(), args.to_vec());
         }

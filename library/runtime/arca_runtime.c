@@ -157,6 +157,46 @@ int64_t arca_str_len(const char* s) {
     return (int64_t)strlen(s);
 }
 
+// std/fs wrappers
+const char* file_read(const char* path) {
+    static char buf[65536];
+    if (!path) return "";
+    FILE* f = fopen(path, "rb");
+    if (!f) return "";
+    size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    buf[n] = 0;
+    return buf;
+}
+int32_t file_write(const char* path, const char* data) {
+    if (!path || !data) return -1;
+    FILE* f = fopen(path, "wb");
+    if (!f) return -1;
+    size_t n = fwrite(data, 1, strlen(data), f);
+    fclose(f);
+    return (int32_t)n;
+}
+int32_t file_append(const char* path, const char* data) {
+    if (!path || !data) return -1;
+    FILE* f = fopen(path, "ab");
+    if (!f) return -1;
+    size_t n = fwrite(data, 1, strlen(data), f);
+    fclose(f);
+    return (int32_t)n;
+}
+int32_t file_exists(const char* path) { return access(path, F_OK) == 0 ? 1 : 0; }
+int32_t file_copy(const char* src, const char* dst) {
+    if (!src || !dst) return -1;
+    FILE* s = fopen(src, "rb"); if (!s) return -1;
+    FILE* d = fopen(dst, "wb"); if (!d) { fclose(s); return -1; }
+    char buf[8192]; size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), s)) > 0) { fwrite(buf, 1, n, d); }
+    fclose(s); fclose(d); return 0;
+}
+int32_t file_rename(const char* old, const char* new_) { return rename(old, new_) == 0 ? 0 : -1; }
+int32_t file_remove(const char* path) { return remove(path) == 0 ? 0 : -1; }
+int32_t file_mkdir(const char* path) { return mkdir(path, 0755) == 0 ? 0 : -1; }
+
 int64_t __arca_str_is_empty(const char* s) { return !s || *s == 0 ? 1 : 0; }
 const char* __arca_str_at(const char* s, int64_t i) {
     static char buf[2];
@@ -1054,4 +1094,6 @@ int64_t arca_iter_map(int64_t h, int64_t map_fn) { (void)map_fn; return h; }
 int64_t arca_iter_take(int64_t h, int64_t count) { (void)count; return h; }
 int64_t arca_iter_skip(int64_t h, int64_t count) { (void)count; return h; }
 int64_t arca_iter_collect(int64_t h) { (void)h; return 0; }
+int64_t arca_iter_reduce(int64_t h, int64_t fn, int64_t init) { (void)h; (void)fn; return init; }
+int64_t arca_iter_enumerate(int64_t h) { (void)h; return 0; }
 

@@ -146,6 +146,34 @@ impl TypeEnv {
         };
         self.functions.insert("compress".into(), string_fn.clone());
         self.functions.insert("sha256".into(), string_fn.clone());
+
+        // std/fs operations
+        let string_to_i32 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        };
+        let string_string_to_i32 = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::I32)),
+        };
+        let string_string_to_string = FnType {
+            params: vec![Type::Primitive(PrimitiveType::String), Type::Primitive(PrimitiveType::String)],
+            return_type: Box::new(Type::Primitive(PrimitiveType::String)),
+        };
+        self.functions.insert("file_read".into(), string_fn.clone());
+        self.functions.insert("file_write".into(), string_string_to_i32.clone());
+        self.functions.insert("file_append".into(), string_string_to_i32.clone());
+        self.functions.insert("file_copy".into(), string_string_to_i32.clone());
+        self.functions.insert("file_rename".into(), string_string_to_i32.clone());
+        self.functions.insert("file_remove".into(), string_to_i32.clone());
+        self.functions.insert("file_mkdir".into(), string_to_i32.clone());
+        self.functions.insert("file_exists".into(), string_to_i32.clone());
+
+        // std/json method wrappers
+        self.functions.insert("Json.value".into(), string_string_to_string.clone());
+        self.functions.insert("Json.pretty".into(), string_fn.clone());
+        self.functions.insert("Json.object".into(), string_fn.clone());
+        self.functions.insert("Json.array".into(), string_fn.clone());
         let info_fn = FnType {
             params: vec![Type::Primitive(PrimitiveType::String)],
             return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
@@ -595,6 +623,14 @@ impl TypeEnv {
                     return_type: Box::new(i64_ty.clone()),
                 }),
                 ("collect".into(), FnType {
+                    params: vec![],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("reduce".into(), FnType {
+                    params: vec![i64_ty.clone(), i64_ty.clone()],
+                    return_type: Box::new(i64_ty.clone()),
+                }),
+                ("enumerate".into(), FnType {
                     params: vec![],
                     return_type: Box::new(i64_ty.clone()),
                 }),
