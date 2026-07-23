@@ -501,23 +501,25 @@ fn main() {
             fs::create_dir_all("build").ok();
             let runtime_o = "build/arca_runtime.o";
             let http_o = "build/http.o";
-            let compile_o = |src: &str, out: &str| -> Option<std::process::ExitStatus> {
+            let compile_o = |src: &str, out: &str| {
                 let src_mtime = std::fs::metadata(src).and_then(|m| m.modified()).ok();
                 let out_mtime = std::fs::metadata(out).and_then(|m| m.modified()).ok();
                 if src_mtime.map_or(true, |s| out_mtime.map_or(true, |o| s > o)) {
                     std::process::Command::new("cc")
                         .args(&["-O3", "-c", src, "-o", out, "-I", "library/runtime"])
-                        .status().ok()
-                } else { None }
+                        .status().ok();
+                }
             };
             compile_o("library/runtime/arca_runtime.c", runtime_o);
             compile_o("library/net/http.c", http_o);
 
-            let opt = if c_code.len() < 5000 { "-O1" } else { "-O3" };
+            // Compile generated C to .o (fast, no optimization), then link
+            let gen_o = format!("{}_gen.o", c_path);
+            std::process::Command::new("cc")
+                .args(&["-c", &c_path, "-o", &gen_o, "-I", "library/runtime"])
+                .status().ok();
             let status = std::process::Command::new("cc")
-                .args(&[opt, "-o", &bin_path, &c_path,
-                        "-I", "library/runtime",
-                        runtime_o, http_o])
+                .args(&["-o", &bin_path, &gen_o, runtime_o, http_o])
                 .status();
             match status {
                 Ok(s) if s.success() => {

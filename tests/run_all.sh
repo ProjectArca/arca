@@ -15,7 +15,7 @@ echo " Arca Multi-Layer Test Suite"
 echo " Date: $(date -u)"
 echo "========================================="
 echo ""
-} | tee "$RAW_LOG"
+} > "$RAW_LOG"
 
 cargo build --release -q
 
@@ -25,9 +25,7 @@ TOTAL_PASS=0; TOTAL_FAIL=0
 for layer in "${LAYERS[@]}"; do
   SCRIPT="tests/run_${layer}.sh"
   if [ -f "$SCRIPT" ]; then
-    {
-      echo "----- Layer: $layer -----"
-    } | tee -a "$RAW_LOG"
+    echo "----- Layer: $layer -----" | tee -a "$RAW_LOG"
     $SCRIPT 2>&1 | tee -a "$RAW_LOG"
     RC=${PIPESTATUS[0]}
     RESULTS+=("$layer: $([ $RC -eq 0 ] && echo PASS || echo FAIL)")

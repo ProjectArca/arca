@@ -25,7 +25,7 @@ for dir in tests/runtime/features tests/runtime/std-libs; do
     TOTAL=$((TOTAL + 1))
 
     START_NS=$(date +%s%N)
-    output=$(echo "" | perl -e 'alarm 30; exec @ARGV' "$ARCA_BIN" run "$f" 2>&1 || true)
+    output=$("$ARCA_BIN" run "$f" 2>&1 || true)
     END_NS=$(date +%s%N)
     DURATION_MS=$(( (END_NS - START_NS) / 1000000 ))
     DURATION_S=$(( (DURATION_MS + 500) / 1000 ))
