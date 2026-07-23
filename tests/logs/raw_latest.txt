@@ -1,109 +1,103 @@
-=========================================
- Arca Multi-Layer Test Suite
- Date: Thu Jul 23 01:04:13 UTC 2026
-=========================================
-
------ Layer: parse -----
-[parse] simple  183ms  PASS
-[parse] struct_literal  7ms  PASS
-[parse] variables  7ms  PASS
----
-Parse layer: 3 passed, 0 failed out of 3 tests
-Log saved to: tests/logs/parse_latest.txt
-Raw log saved to: tests/logs/parse_raw_latest.txt
-
------ Layer: semantic -----
-[semantic] check_borrow  9ms  PASS
-[semantic] check_simple  8ms  PASS
-[semantic] type_mismatch_invalid  8ms  PASS (expected error)
----
-Semantic layer: 3 passed, 0 failed out of 3 tests
-Log saved to: tests/logs/semantic_latest.txt
-Raw log saved to: tests/logs/semantic_raw_latest.txt
-
------ Layer: codegen -----
-[codegen] branching  AIR=17ms C=8ms  PASS
-[codegen] calls  AIR=7ms C=8ms  PASS
-[codegen] simple  AIR=6ms C=10ms  PASS
----
-Codegen layer: 3 passed, 0 failed out of 3 tests
-Log saved to: tests/logs/codegen_latest.txt
-Raw log saved to: tests/logs/codegen_raw_latest.txt
-
------ Layer: runtime -----
-[runtime] arithmetic.arca  995ms  PASS
-[runtime] borrow.arca  1030ms  PASS
-[runtime] channel.arca  1069ms  PASS
-[runtime] comparison.arca  1092ms  PASS
-[runtime] defer.arca  1086ms  PASS
-[runtime] enum.arca  960ms  PASS
-[runtime] env.arca  1108ms  PASS
-[runtime] env_full.arca  960ms  PASS
-[runtime] extend.arca  1002ms  PASS
-[runtime] fib.arca  1029ms  PASS
-[runtime] for_loop.arca  905ms  PASS
-[runtime] foreach.arca  1111ms  PASS
-[runtime] fs.arca  1111ms  PASS
-[runtime] fs_full.arca  1077ms  PASS
-[runtime] functions.arca  1126ms  PASS
-[runtime] if_else.arca  961ms  PASS
-[runtime] impl.arca  1118ms  PASS
-[runtime] io.arca  1048ms  PASS
-[runtime] json.arca  1105ms  PASS
-[runtime] loop.arca  1067ms  PASS
-[runtime] match.arca  924ms  PASS
-[runtime] match_payload.arca  1031ms  PASS
-[runtime] math.arca  1215ms  PASS
-[runtime] method.arca  1118ms  PASS
-[runtime] move.arca  1080ms  PASS
-[runtime] none.arca  841ms  PASS
-[runtime] option.arca  888ms  PASS
-[runtime] parse_int.arca  1131ms  PASS
-[runtime] path.arca  1087ms  PASS
-[runtime] path_full.arca  975ms  PASS
-[runtime] prime.arca  778ms  PASS
-[runtime] process.arca  1076ms  PASS
-[runtime] ref_ptr.arca  1069ms  PASS
-[runtime] result.arca  1083ms  PASS
-[runtime] sleep.arca  1058ms  PASS
-[runtime] spawn.arca  979ms  PASS
-[runtime] string.arca  989ms  PASS
-[runtime] string_slice.arca  1053ms  PASS
-[runtime] strings.arca  982ms  PASS
-[runtime] struct.arca  974ms  PASS
-[runtime] throw.arca  752ms  PASS
-[runtime] to_string.arca  769ms  PASS
-[runtime] try_catch.arca  1056ms  PASS
-[runtime] variables.arca  1024ms  PASS
-[runtime] while_loop.arca  1076ms  PASS
-[runtime] ai.arca  1015ms  PASS
-[runtime] async.arca  905ms  PASS
-[runtime] backend.arca  947ms  PASS
-[runtime] collections.arca  1045ms  PASS
-[runtime] compress.arca  1024ms  PASS
-[runtime] crypto.arca  1003ms  PASS
-[runtime] http_full.arca  1007ms  PASS
-[runtime] import.arca  997ms  PASS
-[runtime] iterator.arca  1048ms  PASS
-[runtime] log.arca  970ms  PASS
-[runtime] opt.arca  688ms  PASS
-[runtime] os.arca  658ms  PASS
-[runtime] serve.arca  670ms  PASS
-[runtime] timing.arca  792ms  PASS
-[runtime] toolchain.arca  865ms  PASS
-=========================================
-Runtime layer: 60 passed, 0 failed out of 60 tests
-
-Detailed log: tests/logs/runtime_latest.txt
-Raw log:      tests/logs/runtime_raw_latest.txt
 
 =========================================
- Layer Results:
-  parse: PASS
-  semantic: PASS
-  codegen: PASS
-  runtime: PASS
+  Arca Test Suite v0.1.0-alpha
 =========================================
- Total time: 61847ms
- Layers: 4 total, 4 passed, 0 failed
+
+── Parse Layer ───────────────────────────────
+  struct_literal                       205µs  PASS
+  simple                                 6µs  PASS
+  variables                             10µs  PASS
+
+── Semantic Layer ────────────────────────────
+  check_borrow                         527µs  PASS
+  type_mismatch_invalid                 99µs  PASS
+  check_simple                          89µs  PASS
+
+── Codegen Layer ────────────────────────────
+  simple                                83µs  PASS
+  branching                             91µs  PASS
+  calls                                113µs  PASS
+
+── Runtime Layer ────────────────────────────
+  none                                1ms  PASS
+  while_loop                          0ms  PASS
+  result                              1ms  PASS
+  math                                1ms  PASS
+  move                                1ms  PASS
+  struct                              1ms  PASS
+  foreach                             1ms  PASS
+  for_loop                            1ms  PASS
+  loop                                2ms  PASS
+  path                                2ms  PASS
+  channel                             1ms  PASS
+  comparison                          1ms  PASS
+  parse_int                           0ms  PASS
+  extend                              1ms  PASS
+  env                                 1ms  PASS
+  match                               1ms  PASS
+  enum                                1ms  PASS
+  impl                                0ms  PASS
+  prime                               1ms  PASS
+  sleep                               2ms  PASS
+  json                                1ms  PASS
+  strings                             1ms  PASS
+  io                                  0ms  PASS
+  defer                               0ms  PASS
+  fs                                  1ms  PASS
+  option                              0ms  PASS
+  borrow                              0ms  PASS
+  match_payload                       1ms  PASS
+  ref_ptr                             0ms  PASS
+  path_full                           0ms  PASS
+  to_string                           0ms  PASS
+  fib                                 0ms  PASS
+  string_slice                        0ms  PASS
+  string                              0ms  PASS
+  throw                               0ms  PASS
+  fs_full                             1ms  PASS
+  env_full                            0ms  PASS
+  if_else                             1ms  PASS
+  arithmetic                          0ms  PASS
+  method                              0ms  PASS
+  spawn                               0ms  PASS
+  functions                           0ms  PASS
+  try_catch                           0ms  PASS
+  process                             0ms  PASS
+  variables                           0ms  PASS
+  serve                               0ms  PASS
+  ai                                  0ms  PASS
+  os                                  0ms  PASS
+  crypto                              0ms  PASS
+  collections                         0ms  PASS
+  timing                              0ms  PASS
+  iterator                            0ms  PASS
+  compress                            0ms  PASS
+  import                              0ms  PASS
+  log                                 0ms  PASS
+  opt                                 1ms  PASS
+  async                               1ms  PASS
+  http_full                           0ms  PASS
+  backend                             1ms  PASS
+  toolchain                           0ms  PASS
+  collections_structs                 1ms  PASS
+  iterator_chain                      0ms  PASS
+  os_queries                          0ms  PASS
+  ai_chat                             1ms  PASS
+  compress_crypto                     0ms  PASS
+  log_info                            0ms  PASS
+  json_stringify                      1ms  PASS
+  (link 353ms, run 685ms)
+
 =========================================
+  Results
+-----------------------------------------
+  Parse           3/  3  passed
+  Semantic        3/  3  passed
+  Codegen         3/  3  passed
+  Runtime        67/ 67  passed
+-----------------------------------------
+  Total          76/ 76  (100%)
+  Commit        9df2cb2
+  Version       0.1.0-alpha
+=========================================
+
