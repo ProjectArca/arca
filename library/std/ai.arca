@@ -1,147 +1,1066 @@
-// Arca AI Standard Library (std/ai)
-// Supports OpenAI, Anthropic, Custom OpenAI-compatible providers, Vector DBs, and RAG pipelines.
+// ============================================================================
+// Arca AI Standard Library - Phase 1: AI as part of stdlib
+// ============================================================================
+// 
+// This module provides AI capabilities as part of Arca's standard library,
+// making it the first-class citizen in the language.
+//
+// Supported Features:
+// - Chat Completions (OpenAI & Anthropic compatible)
+// - Streaming Responses
+// - Embeddings
+// - Image Generation
+// - Speech to Text
+// - Text to Speech
+// - Function Calling
+// - Structured JSON Output
+//
+// Usage:
+//
+//     import { chat, embedding } from "std/ai"
+//
+//     // Simple chat
+//     let response = chat({
+//         model: "gpt-4o",
+//         prompt: "Explain ownership in Rust"
+//     })
+//     println(response.text)
+//
+//     // Streaming
+//     for chunk in chat.stream({
+//         model: "gpt-4o",
+//         prompt: "Write a story"
+//     }) {
+//         print(chunk.text)
+//     }
+//
+//     // Embeddings
+//     let emb = embedding("Hello world")
+//     println(emb.dimensions)
+//
+// ============================================================================
 
-// ===== Tensor =====
-struct Tensor {
-  shape: string
-  data_ptr: i64
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+// Message roles for chat completions
+enum MessageRole {
+    System,
+    User,
+    Assistant,
+    Tool
 }
 
-extern fn arca_tensor_new(shape: string) -> i64
-extern fn arca_tensor_reshape(h: i64, new_shape: string) -> i64
-extern fn arca_tensor_transpose(h: i64) -> i64
-extern fn arca_tensor_slice(h: i64, start: i64, end: i64) -> i64
-extern fn arca_tensor_broadcast(h: i64, shape: string) -> i64
-
-// ===== Dataset =====
-struct Dataset {
-  format: string
-  path: string
+// Chat message structure
+struct Message {
+    role: MessageRole
+    content: string
+    name?: string
+    tool_call_id?: string
 }
 
-extern fn arca_dataset_load(path: string, format: string) -> i64
-extern fn arca_dataset_shuffle(h: i64) -> i64
-extern fn arca_dataset_batch(h: i64, batch_size: i64) -> i64
-extern fn arca_dataset_split(h: i64, ratio: i64) -> i64
-
-// ===== Tokenizer =====
-struct Tokenizer {
-  kind: string
+// Tool definition for function calling
+struct Tool {
+    type: string        // "function"
+    function: ToolFunction
 }
 
-extern fn arca_tokenizer_load(kind: string) -> i64
-extern fn arca_tokenizer_encode(h: i64, text: string) -> string
-extern fn arca_tokenizer_decode(h: i64, tokens: string) -> string
-
-// ===== Embedding =====
-extern fn arca_embedding_cosine_similarity(a: i64, b: i64) -> i64
-extern fn arca_embedding_normalize(h: i64) -> i64
-extern fn arca_embedding_topk(h: i64, k: i32) -> string
-
-// ===== Inference =====
-struct InferenceModel {
-  format: string
-  model_path: string
+struct ToolFunction {
+    name: string
+    description: string
+    parameters: string  // JSON Schema
 }
 
-extern fn arca_inference_load(model_path: string, format: string) -> i64
-extern fn arca_inference_predict(h: i64, input: i64) -> i64
-
-// ===== SIMD =====
-struct Vector { len: i64 }
-struct Matrix { rows: i64, cols: i64 }
-
-extern fn arca_simd_dot_product(a: i64, b: i64) -> i64
-extern fn arca_simd_matmul(a: i64, b: i64) -> i64
-
-// ===== AI Providers =====
-extern fn arca_ai_chat_completion(provider: string, model: string, prompt: string, api_key: string, base_url: string) -> string
-extern fn arca_ai_embeddings(provider: string, model: string, input: string, api_key: string) -> string
-
-struct OpenAI {
-  api_key: string
-  model: string
+// Function call result from tool execution
+struct ToolCall {
+    id: string
+    name: string
+    arguments: string
+    result?: string
 }
 
-struct Anthropic {
-  api_key: string
-  model: string
+// Chat completion options
+struct ChatOptions {
+    model: string
+    messages?: Message[]
+    prompt?: string
+    system?: string
+    temperature?: float64
+    max_tokens?: int
+    top_p?: float64
+    frequency_penalty?: float64
+    presence_penalty?: float64
+    tools?: Tool[]
+    tool_choice?: string  // "auto", "none", or function name
+    response_format?: ResponseFormat
+    stream?: bool
+    timeout?: int
 }
 
-struct CustomAIProvider {
-  base_url: string
-  api_key: string
-  model: string
+// Response format for structured output
+struct ResponseFormat {
+    type: string  // "text" or "json_object"
+    schema?: string
 }
 
-extend OpenAI {
-  fn chat(self, prompt: string) -> string {
-    arca_ai_chat_completion("openai", self.model, prompt, self.api_key, "")
-  }
-
-  fn embed(self, input: string) -> string {
-    arca_ai_embeddings("openai", "text-embedding-3-small", input, self.api_key)
-  }
+// Chat response
+struct ChatResponse {
+    id: string
+    model: string
+    text: string
+    content: string
+    finish_reason: string
+    usage: Usage
+    tool_calls?: ToolCall[]
+    created: int
 }
 
-extend Anthropic {
-  fn chat(self, prompt: string) -> string {
-    arca_ai_chat_completion("anthropic", self.model, prompt, self.api_key, "")
-  }
+// Streaming chunk
+struct ChatChunk {
+    text: string
+    content: string
+    index: int
+    finish_reason?: string
+    done: bool
 }
 
-extend CustomAIProvider {
-  fn chat(self, prompt: string) -> string {
-    arca_ai_chat_completion("custom", self.model, prompt, self.api_key, self.base_url)
-  }
+// Token usage information
+struct Usage {
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
 }
 
-// ===== Vector DB =====
-extern fn arca_vector_db_connect(db_type: string, conn_str: string) -> i64
-extern fn arca_vector_db_insert(h: i64, id: string, vector_str: string, metadata: string) -> i32
-extern fn arca_vector_db_search(h: i64, query_vec_str: string, top_k: i32) -> string
-
-struct VectorStore {
-  handle: i64
-  db_type: string
+// Embedding options
+struct EmbedOptions {
+    model: string        // "text-embedding-ada-002", "text-embedding-3-small", "text-embedding-3-large"
+    input: string | string[]
+    encoding_format?: string  // "float" or "base64"
+    dimensions?: int
 }
 
-extend VectorStore {
-  fn connect(db_type: string, conn_str: string) -> VectorStore {
-    VectorStore {
-      handle: arca_vector_db_connect(db_type, conn_str),
-      db_type: db_type
+// Embedding response
+struct EmbedResponse {
+    model: string
+    data: Embedding[]
+    usage: Usage
+}
+
+struct Embedding {
+    embedding: float64[]
+    index: int
+}
+
+// Image generation options
+struct ImageOptions {
+    model?: string       // "dall-e-3", "dall-e-2"
+    prompt: string
+    size?: string        // "1024x1024", "1792x1024", "1024x1792"
+    quality?: string     // "standard", "hd"
+    style?: string       // "vivid", "natural"
+    n?: int
+}
+
+// Image response
+struct ImageResponse {
+    created: int
+    data: Image[]
+}
+
+struct Image {
+    url?: string
+    b64_json?: string
+    revised_prompt?: string
+}
+
+// Speech to text options
+struct STTOptions {
+    model?: string       // "whisper-1"
+    language?: string    // ISO 639-1 code
+    prompt?: string
+    temperature?: float64
+    audio_data: string   // Base64 encoded audio
+    response_format?: string
+}
+
+// STT response
+struct STTResponse {
+    text: string
+    language?: string
+    duration?: float64
+    model: string
+}
+
+// Text to speech options
+struct TTSOptions {
+    model?: string       // "tts-1", "tts-1-hd"
+    input: string
+    voice?: string      // "alloy", "echo", "fable", "onyx", "nova", "shimmer"
+    speed?: float64     // 0.25 to 4.0
+    response_format?: string  // "mp3", "opus", "aac", "flac"
+}
+
+// TTS response
+struct TTSResponse {
+    audio_data: string   // Base64 encoded audio
+    model: string
+    voice: string
+    format: string
+}
+
+// AI Provider configuration
+struct AIConfig {
+    api_key?: string
+    base_url?: string   // Custom endpoint
+    timeout?: int
+    max_retries?: int
+}
+
+// Anthropic-specific types
+struct AnthropicMessage {
+    role: MessageRole
+    content: string | ContentBlock[]
+}
+
+struct ContentBlock {
+    type: string  // "text", "tool_use", "tool_result"
+    text?: string
+    id?: string
+    name?: string
+    input?: string
+    tool_use_id?: string
+    content?: string
+}
+
+struct AnthropicResponse {
+    id: string
+    type: string
+    role: string
+    content: ContentBlock[]
+    model: string
+    stop_reason: string
+    stop_sequence?: string
+    usage: AnthropicUsage
+}
+
+struct AnthropicUsage {
+    input_tokens: int
+    output_tokens: int
+}
+
+// ============================================================================
+// External Functions (implemented in Rust runtime)
+// ============================================================================
+
+// Core HTTP client for AI APIs
+extern fn arca_ai_request(
+    method: string,
+    url: string,
+    headers: string,
+    body: string,
+    timeout: int
+) -> string
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+var _ai_config: AIConfig = AIConfig {
+    api_key: "",
+    base_url: "http://localhost:8080",
+    timeout: 30000,
+    max_retries: 3
+}
+
+// Set AI provider configuration
+fn config(config: AIConfig) {
+    _ai_config = config
+}
+
+// Set API key
+fn set_api_key(api_key: string) {
+    _ai_config.api_key = api_key
+}
+
+// Set base URL for custom endpoints
+fn set_base_url(base_url: string) {
+    _ai_config.base_url = base_url
+}
+
+// ============================================================================
+// Message Helpers
+// ============================================================================
+
+// Create a user message
+fn user_message(content: string) -> Message {
+    return Message {
+        role: MessageRole.User,
+        content: content
     }
-  }
-
-  fn insert(self, id: string, vector_str: string, metadata: string) -> i32 {
-    arca_vector_db_insert(self.handle, id, vector_str, metadata)
-  }
-
-  fn search(self, query_vec_str: string, top_k: i32) -> string {
-    arca_vector_db_search(self.handle, query_vec_str, top_k)
-  }
 }
 
-// ===== RAG Pipeline =====
-extern fn arca_rag_create(db_handle: i64, llm_provider: string, model: string) -> i64
-extern fn arca_rag_ingest_document(h: i64, doc_text: string, chunk_size: i32) -> i32
-extern fn arca_rag_query(h: i64, query_text: string) -> string
-
-struct RAGEngine {
-  handle: i64
+// Create a system message
+fn system_message(content: string) -> Message {
+    return Message {
+        role: MessageRole.System,
+        content: content
+    }
 }
 
-extend RAGEngine {
-  fn new(store: VectorStore, provider: string, model: string) -> RAGEngine {
-    RAGEngine { handle: arca_rag_create(store.handle, provider, model) }
-  }
-
-  fn ingest(self, doc_text: string, chunk_size: i32) -> i32 {
-    arca_rag_ingest_document(self.handle, doc_text, chunk_size)
-  }
-
-  fn query(self, query_text: string) -> string {
-    arca_rag_query(self.handle, query_text)
-  }
+// Create an assistant message
+fn assistant_message(content: string) -> Message {
+    return Message {
+        role: MessageRole.Assistant,
+        content: content
+    }
 }
+
+// Create a tool message
+fn tool_message(tool_call_id: string, content: string) -> Message {
+    return Message {
+        role: MessageRole.Tool,
+        content: content,
+        tool_call_id: tool_call_id
+    }
+}
+
+// Convert MessageRole to string
+fn _role_to_string(role: MessageRole) -> string {
+    match role {
+        MessageRole.System => return "system"
+        MessageRole.User => return "user"
+        MessageRole.Assistant => return "assistant"
+        MessageRole.Tool => return "tool"
+    }
+}
+
+// ============================================================================
+// Tool/Function Calling
+// ============================================================================
+
+// Create a tool definition
+fn tool(name: string, description: string, parameters: string) -> Tool {
+    return Tool {
+        type: "function",
+        function: ToolFunction {
+            name: name,
+            description: description,
+            parameters: parameters
+        }
+    }
+}
+
+// Create a tool call result
+fn tool_call_result(id: string, name: string, result: string) -> ToolCall {
+    return ToolCall {
+        id: id,
+        name: name,
+        arguments: "",
+        result: result
+    }
+}
+
+// Define common tools
+
+fn weather_tool() -> Tool {
+    return tool(
+        "get_weather",
+        "Get the current weather in a given location",
+        `{
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string",
+                    "description": "The city and state, e.g. San Francisco, CA"
+                },
+                "unit": {
+                    "type": "string",
+                    "enum": ["celsius", "fahrenheit"],
+                    "description": "The unit of temperature"
+                }
+            },
+            "required": ["location"]
+        }`
+    )
+}
+
+fn calculator_tool() -> Tool {
+    return tool(
+        "calculate",
+        "Perform a mathematical calculation",
+        `{
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "The mathematical expression to evaluate"
+                }
+            },
+            "required": ["expression"]
+        }`
+    )
+}
+
+fn search_tool() -> Tool {
+    return tool(
+        "web_search",
+        "Search the web for information",
+        `{
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query"
+                },
+                "num_results": {
+                    "type": "integer",
+                    "description": "Number of results to return",
+                    "default": 5
+                }
+            },
+            "required": ["query"]
+        }`
+    )
+}
+
+// ============================================================================
+// Chat Completions
+// ============================================================================
+
+// Main chat function
+fn chat(options: ChatOptions) -> ChatResponse {
+    // Build messages array
+    let messages: Message[] = []
+    
+    // Add system message if provided
+    if options.system != "" {
+        messages.push(system_message(options.system))
+    }
+    
+    // Add existing messages if provided
+    if options.messages != nil {
+        for msg in options.messages {
+            messages.push(msg)
+        }
+    }
+    
+    // Add prompt as user message if provided
+    if options.prompt != "" {
+        messages.push(user_message(options.prompt))
+    }
+    
+    // Build request body
+    let body = _build_chat_request(options, messages)
+    
+    // Make HTTP request
+    let response = _make_request("/v1/chat/completions", body)
+    
+    // Parse response
+    return _parse_chat_response(response)
+}
+
+// Build chat completion request
+fn _build_chat_request(options: ChatOptions, messages: Message[]) -> string {
+    let mut request = `{"model":"` + options.model + `","messages":[`
+    
+    for i, msg in messages {
+        if i > 0 {
+            request = request + ","
+        }
+        request = request + `{"role":"` + _role_to_string(msg.role) + `","content":"` + _escape_json(msg.content) + `"}`
+    }
+    
+    request = request + "]"
+    
+    // Add optional parameters
+    if options.temperature != 1.0 {
+        request = request + `,"temperature":` + str(options.temperature)
+    }
+    
+    if options.max_tokens != 0 {
+        request = request + `,"max_tokens":` + str(options.max_tokens)
+    }
+    
+    if options.top_p != 1.0 {
+        request = request + `,"top_p":` + str(options.top_p)
+    }
+    
+    if options.tools != nil && len(options.tools) > 0 {
+        request = request + `,"tools":[`
+        for i, t in options.tools {
+            if i > 0 {
+                request = request + ","
+            }
+            request = request + `{"type":"` + t.type + `","function":{"name":"` + t.function.name + `","description":"` + t.function.description + `","parameters":` + t.function.parameters + `}}`
+        }
+        request = request + "]"
+        
+        if options.tool_choice != "" {
+            if options.tool_choice == "auto" || options.tool_choice == "none" {
+                request = request + `,"tool_choice":"` + options.tool_choice + `"`
+            } else {
+                request = request + `,"tool_choice":{"type":"function","function":{"name":"` + options.tool_choice + `"}}`
+            }
+        }
+    }
+    
+    if options.response_format != nil {
+        request = request + `,"response_format":{"type":"` + options.response_format.type + `"}`
+    }
+    
+    if options.stream == true {
+        request = request + `,"stream":true`
+    }
+    
+    request = request + "}"
+    
+    return request
+}
+
+// Parse chat completion response
+fn _parse_chat_response(response: string) -> ChatResponse {
+    // Parse JSON response (using json module)
+    let parsed = json.parse(response)
+    
+    let choices = parsed.choices as any[]
+    let choice = choices[0] as any
+    let message = choice.message as any
+    
+    let result = ChatResponse {
+        id: parsed.id,
+        model: parsed.model,
+        text: message.content,
+        content: message.content,
+        finish_reason: choice.finish_reason,
+        usage: Usage {
+            prompt_tokens: parsed.usage.prompt_tokens,
+            completion_tokens: parsed.usage.completion_tokens,
+            total_tokens: parsed.usage.total_tokens
+        },
+        created: parsed.created
+    }
+    
+    // Parse tool calls if present
+    if message.tool_calls != nil {
+        result.tool_calls = []
+        for tc in message.tool_calls as any[] {
+            result.tool_calls.push(ToolCall {
+                id: tc.id,
+                name: tc.function.name,
+                arguments: tc.function.arguments
+            })
+        }
+    }
+    
+    return result
+}
+
+// ============================================================================
+// Streaming Chat
+// ============================================================================
+
+// Streaming chat iterator
+struct ChatStream {
+    options: ChatOptions
+    messages: Message[]
+    _buffer: string
+    _done: bool
+}
+
+// Create a streaming chat
+fn stream(options: ChatOptions) -> ChatStream {
+    let messages: Message[] = []
+    
+    if options.system != "" {
+        messages.push(system_message(options.system))
+    }
+    
+    if options.messages != nil {
+        for msg in options.messages {
+            messages.push(msg)
+        }
+    }
+    
+    if options.prompt != "" {
+        messages.push(user_message(options.prompt))
+    }
+    
+    // Enable streaming
+    options.stream = true
+    
+    let body = _build_chat_request(options, messages)
+    
+    // Make streaming request
+    let response = _make_streaming_request("/v1/chat/completions", body)
+    
+    return ChatStream {
+        options: options,
+        messages: messages,
+        _buffer: response,
+        _done: false
+    }
+}
+
+// Iterator implementation for ChatStream
+fn next_chunk(stream: ChatStream) -> ChatChunk? {
+    if stream._done {
+        return nil
+    }
+    
+    // Parse next chunk from buffer
+    let chunk = _parse_stream_chunk(stream._buffer)
+    
+    if chunk == nil {
+        stream._done = true
+        return ChatChunk {
+            text: "",
+            content: "",
+            index: 0,
+            done: true
+        }
+    }
+    
+    return chunk
+}
+
+// Parse a single streaming chunk
+fn _parse_stream_chunk(data: string) -> ChatChunk? {
+    // In actual implementation, this would parse SSE data
+    // For now, return a placeholder
+    return nil
+}
+
+// ============================================================================
+// Embeddings
+// ============================================================================
+
+// Generate embeddings for text
+fn embedding(input: string | string[]) -> EmbedResponse {
+    return embed(EmbedOptions {
+        model: "text-embedding-ada-002",
+        input: input
+    })
+}
+
+// Generate embeddings with options
+fn embed(options: EmbedOptions) -> EmbedResponse {
+    let body = `{"model":"` + options.model + `","input":"` + _escape_json(options.input as string) + `"}`
+    
+    if options.encoding_format != "" {
+        body = body + `,"encoding_format":"` + options.encoding_format + `"`
+    }
+    
+    if options.dimensions != 0 {
+        body = body + `,"dimensions":` + str(options.dimensions)
+    }
+    
+    let response = _make_request("/v1/embeddings", body)
+    
+    return _parse_embedding_response(response)
+}
+
+// Parse embedding response
+fn _parse_embedding_response(response: string) -> EmbedResponse {
+    let parsed = json.parse(response)
+    
+    let data: Embedding[] = []
+    for item in parsed.data as any[] {
+        data.push(Embedding {
+            embedding: item.embedding,
+            index: item.index
+        })
+    }
+    
+    return EmbedResponse {
+        model: parsed.model,
+        data: data,
+        usage: Usage {
+            prompt_tokens: parsed.usage.prompt_tokens,
+            completion_tokens: parsed.usage.total_tokens,
+            total_tokens: parsed.usage.total_tokens
+        }
+    }
+}
+
+// Get embedding vector (first result)
+fn get_embedding_vector(response: EmbedResponse) -> float64[] {
+    if len(response.data) > 0 {
+        return response.data[0].embedding
+    }
+    return []
+}
+
+// ============================================================================
+// Image Generation
+// ============================================================================
+
+// Generate an image
+fn image(prompt: string) -> ImageResponse {
+    return generate_image(ImageOptions {
+        prompt: prompt
+    })
+}
+
+// Generate image with options
+fn generate_image(options: ImageOptions) -> ImageResponse {
+    let model = options.model ?? "dall-e-3"
+    let size = options.size ?? "1024x1024"
+    let quality = options.quality ?? "standard"
+    let n = options.n ?? 1
+    
+    let body = `{"model":"` + model + `","prompt":"` + _escape_json(options.prompt) + `","size":"` + size + `","quality":"` + quality + `","n":` + str(n) + `}`
+    
+    let response = _make_request("/v1/images/generations", body)
+    
+    return _parse_image_response(response)
+}
+
+// Parse image response
+fn _parse_image_response(response: string) -> ImageResponse {
+    let parsed = json.parse(response)
+    
+    let images: Image[] = []
+    for item in parsed.data as any[] {
+        images.push(Image {
+            url: item.url,
+            b64_json: item.b64_json,
+            revised_prompt: item.revised_prompt
+        })
+    }
+    
+    return ImageResponse {
+        created: parsed.created,
+        data: images
+    }
+}
+
+// ============================================================================
+// Speech to Text
+// ============================================================================
+
+// Transcribe audio
+fn transcribe(audio_data: string) -> STTResponse {
+    return _transcribe(audio_data, STTOptions {
+        model: "whisper-1",
+        audio_data: audio_data
+    })
+}
+
+// Transcribe with options
+fn _transcribe(audio_data: string, options: STTOptions) -> STTResponse {
+    // Note: Audio transcription requires multipart form data
+    // This is a simplified implementation
+    let body = `{"model":"` + (options.model ?? "whisper-1") + `"}`
+    
+    if options.language != "" {
+        body = body + `,"language":"` + options.language + `"`
+    }
+    
+    // In production, this would send actual audio data
+    let response = _make_request("/v1/audio/transcriptions", body)
+    
+    return _parse_stt_response(response)
+}
+
+// Parse STT response
+fn _parse_stt_response(response: string) -> STTResponse {
+    let parsed = json.parse(response)
+    
+    return STTResponse {
+        text: parsed.text,
+        language: parsed.language,
+        duration: parsed.duration,
+        model: parsed.model
+    }
+}
+
+// ============================================================================
+// Text to Speech
+// ============================================================================
+
+// Generate speech from text
+fn speech(input: string) -> TTSResponse {
+    return generate_speech(TTSOptions {
+        input: input,
+        model: "tts-1",
+        voice: "alloy"
+    })
+}
+
+// Generate speech with options
+fn generate_speech(options: TTSOptions) -> TTSResponse {
+    let model = options.model ?? "tts-1"
+    let voice = options.voice ?? "alloy"
+    let format = options.response_format ?? "mp3"
+    let speed = options.speed ?? 1.0
+    
+    let body = `{"model":"` + model + `","input":"` + _escape_json(options.input) + `","voice":"` + voice + `","response_format":"` + format + `","speed":` + str(speed) + `}`
+    
+    let response = _make_request("/v1/audio/speech", body)
+    
+    return _parse_tts_response(response, model, voice, format)
+}
+
+// Parse TTS response
+fn _parse_tts_response(response: string, model: string, voice: string, format: string) -> TTSResponse {
+    // Response is base64 encoded audio
+    return TTSResponse {
+        audio_data: response,
+        model: model,
+        voice: voice,
+        format: format
+    }
+}
+
+// ============================================================================
+// Anthropic API
+// ============================================================================
+
+// Send message to Claude
+fn claude(options: {
+    model: string,
+    messages: AnthropicMessage[],
+    system?: string,
+    max_tokens: int,
+    temperature?: float64,
+    stream?: bool
+}) -> AnthropicResponse {
+    let body = `{"model":"` + options.model + `","messages":[`
+    
+    for i, msg in options.messages {
+        if i > 0 {
+            body = body + ","
+        }
+        body = body + `{"role":"` + _role_to_string(msg.role) + `","content":"` + _escape_json(msg.content as string) + `"}`
+    }
+    
+    body = body + `],"max_tokens":` + str(options.max_tokens)
+    
+    if options.system != "" {
+        body = body + `,"system":"` + _escape_json(options.system) + `"`
+    }
+    
+    if options.temperature != 1.0 {
+        body = body + `,"temperature":` + str(options.temperature)
+    }
+    
+    if options.stream == true {
+        body = body + `,"stream":true`
+    }
+    
+    body = body + "}"
+    
+    let response = _make_request("/v1/messages", body)
+    
+    return _parse_anthropic_response(response)
+}
+
+// Parse Anthropic response
+fn _parse_anthropic_response(response: string) -> AnthropicResponse {
+    let parsed = json.parse(response)
+    
+    let content: ContentBlock[] = []
+    for block in parsed.content as any[] {
+        content.push(ContentBlock {
+            type: block.type,
+            text: block.text
+        })
+    }
+    
+    return AnthropicResponse {
+        id: parsed.id,
+        type: parsed.type,
+        role: parsed.role,
+        content: content,
+        model: parsed.model,
+        stop_reason: parsed.stop_reason,
+        stop_sequence: parsed.stop_sequence,
+        usage: AnthropicUsage {
+            input_tokens: parsed.usage.input_tokens,
+            output_tokens: parsed.usage.output_tokens
+        }
+    }
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+// Make HTTP request to AI API
+fn _make_request(endpoint: string, body: string) -> string {
+    let url = _ai_config.base_url + endpoint
+    
+    let headers = `{"Content-Type":"application/json"}`
+    
+    if _ai_config.api_key != "" {
+        headers = `{"Content-Type":"application/json","Authorization":"Bearer ` + _ai_config.api_key + `"}`
+    }
+    
+    return arca_ai_request("POST", url, headers, body, _ai_config.timeout)
+}
+
+// Make streaming request (returns raw SSE data)
+fn _make_streaming_request(endpoint: string, body: string) -> string {
+    let url = _ai_config.base_url + endpoint
+    
+    let headers = `{"Content-Type":"application/json"}`
+    
+    if _ai_config.api_key != "" {
+        headers = `{"Content-Type":"application/json","Authorization":"Bearer ` + _ai_config.api_key + `"}`
+    }
+    
+    // Streaming request returns raw response
+    return arca_ai_request("POST", url, headers, body, _ai_config.timeout)
+}
+
+// Escape string for JSON
+fn _escape_json(s: string) -> string {
+    let result = ""
+    for c in s {
+        match c {
+            '"' => result = result + "\\\""
+            '\\' => result = result + "\\\\"
+            '\n' => result = result + "\\n"
+            '\r' => result = result + "\\r"
+            '\t' => result = result + "\\t"
+            else => result = result + str(c)
+        }
+    }
+    return result
+}
+
+// ============================================================================
+// Model Information
+// ============================================================================
+
+struct Model {
+    id: string
+    object: string
+    created: int
+    owned_by: string
+}
+
+// Get available models
+fn models() -> Model[] {
+    let response = _make_request("/v1/models", "{}")
+    let parsed = json.parse(response)
+    
+    let result: Model[] = []
+    for m in parsed.data as any[] {
+        result.push(Model {
+            id: m.id,
+            object: m.object,
+            created: m.created,
+            owned_by: m.owned_by
+        })
+    }
+    
+    return result
+}
+
+// Get specific model info
+fn model_info(id: string) -> Model? {
+    let response = _make_request("/v1/models/" + id, "{}")
+    
+    if response == "" {
+        return nil
+    }
+    
+    let parsed = json.parse(response)
+    
+    if parsed.error != nil {
+        return nil
+    }
+    
+    return Model {
+        id: parsed.id,
+        object: parsed.object,
+        created: parsed.created,
+        owned_by: parsed.owned_by
+    }
+}
+
+// ============================================================================
+// Example Usage (uncomment to test)
+// ============================================================================
+
+/*
+fn main() {
+    // Set up API configuration
+    set_base_url("http://localhost:8080")
+    
+    // Simple chat
+    let response = chat(ChatOptions {
+        model: "gpt-4o",
+        prompt: "Hello, how are you?"
+    })
+    println("Response: " + response.text)
+    println("Usage: " + str(response.usage.total_tokens) + " tokens")
+    
+    // Chat with system message
+    let response2 = chat(ChatOptions {
+        model: "gpt-4o",
+        system: "You are a helpful assistant that speaks like a pirate.",
+        prompt: "Tell me about Rust ownership."
+    })
+    println("Pirate response: " + response2.text)
+    
+    // Streaming chat
+    println("Streaming: ")
+    let stream = chat.stream(ChatOptions {
+        model: "gpt-4o",
+        prompt: "Count to 5"
+    })
+    for chunk in stream {
+        print(chunk.text)
+    }
+    println("")
+    
+    // Embeddings
+    let emb = embedding("Hello world")
+    println("Embedding dimensions: " + str(len(emb.data[0].embedding)))
+    
+    // Image generation
+    let img = image("A sunset over mountains")
+    println("Generated image URL: " + (img.data[0].url ?? ""))
+    
+    // Function calling
+    let tools = [weather_tool()]
+    let response3 = chat(ChatOptions {
+        model: "gpt-4o",
+        prompt: "What's the weather in Tokyo?",
+        tools: tools
+    })
+    if response3.tool_calls != nil && len(response3.tool_calls) > 0 {
+        println("Tool called: " + response3.tool_calls[0].name)
+    }
+    
+    // JSON mode
+    let response4 = chat(ChatOptions {
+        model: "gpt-4o",
+        prompt: "Return a JSON object with name and age fields",
+        response_format: ResponseFormat {
+            type: "json_object"
+        }
+    })
+    println("JSON response: " + response4.text)
+    
+    // Claude (Anthropic)
+    let claude_response = claude({
+        model: "claude-3-sonnet-20240229",
+        messages: [{
+            role: MessageRole.User,
+            content: "Hello Claude"
+        }],
+        max_tokens: 100
+    })
+    println("Claude: " + claude_response.content[0].text)
+    
+    // List models
+    let available_models = models()
+    for m in available_models {
+        println("Model: " + m.id)
+    }
+}
+*/

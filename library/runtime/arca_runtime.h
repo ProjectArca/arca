@@ -256,6 +256,14 @@ int64_t arca_simd_matmul(int64_t a, int64_t b);
 // AI Provider Integrations (OpenAI, Anthropic, Custom OpenAI-Compatible)
 const char* arca_ai_chat_completion(const char* provider, const char* model, const char* prompt, const char* api_key, const char* base_url);
 const char* arca_ai_embeddings(const char* provider, const char* model, const char* input, const char* api_key);
+const char* arca_ai_request(const char* method, const char* url, const char* headers, const char* body, int32_t timeout);
+const char* arca_chat(const char* model, const char* prompt, const char* system, double temperature, int32_t max_tokens);
+const char* arca_embedding(const char* model, const char* input);
+const char* arca_image(const char* prompt, const char* model, const char* size);
+const char* arca_speech(const char* input, const char* voice);
+const char* arca_transcribe(const char* audio_data);
+const char* arca_claude(const char* prompt, int32_t max_tokens);
+void arca_set_ai_config(const char* api_key, const char* base_url, int32_t timeout);
 
 // Vector DB Integrations (Memory, PGVector, Qdrant, Chroma)
 int64_t arca_vector_db_connect(const char* db_type, const char* conn_str);

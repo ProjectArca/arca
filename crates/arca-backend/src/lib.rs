@@ -194,6 +194,16 @@ impl CodeGenerator {
                     || fn_name == "__arca_hostname" || fn_name == "__arca_username"
                     || fn_name == "OpenAI.chat" || fn_name == "OpenAI_chat"
                     || fn_name == "RAGEngine.query" || fn_name == "RAGEngine_query"
+                    || fn_name == "chat" || fn_name == "chat_stream"
+                    || fn_name == "embedding" || fn_name == "embed"
+                    || fn_name == "image" || fn_name == "generate_image"
+                    || fn_name == "speech" || fn_name == "generate_speech"
+                    || fn_name == "transcribe" || fn_name == "claude"
+                    || fn_name == "arca_ai_request" || fn_name == "arca_ai_chat_completion"
+                    || fn_name == "arca_ai_embeddings" || fn_name == "arca_chat"
+                    || fn_name == "arca_embedding" || fn_name == "arca_image"
+                    || fn_name == "arca_speech" || fn_name == "arca_transcribe"
+                    || fn_name == "arca_claude" || fn_name == "set_api_key" || fn_name == "set_base_url"
                     || fn_name.ends_with(".chat") || fn_name.ends_with(".query")
                     || fn_name.ends_with(".to_header") || fn_name.ends_with("_to_header")
                     || fn_name.ends_with(".post") || fn_name.ends_with(".get") || fn_name.ends_with(".put") || fn_name.ends_with(".delete")

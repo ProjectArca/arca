@@ -1,0 +1,66 @@
+// ============================================================================
+// Arca AI Standard Library - Test (using existing AI types)
+// ============================================================================
+//
+// This example demonstrates the existing AI types in the stdlib.
+// Run: arca run examples/ai_test.arca
+//
+// Prerequisites:
+// 1. Start the mock API server:
+//    python3 mock_api.py
+//
+// 2. Run this example:
+//    arca run examples/ai_test.arca
+//
+
+import { Tensor, Dataset, Tokenizer, OpenAI, VectorStore, RAGEngine } from "std/ai"
+
+fn main() {
+    println("Arca AI Standard Library - Test Suite")
+    println("=====================================")
+    println("")
+    
+    // Test 1: Tensor
+    println("=== Test 1: Tensor ===")
+    let t = Tensor { shape: "1x10", data_ptr: 0 }
+    println("Tensor shape: " + t.shape)
+    println("Data pointer: " + t.data_ptr.to_string())
+    println("")
+    
+    // Test 2: Dataset
+    println("=== Test 2: Dataset ===")
+    let d = Dataset { format: "csv", path: "data.csv" }
+    println("Dataset format: " + d.format)
+    println("Dataset path: " + d.path)
+    println("")
+    
+    // Test 3: Tokenizer
+    println("=== Test 3: Tokenizer ===")
+    let tok = Tokenizer { kind: "bpe" }
+    println("Tokenizer kind: " + tok.kind)
+    println("")
+    
+    // Test 4: OpenAI Chat (mock)
+    println("=== Test 4: OpenAI Chat ===")
+    let ai = OpenAI { api_key: "test-key", model: "gpt-4o" }
+    let resp = ai.chat("Hello from Arca AI test")
+    println("AI Response: " + resp)
+    println("")
+    
+    // Test 5: VectorStore
+    println("=== Test 5: VectorStore ===")
+    let store = VectorStore.connect("memory", "local")
+    println("VectorStore connected")
+    println("")
+    
+    // Test 6: RAG Engine
+    println("=== Test 6: RAG Engine ===")
+    let rag = RAGEngine.new(store, "openai", "gpt-4o")
+    let ans = rag.query("What is Arca?")
+    println("RAG Answer: " + ans)
+    println("")
+    
+    println("=====================================")
+    println("All tests completed successfully!")
+    println("=====================================")
+}

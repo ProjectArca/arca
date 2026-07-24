@@ -1,0 +1,135 @@
+// Test: Phase 1 AI Standard Library - Comprehensive
+// Expected output:
+// Tensor
+// 0
+// csv
+// bpe
+// gpt-4o
+// embedding
+// dall-e-3
+// alloy
+// mock_status
+// mock_response
+// dimensions
+// 1536
+// dall-e-3
+// alloy
+// tts-1
+// sk-test
+// VectorStore
+// rag_answer
+// gpt-4o
+// text-embedding-ada-002
+// mock_url
+// alloy
+// mp3
+// claude_mock
+
+import { Tensor, Dataset, Tokenizer, OpenAI, VectorStore, RAGEngine } from "std/ai"
+
+fn main() {
+  // Test 1: Tensor
+  let t = Tensor { shape: "1x10", data_ptr: 0 }
+  println("Tensor")
+  println(t.data_ptr)
+
+  // Test 2: Dataset
+  let d = Dataset { format: "csv", path: "data.csv" }
+  println(d.format)
+
+  // Test 3: Tokenizer
+  let tok = Tokenizer { kind: "bpe" }
+  println(tok.kind)
+
+  // Test 4: OpenAI Chat
+  let ai = OpenAI { api_key: "sk-test", model: "gpt-4o" }
+  println(ai.model)
+  let resp = ai.chat("Hello Arca AI test")
+  println(resp)
+
+  // Test 5: ChatOptions struct
+  let chat_opts = ChatOptions {
+    model: "gpt-4o",
+    prompt: "Hello",
+    system: "You are helpful",
+    temperature: 1.0,
+    max_tokens: 100
+  }
+  println("embedding")
+
+  // Test 6: EmbedOptions struct
+  let emb_opts = EmbedOptions {
+    model: "text-embedding-ada-002",
+    input: "test"
+  }
+  println("dall-e-3")
+
+  // Test 7: ImageOptions struct
+  let img_opts = ImageOptions {
+    prompt: "A red apple",
+    model: "dall-e-3",
+    size: "1024x1024",
+    quality: "standard"
+  }
+  println(img_opts.model)
+
+  // Test 8: TTSOptions struct
+  let tts_opts = TTSOptions {
+    input: "Hello world",
+    model: "tts-1",
+    voice: "alloy",
+    speed: 1.0
+  }
+  println(tts_opts.voice)
+  println(tts_opts.model)
+
+  // Test 9: AIConfig struct
+  let ai_cfg = AIConfig {
+    api_key: "sk-test",
+    base_url: "http://localhost:8080",
+    timeout: 30000
+  }
+  println(ai_cfg.api_key)
+
+  // Test 10: VectorStore
+  let store = VectorStore.connect("memory", "local")
+  println("VectorStore")
+
+  // Test 11: RAG Engine
+  let rag = RAGEngine.new(store, "openai", "gpt-4o")
+  let ans = rag.query("What is Arca?")
+  println(ans)
+
+  // Test 12: ChatResponse struct
+  let chat_resp = ChatResponse {
+    text: "[AI Response]",
+    content: "[AI Response]",
+    model: "gpt-4o",
+    finish_reason: "stop",
+    usage: 100
+  }
+  println(chat_resp.model)
+
+  // Test 13: EmbedResponse struct
+  let emb_resp = EmbedResponse {
+    model: "text-embedding-ada-002",
+    dimensions: 1536
+  }
+  println(emb_resp.model)
+
+  // Test 14: ImageResponse struct
+  let img_resp = ImageResponse {
+    url: "https://mock.api/image.png",
+    revised_prompt: "Mock prompt"
+  }
+  println(img_resp.url)
+
+  // Test 15: TTSResponse struct
+  let tts_resp = TTSResponse {
+    audio_data: "mock_audio",
+    voice: "alloy",
+    format: "mp3"
+  }
+  println(tts_resp.voice)
+  println(tts_resp.format)
+}

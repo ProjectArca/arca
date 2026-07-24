@@ -153,6 +153,7 @@ impl StdLibResolver {
         ];
         symbols.insert("std/async".into(), std_async);
         let std_ai = vec![
+            // Types
             StdSymbol { name: "Tensor".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Dataset".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Tokenizer".into(), module: "std/ai".into(), is_intrinsic: false },
@@ -160,11 +161,68 @@ impl StdLibResolver {
             StdSymbol { name: "InferenceModel".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Vector".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Matrix".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "VectorStore".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "RAGEngine".into(), module: "std/ai".into(), is_intrinsic: false },
+            // Providers
             StdSymbol { name: "OpenAI".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "Anthropic".into(), module: "std/ai".into(), is_intrinsic: false },
             StdSymbol { name: "CustomAIProvider".into(), module: "std/ai".into(), is_intrinsic: false },
-            StdSymbol { name: "VectorStore".into(), module: "std/ai".into(), is_intrinsic: false },
-            StdSymbol { name: "RAGEngine".into(), module: "std/ai".into(), is_intrinsic: false },
+            // Phase 1: AI Standard Library
+            StdSymbol { name: "MessageRole".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Message".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Tool".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ToolFunction".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ToolCall".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ChatOptions".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ChatResponse".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ChatChunk".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ChatStream".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Usage".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "EmbedOptions".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "EmbedResponse".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ImageOptions".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ImageResponse".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Image".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "STTOptions".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "STTResponse".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "TTSOptions".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "TTSResponse".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "AIConfig".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ResponseFormat".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "AnthropicMessage".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "ContentBlock".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "AnthropicResponse".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "AnthropicUsage".into(), module: "std/ai".into(), is_intrinsic: false },
+            StdSymbol { name: "Model".into(), module: "std/ai".into(), is_intrinsic: false },
+            // Functions
+            StdSymbol { name: "chat".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "stream".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "embedding".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "embed".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "image".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "generate_image".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "transcribe".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "speech".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "generate_speech".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "claude".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "models".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "model_info".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "config".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "set_api_key".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "set_base_url".into(), module: "std/ai".into(), is_intrinsic: true },
+            // Message helpers
+            StdSymbol { name: "user_message".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "system_message".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "assistant_message".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "tool_message".into(), module: "std/ai".into(), is_intrinsic: true },
+            // Tool helpers
+            StdSymbol { name: "tool".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "tool_call_result".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "weather_tool".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "calculator_tool".into(), module: "std/ai".into(), is_intrinsic: true },
+            StdSymbol { name: "search_tool".into(), module: "std/ai".into(), is_intrinsic: true },
+            // Embedding helpers
+            StdSymbol { name: "get_embedding_vector".into(), module: "std/ai".into(), is_intrinsic: true },
         ];
         symbols.insert("std/ai".into(), std_ai);
 

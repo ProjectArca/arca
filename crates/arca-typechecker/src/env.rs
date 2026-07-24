@@ -734,7 +734,184 @@ impl TypeEnv {
             return_type: Box::new(Type::Primitive(PrimitiveType::String)),
         });
 
+        // =============================================================================
+        // Phase 1: AI Standard Library - Comprehensive Types
+        // =============================================================================
+
+        let string_ty = Type::Primitive(PrimitiveType::String);
+        let i32_ty = Type::Primitive(PrimitiveType::I32);
+        let i64_ty = Type::Primitive(PrimitiveType::I64);
+        let f64_ty = Type::Primitive(PrimitiveType::F64);
+
+        // ChatOptions struct
+        let chat_options_struct = Type::Struct {
+            name: "ChatOptions".into(),
+            fields: vec![
+                ("model".into(), string_ty.clone()),
+                ("prompt".into(), string_ty.clone()),
+                ("system".into(), string_ty.clone()),
+                ("temperature".into(), f64_ty.clone()),
+                ("max_tokens".into(), i32_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("ChatOptions".into(), chat_options_struct.clone());
+
+        // ChatResponse struct
+        let chat_response_struct = Type::Struct {
+            name: "ChatResponse".into(),
+            fields: vec![
+                ("text".into(), string_ty.clone()),
+                ("content".into(), string_ty.clone()),
+                ("model".into(), string_ty.clone()),
+                ("finish_reason".into(), string_ty.clone()),
+                ("usage".into(), i64_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("ChatResponse".into(), chat_response_struct.clone());
+
+        // EmbedOptions struct
+        let embed_options_struct = Type::Struct {
+            name: "EmbedOptions".into(),
+            fields: vec![
+                ("model".into(), string_ty.clone()),
+                ("input".into(), string_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("EmbedOptions".into(), embed_options_struct.clone());
+
+        // EmbedResponse struct
+        let embed_response_struct = Type::Struct {
+            name: "EmbedResponse".into(),
+            fields: vec![
+                ("model".into(), string_ty.clone()),
+                ("dimensions".into(), i32_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("EmbedResponse".into(), embed_response_struct.clone());
+
+        // ImageOptions struct
+        let image_options_struct = Type::Struct {
+            name: "ImageOptions".into(),
+            fields: vec![
+                ("prompt".into(), string_ty.clone()),
+                ("model".into(), string_ty.clone()),
+                ("size".into(), string_ty.clone()),
+                ("quality".into(), string_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("ImageOptions".into(), image_options_struct.clone());
+
+        // ImageResponse struct
+        let image_response_struct = Type::Struct {
+            name: "ImageResponse".into(),
+            fields: vec![
+                ("url".into(), string_ty.clone()),
+                ("revised_prompt".into(), string_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("ImageResponse".into(), image_response_struct.clone());
+
+        // TTSOptions struct
+        let tts_options_struct = Type::Struct {
+            name: "TTSOptions".into(),
+            fields: vec![
+                ("input".into(), string_ty.clone()),
+                ("model".into(), string_ty.clone()),
+                ("voice".into(), string_ty.clone()),
+                ("speed".into(), f64_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("TTSOptions".into(), tts_options_struct.clone());
+
+        // TTSResponse struct
+        let tts_response_struct = Type::Struct {
+            name: "TTSResponse".into(),
+            fields: vec![
+                ("audio_data".into(), string_ty.clone()),
+                ("voice".into(), string_ty.clone()),
+                ("format".into(), string_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("TTSResponse".into(), tts_response_struct.clone());
+
+        // AIConfig struct
+        let ai_config_struct = Type::Struct {
+            name: "AIConfig".into(),
+            fields: vec![
+                ("api_key".into(), string_ty.clone()),
+                ("base_url".into(), string_ty.clone()),
+                ("timeout".into(), i32_ty.clone()),
+            ].into_iter().collect(),
+            methods: HashMap::new(),
+        };
+        self.structs.insert("AIConfig".into(), ai_config_struct.clone());
+
+        // AI standalone functions
+        self.functions.insert("chat".into(), FnType {
+            params: vec![chat_options_struct.clone()],
+            return_type: Box::new(chat_response_struct.clone()),
+        });
+        self.functions.insert("embedding".into(), FnType {
+            params: vec![string_ty.clone()],
+            return_type: Box::new(embed_response_struct.clone()),
+        });
+        self.functions.insert("embed".into(), FnType {
+            params: vec![embed_options_struct.clone()],
+            return_type: Box::new(embed_response_struct.clone()),
+        });
+        self.functions.insert("image".into(), FnType {
+            params: vec![string_ty.clone()],
+            return_type: Box::new(image_response_struct.clone()),
+        });
+        self.functions.insert("generate_image".into(), FnType {
+            params: vec![image_options_struct.clone()],
+            return_type: Box::new(image_response_struct.clone()),
+        });
+        self.functions.insert("speech".into(), FnType {
+            params: vec![string_ty.clone()],
+            return_type: Box::new(tts_response_struct.clone()),
+        });
+        self.functions.insert("generate_speech".into(), FnType {
+            params: vec![tts_options_struct.clone()],
+            return_type: Box::new(tts_response_struct.clone()),
+        });
+        self.functions.insert("transcribe".into(), FnType {
+            params: vec![string_ty.clone()],
+            return_type: Box::new(string_ty.clone()),
+        });
+        self.functions.insert("claude".into(), FnType {
+            params: vec![string_ty.clone(), i32_ty.clone()],
+            return_type: Box::new(string_ty.clone()),
+        });
+        self.functions.insert("set_api_key".into(), FnType {
+            params: vec![string_ty.clone()],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("set_base_url".into(), FnType {
+            params: vec![string_ty.clone()],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        self.functions.insert("config".into(), FnType {
+            params: vec![ai_config_struct.clone()],
+            return_type: Box::new(Type::Primitive(PrimitiveType::Void)),
+        });
+        // AI HTTP request extern
+        self.functions.insert("arca_ai_request".into(), FnType {
+            params: vec![string_ty.clone(), string_ty.clone(), string_ty.clone(), string_ty.clone(), i32_ty.clone()],
+            return_type: Box::new(string_ty.clone()),
+        });
+
+        // =============================================================================
         // std/collections structs — all handle wrappers with no methods
+        // =============================================================================
         let handle_struct = |name: &str| -> Type {
             Type::Struct {
                 name: name.into(),

@@ -969,6 +969,125 @@ const char* arca_ai_embeddings(const char* provider, const char* model, const ch
     return "[0.015, -0.023, 0.089, 0.124]";
 }
 
+// =============================================================================
+// Phase 1: AI Standard Library - Comprehensive Functions
+// =============================================================================
+
+// AI Configuration (thread-safe static storage)
+static char g_ai_api_key[256] = {0};
+static char g_ai_base_url[512] = "http://localhost:8080";
+static int32_t g_ai_timeout = 30000;
+
+void arca_set_ai_config(const char* api_key, const char* base_url, int32_t timeout) {
+    if (api_key) strncpy(g_ai_api_key, api_key, sizeof(g_ai_api_key) - 1);
+    if (base_url) strncpy(g_ai_base_url, base_url, sizeof(g_ai_base_url) - 1);
+    g_ai_timeout = timeout > 0 ? timeout : 30000;
+}
+
+const char* arca_ai_request(const char* method, const char* url, const char* headers, const char* body, int32_t timeout) {
+    (void)method; (void)url; (void)headers; (void)body; (void)timeout;
+    // For now, return mock response based on URL
+    static char buf[8192];
+    if (strstr(url, "chat/completions")) {
+        snprintf(buf, sizeof(buf),
+            "{\"id\":\"chatcmpl-mock\",\"object\":\"chat.completion\",\"created\":1234567890,"
+            "\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,"
+            "\"message\":{\"role\":\"assistant\",\"content\":\"Mock AI response\"},"
+            "\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":20,\"total_tokens\":30}}");
+    } else if (strstr(url, "embeddings")) {
+        snprintf(buf, sizeof(buf),
+            "{\"object\":\"list\",\"data\":[{\"object\":\"embedding\",\"embedding\":[0.1,0.2,0.3],\"index\":0}],"
+            "\"model\":\"text-embedding-ada-002\",\"usage\":{\"prompt_tokens\":2,\"total_tokens\":2}}");
+    } else if (strstr(url, "images/generations")) {
+        snprintf(buf, sizeof(buf),
+            "{\"created\":1234567890,\"data\":[{\"url\":\"https://mock.api/image.png\","
+            "\"revised_prompt\":\"Mock revised prompt\"}]}");
+    } else {
+        snprintf(buf, sizeof(buf), "{\"status\":\"mock\",\"endpoint\":\"%s\"}", url ? url : "unknown");
+    }
+    return buf;
+}
+
+const char* arca_chat(const char* model, const char* prompt, const char* system, double temperature, int32_t max_tokens) {
+    static char buf[8192];
+    const char* safe_prompt = prompt ? prompt : "";
+    const char* safe_system = system ? system : "";
+    const char* safe_model = model ? model : "gpt-4o";
+
+    // Build mock response
+    snprintf(buf, sizeof(buf),
+        "{\"text\":\"[AI Response to: %s]\",\"content\":\"[AI Response to: %s]\","
+        "\"model\":\"%s\",\"finish_reason\":\"stop\",\"usage\":100}",
+        safe_prompt, safe_prompt, safe_model);
+    return buf;
+}
+
+const char* arca_embedding(const char* model, const char* input) {
+    static char buf[16384];
+    const char* safe_model = model ? model : "text-embedding-ada-002";
+    const char* safe_input = input ? input : "";
+
+    // Generate deterministic-ish embedding based on input
+    int seed = 0;
+    for (const char* p = safe_input; *p; p++) seed += (int)*p;
+
+    snprintf(buf, sizeof(buf),
+        "{\"model\":\"%s\",\"dimensions\":1536,\"embedding\":\"[",
+        safe_model);
+
+    char* buf_ptr = buf + strlen(buf);
+    for (int i = 0; i < 10; i++) {
+        double val = ((seed * (i + 1)) % 1000) / 1000.0 - 0.5;
+        if (i > 0) *buf_ptr++ = ',';
+        buf_ptr += snprintf(buf_ptr, 32, "%.4f", val);
+        if (buf_ptr >= buf + sizeof(buf) - 32) break;
+    }
+    strcpy(buf_ptr, "...]\"}");
+    return buf;
+}
+
+const char* arca_image(const char* prompt, const char* model, const char* size) {
+    static char buf[2048];
+    const char* safe_prompt = prompt ? prompt : "";
+    const char* safe_model = model ? model : "dall-e-3";
+    const char* safe_size = size ? size : "1024x1024";
+
+    snprintf(buf, sizeof(buf),
+        "{\"url\":\"https://mock.api/generated/%s.png\",\"revised_prompt\":\"[Revised: %s]\"}",
+        safe_model, safe_prompt);
+    return buf;
+}
+
+const char* arca_speech(const char* input, const char* voice) {
+    static char buf[1024];
+    const char* safe_input = input ? input : "";
+    const char* safe_voice = voice ? voice : "alloy";
+
+    snprintf(buf, sizeof(buf),
+        "{\"audio_data\":\"mock_audio_data_base64\",\"voice\":\"%s\",\"format\":\"mp3\"}",
+        safe_voice);
+    return buf;
+}
+
+const char* arca_transcribe(const char* audio_data) {
+    (void)audio_data;
+    return "\"Mock transcription of audio content\"";
+}
+
+const char* arca_claude(const char* prompt, int32_t max_tokens) {
+    static char buf[4096];
+    const char* safe_prompt = prompt ? prompt : "";
+    (void)max_tokens;
+
+    snprintf(buf, sizeof(buf),
+        "{\"id\":\"msg_mock\",\"type\":\"message\",\"role\":\"assistant\","
+        "\"content\":[{\"type\":\"text\",\"text\":\"[Claude Response to: %s]\"}],"
+        "\"model\":\"claude-3-sonnet-20240229\",\"stop_reason\":\"end_turn\","
+        "\"usage\":{\"input_tokens\":50,\"output_tokens\":30}}",
+        safe_prompt);
+    return buf;
+}
+
 // Vector DB Real Vector Storage & Distance Engine
 typedef struct {
     char id[128];
