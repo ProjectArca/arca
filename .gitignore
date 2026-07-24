@@ -16,3 +16,4 @@ Thumbs.db
 project-arca.code-workspace
 build/output.c
 build/output_*
+__pycache__/mock_api.cpython-313.pyc
